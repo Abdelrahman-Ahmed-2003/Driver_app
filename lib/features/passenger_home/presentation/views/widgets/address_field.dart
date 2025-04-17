@@ -46,7 +46,7 @@ class AddressField extends StatelessWidget {
                 final url = Uri.parse(
                     'https://nominatim.openstreetmap.org/search?q=$query&format=json&limit=1');
 
-                print('🔍 Searching location: $query'); // Debug log
+                // print('🔍 Searching location: $query'); // Debug log
 
                 final response = await http.get(url);
                 print('📩 Response received: ${response.statusCode}');
