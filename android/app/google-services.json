@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "211317591161",
+    "project_id": "driver-ae64a",
+    "storage_bucket": "driver-ae64a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:211317591161:android:2686a11ac56af7880718a8",
+        "android_client_info": {
+          "package_name": "com.example.dirver"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "211317591161-rhtgsasu8ur1ofeb6ibnaktn1tfrpt4l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAYYMsuALKxVhT8B1e2jy24pZhWrxRIrGo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "211317591161-rhtgsasu8ur1ofeb6ibnaktn1tfrpt4l.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "211317591161-2jr6jv3qicn565mnbjnjgv38vld5ncb5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.driverApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
