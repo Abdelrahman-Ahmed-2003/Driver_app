@@ -1,12 +1,15 @@
+import 'package:dirver/features/passenger_home/presentation/provider/trip_provider.dart';
 import 'package:dirver/features/passenger_home/presentation/views/widgets/address_field.dart';
 import 'package:dirver/features/passenger_home/presentation/views/widgets/list_view_widget.dart';
 import 'package:dirver/features/passenger_home/presentation/views/widgets/price_field.dart';
 import 'package:dirver/features/passenger_home/presentation/views/widgets/search_button.dart';
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:provider/provider.dart';
 
 class BottomSheetWidget extends StatelessWidget {
-  BottomSheetWidget({super.key});
-  TextEditingController fromController = TextEditingController();
+  const BottomSheetWidget({super.key});
+  // TextEditingController fromController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     debugPrint('build bottom sheet widget ');
@@ -17,7 +20,8 @@ class BottomSheetWidget extends StatelessWidget {
         children: [
           Align(
             alignment: Alignment.bottomRight,
-            child: Container(
+            child: 
+            Container(
                 decoration: const BoxDecoration(
                     color: Color(0XFF661AFD),
                     borderRadius: BorderRadius.all(Radius.circular(25))),
@@ -25,9 +29,19 @@ class BottomSheetWidget extends StatelessWidget {
                 height: 50,
                 width: 50,
                 child: IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    var provider = context.read<TripProvider>();
+                    provider.toController.clear();
+                    provider.priceController.clear();
+                    provider.setFrom('');
+                    provider.setPrice('');
+                    provider.setDest(LatLng(0, 0));
+                    provider.setCurrentPoints(LatLng(0, 0));
+                    provider.points.clear();
+                    provider.lastDest = null;
+                  },
                   icon: Icon(
-                    Icons.location_searching_rounded,
+                    Icons.wrong_location_outlined,
                     color: Colors.white,
                   ),
                 )),

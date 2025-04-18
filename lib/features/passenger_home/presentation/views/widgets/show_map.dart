@@ -1,10 +1,12 @@
 import 'dart:async';
 
+import 'package:dirver/core/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:location/location.dart';
+import 'package:location/location.dart' as location_package;
 import 'package:provider/provider.dart';
 import 'package:dirver/features/passenger_home/presentation/provider/trip_provider.dart';
 
@@ -17,8 +19,8 @@ class ShowMap extends StatefulWidget {
 
 class _ShowMapState extends State<ShowMap> {
   final MapController _mapController = MapController();
-  final Location _location = Location();
-  StreamSubscription<LocationData>? _locationSubscription;
+  final  _location = location_package.Location();
+  StreamSubscription<location_package.LocationData>? _locationSubscription;
   bool _isLoading = true;
   LatLng? _lastUpdatedLocation;
   final Distance _distanceCalculator = Distance();
@@ -48,7 +50,7 @@ class _ShowMapState extends State<ShowMap> {
         );
 
         // Check if we should update based on distance threshold
-        if (_shouldUpdateLocation(newLocation)) {
+        if (_shouldUpdateLocation(newLocation)){
           final tripProvider = Provider.of<TripProvider>(context, listen: false);
           tripProvider.currentLocation = newLocation;
           tripProvider.setCurrentPoints(newLocation);
@@ -73,7 +75,7 @@ class _ShowMapState extends State<ShowMap> {
     );
     
     // Only update if moved more than 15 meters
-    return distance > 15;
+    return distance > 5;
   }
 
   Future<bool> _checkPermissions() async {
@@ -84,7 +86,7 @@ class _ShowMapState extends State<ShowMap> {
     }
 
     final permissionStatus = await _location.requestPermission();
-    return permissionStatus == PermissionStatus.granted;
+    return permissionStatus == location_package.PermissionStatus.granted;
   }
 
   Future<void> _centerOnUserLocation() async {
@@ -116,10 +118,22 @@ class _ShowMapState extends State<ShowMap> {
     return FlutterMap(
       mapController: _mapController,
       options: MapOptions(
-        onTap:(TapPosition tapPosition, LatLng latLng){
+        onTap:(TapPosition tapPosition, LatLng latLng) async {
           tripProvider.setDest(latLng);
           tripProvider.setCoordinatesPoint(latLng);
-          
+          try {
+            List<Placemark> placemarks = await placemarkFromCoordinates(
+              latLng.latitude,
+              latLng.longitude
+            );
+            
+            Placemark place = placemarks.first;
+            tripProvider.toController.text = place.street ?? 'Unknown location';
+          } catch (e) {
+            debugPrint("Error: $e");
+            errorMessage(context, e.toString());
+          }
+
         },
         initialCenter: tripProvider.currentLocation ?? const LatLng(0, 0),
         initialZoom: 15,
