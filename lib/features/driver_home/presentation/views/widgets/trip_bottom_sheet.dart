@@ -76,7 +76,7 @@ class TripBottomSheet extends StatelessWidget {
 
       }
     } catch (e, stackTrace) {
-      print(stackTrace);
+      debugPrint(stackTrace.toString());
 
         errorMessage(context, 'Something went wrong. Please try again. $e');
 

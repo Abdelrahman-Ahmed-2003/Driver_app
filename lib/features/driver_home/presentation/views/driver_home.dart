@@ -62,9 +62,9 @@ class DriverHome extends StatelessWidget {
         'status': 'in progress',
       });
 
-      print("✅ Trip accepted by driver ${driver.uid}");
+      debugPrint("✅ Trip accepted by driver ${driver.uid}");
     } catch (e) {
-      print("❌ Error accepting trip: $e");
+      debugPrint("❌ Error accepting trip: $e");
     }
   }
 }

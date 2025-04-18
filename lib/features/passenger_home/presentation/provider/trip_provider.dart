@@ -83,7 +83,7 @@
 //       final geometry = data['routes'][0]['geometry'];
 //       _decodePolyline(geometry);
 //     } else {
-//       print('Error fetching route');
+//       debugPrint('Error fetching route');
 //     }
 //   }
 
@@ -130,8 +130,8 @@ class TripProvider with ChangeNotifier {
   // Setters
   void setFrom(String value) {
     _from = value;
-    print('in setttttttttttttttttttttttttt');
-    print(_from);
+    debugPrint('in setttttttttttttttttttttttttt');
+    debugPrint(_from);
     notifyListeners();
   }
 
@@ -203,7 +203,7 @@ class TripProvider with ChangeNotifier {
   //     final geometry = data['routes'][0]['geometry'];
   //     _decodePolyline(geometry);
   //   } else {
-  //     print('error in fetch route');
+  //     debugPrint('error in fetch route');
   //   }
   // }
 
@@ -224,14 +224,14 @@ class TripProvider with ChangeNotifier {
       // ✅ Reset polyline to only show from current location to destination
       _decodePolyline(geometry);
     } else {
-      print('Error in fetch route');
+      debugPrint('Error in fetch route');
     }
   }
 
   void _decodePolyline(String geometry) {
     PolylinePoints polylinePoints = PolylinePoints();
     List<PointLatLng> result = polylinePoints.decodePolyline(geometry);
-    print('ressssssssssssssssssssssssssssult $result');
+    debugPrint('points of polyline $result');
     setDestinations(
         result.map((e) => LatLng(e.latitude, e.longitude)).toList());
   }

@@ -65,8 +65,8 @@ class _SignupBodyState extends State<SignupBody> {
                   //     imageFile: imageFile);
                   // String temp = await user.addNewUser();
                   // if (temp == 'ok') {
-                  //   print('imaageeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee');
-                  //   print(imageFile.toString());
+                  //   debugPrint('imaageeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee');
+                  //   debugPrint(imageFile.toString());
                   //   temp = await user.sendVerefcation();
                   //   if (temp == 'ok' && await user.startVerificationCheck()) {
                   //     Navigator.pushReplacement(

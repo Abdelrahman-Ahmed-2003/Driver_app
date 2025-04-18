@@ -33,9 +33,9 @@ class SearchButton extends StatelessWidget {
               'createdAt': FieldValue.serverTimestamp(),
             });
 
-            print("🚀 Trip created successfully!");
+            debugPrint("🚀 Trip created successfully!");
           } catch (e) {
-            print("❌ Error creating trip: $e");
+            debugPrint("❌ Error creating trip: $e");
           }
 
         },

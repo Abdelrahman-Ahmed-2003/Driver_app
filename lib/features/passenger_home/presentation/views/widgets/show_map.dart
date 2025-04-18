@@ -1,153 +1,4 @@
-// import 'dart:async';
-
-// import 'package:flutter/material.dart';
-// import 'package:flutter_map/flutter_map.dart';
-// import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
-// import 'package:latlong2/latlong.dart';
-// import 'package:location/location.dart';
-// import 'package:provider/provider.dart';
-// import 'package:dirver/features/passenger_home/presentation/provider/trip_provider.dart';
-
-// class ShowMap extends StatefulWidget {
-//   const ShowMap({super.key});
-
-//   @override
-//   State<ShowMap> createState() => _ShowMapState();
-// }
-
-// class _ShowMapState extends State<ShowMap> {
-//   final MapController _mapController = MapController();
-//   final Location _location = Location();
-//   StreamSubscription<LocationData>? _locationSubscription;
-//   bool isLoading = true;
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     WidgetsBinding.instance.addPostFrameCallback((_) {
-//       _initializeLocation();
-//     });
-//   }
-
-//   Future<void> _initializeLocation() async {
-//     if (!await _checktheRequestPermissions()) return;
-
-//     _locationSubscription = _location.onLocationChanged.listen((LocationData currentLocation) {
-//       if (!mounted) return; // ✅ Ensure widget is mounted before updating UI
-
-//       var tripProvider = Provider.of<TripProvider>(context, listen: false);
-//       LatLng newLocation = LatLng(currentLocation.latitude!, currentLocation.longitude!);
-//       tripProvider.updateCurrentLocation(newLocation);
-//       tripProvider.setCoordinatesPoint(tripProvider.dest);
-//     });
-//   }
-
-
-
-//   Future<bool> _checktheRequestPermissions() async {
-//     bool serviceEnabled = await _location.serviceEnabled();
-//     if (!serviceEnabled) {
-//       serviceEnabled = await _location.requestService();
-//       if (!serviceEnabled) {
-//         return false;
-//       }
-//     }
-//     final PermissionStatus permissionStatus = await _location.requestPermission();
-//     return permissionStatus == PermissionStatus.granted;
-//   }
-
-//   Future<void> userCurrentLocation() async {
-//     var tripProvider = Provider.of<TripProvider>(context, listen: false);
-//     if (tripProvider.currentLocation != null) {
-//       _mapController.move(tripProvider.currentLocation!, 15);
-//     } else {
-//       if (mounted) {
-//         ScaffoldMessenger.of(context).showSnackBar(
-//           const SnackBar(
-//             content: Text('Current location not available'),
-//           ),
-//         );
-//       }
-//     }
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Selector<TripProvider, LatLng?>(
-//       selector: (_, provider) => provider.currentLocation,
-//       builder: (context, currentLocation, child) {
-//         return _buildMap(currentLocation);
-//       },
-//     );
-//   }
-
-//   Widget _buildMap(LatLng? currentLocation) {
-//     return FlutterMap(
-//       mapController: _mapController,
-//       options: MapOptions(
-//         initialCenter: currentLocation ?? LatLng(0, 0),
-//         initialZoom: 2,
-//         minZoom: 0,
-//         maxZoom: 100,
-//       ),
-//       children: [
-//         TileLayer(
-//           urlTemplate: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-//         ),
-//         CurrentLocationLayer(
-//           style: LocationMarkerStyle(
-//             marker: DefaultLocationMarker(
-//               // color: Colors.white,
-//               child: const Icon(Icons.location_pin, color: Colors.blue, size: 40),
-//             ),
-//             markerSize: Size(35, 35),
-//             markerDirection: MarkerDirection.heading,
-//           ),
-//         ),
-//         Selector<TripProvider, LatLng>(
-//           selector: (_, provider) => provider.dest,
-//           builder: (context, dest, child) {
-//             return dest != LatLng(0, 0)
-//                 ? MarkerLayer(
-//               markers: [
-//                 Marker(
-//                   width: 50,
-//                   height: 50,
-//                   point: dest,
-//                   child: const Icon(Icons.flag, color: Colors.red, size: 40),
-//                 ),
-//               ],
-//             )
-//                 : SizedBox.shrink();
-//           },
-//         ),
-//         Selector<TripProvider, List<LatLng>>(
-//           selector: (_, provider) => provider.points,
-//           builder: (context, points, child) {
-//             return points.isNotEmpty
-//                 ? PolylineLayer(
-//               polylines: [
-//                 Polyline(
-//                   points: points,
-//                   strokeWidth: 5,
-//                   color: Colors.green,
-//                 ),
-//               ],
-//             )
-//                 : SizedBox.shrink();
-//           },
-//         ),
-//       ],
-//     );
-//   }
-//   @override
-//   void dispose() {
-//     _locationSubscription?.cancel(); // ✅ Cancel location updates when widget is destroyed
-//     super.dispose();
-//   }
-// }
-
-
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -166,9 +17,11 @@ class ShowMap extends StatefulWidget {
 
 class _ShowMapState extends State<ShowMap> {
   final MapController _mapController = MapController();
-
   final Location _location = Location();
-  bool isLoading = true;
+  StreamSubscription<LocationData>? _locationSubscription;
+  bool _isLoading = true;
+  LatLng? _lastUpdatedLocation;
+  final Distance _distanceCalculator = Distance();
 
   @override
   void initState() {
@@ -178,55 +31,70 @@ class _ShowMapState extends State<ShowMap> {
     });
   }
 
-  Future<void> _initializeLocation() async {
-    if (!await _checktheRequestPermissions()) return;
-    _location.onLocationChanged.listen((LocationData currentLocation) {
-      if (currentLocation.latitude != null &&
-          currentLocation.longitude != null) {
-        var tripProvider = Provider.of<TripProvider>(context, listen: false);
+  @override
+  void dispose() {
+    _locationSubscription?.cancel();
+    super.dispose();
+  }
 
-        tripProvider.currentLocation =
-            LatLng(currentLocation.latitude!, currentLocation.longitude!);
-        tripProvider.setCurrentPoints(tripProvider.currentLocation!);
-        print('in set stateeeeeeeeeeeeeeeeeeeee');
-        print(tripProvider.currentLocation);
+  Future<void> _initializeLocation() async {
+    if (!await _checkPermissions()) return;
+    
+    _locationSubscription = _location.onLocationChanged.listen((currentLocation) {
+      if (currentLocation.latitude != null && currentLocation.longitude != null) {
+        final newLocation = LatLng(
+          currentLocation.latitude!, 
+          currentLocation.longitude!
+        );
+
+        // Check if we should update based on distance threshold
+        if (_shouldUpdateLocation(newLocation)) {
+          final tripProvider = Provider.of<TripProvider>(context, listen: false);
+          tripProvider.currentLocation = newLocation;
+          tripProvider.setCurrentPoints(newLocation);
+          _lastUpdatedLocation = newLocation;
+          
+          if (_isLoading) {
+            setState(() => _isLoading = false);
+          }
+        }
       }
-      // setState(() {
-      //   var tripProvider = Provider.of<TripProvider>(context, listen: false);
-      //   print('in set stateeeeeeeeeeeeeeeeeeeee');
-      //   tripProvider.currentLocation =
-      //       LatLng(currentLocation.latitude!, currentLocation.longitude!);
-      //   isLoading = false;
-      // });
     });
   }
 
-  Future<bool> _checktheRequestPermissions() async {
+  bool _shouldUpdateLocation(LatLng newLocation) {
+    // If first location or no previous location, always update
+    if (_lastUpdatedLocation == null) return true;
+    
+    // Calculate distance in meters between last point and new point
+    final distance = _distanceCalculator(
+      _lastUpdatedLocation!, 
+      newLocation
+    );
+    
+    // Only update if moved more than 15 meters
+    return distance > 15;
+  }
+
+  Future<bool> _checkPermissions() async {
     bool serviceEnabled = await _location.serviceEnabled();
     if (!serviceEnabled) {
       serviceEnabled = await _location.requestService();
-      if (!serviceEnabled) {
-        return false;
-      }
+      if (!serviceEnabled) return false;
     }
-    final PermissionStatus permissionStatus =
-        await _location.requestPermission();
-    if (permissionStatus == PermissionStatus.granted) {
-      return true;
-    }
-    return false;
+
+    final permissionStatus = await _location.requestPermission();
+    return permissionStatus == PermissionStatus.granted;
   }
 
-  Future<void> userCurrentLocation() async {
-    var tripProvider = Provider.of<TripProvider>(context, listen: false);
-
+  Future<void> _centerOnUserLocation() async {
+    final tripProvider = Provider.of<TripProvider>(context, listen: false);
+    
     if (tripProvider.currentLocation != null) {
       _mapController.move(tripProvider.currentLocation!, 15);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Current location not available'),
-        ),
+        const SnackBar(content: Text('Current location not available')),
       );
     }
   }
@@ -241,15 +109,23 @@ class _ShowMapState extends State<ShowMap> {
   }
 
   Widget _buildMap(TripProvider tripProvider) {
-    
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
     return FlutterMap(
       mapController: _mapController,
       options: MapOptions(
-        initialCenter: tripProvider.currentLocation ?? LatLng(0, 0),
-        initialZoom: 2,
+        onTap:(TapPosition tapPosition, LatLng latLng){
+          tripProvider.setDest(latLng);
+          tripProvider.setCoordinatesPoint(latLng);
+          
+        },
+        initialCenter: tripProvider.currentLocation ?? const LatLng(0, 0),
+        initialZoom: 15,
         minZoom: 0,
         maxZoom: 100,
+        onMapReady: _centerOnUserLocation,
       ),
       children: [
         TileLayer(
@@ -259,20 +135,20 @@ class _ShowMapState extends State<ShowMap> {
           style: LocationMarkerStyle(
             marker: DefaultLocationMarker(
               color: Colors.white,
-              child: Icon(Icons.location_pin),
+              child: const Icon(Icons.location_pin),
             ),
-            markerSize: Size(35, 35),
+            markerSize: const Size(35, 35),
             markerDirection: MarkerDirection.heading,
           ),
         ),
-        if (tripProvider.dest != LatLng(0, 0))
+        if (tripProvider.dest != const LatLng(0, 0))
           MarkerLayer(
             markers: [
               Marker(
                 width: 50,
                 height: 50,
                 point: tripProvider.dest,
-                child: Icon(
+                child: const Icon(
                   Icons.location_pin,
                   color: Colors.blue,
                   size: 40,

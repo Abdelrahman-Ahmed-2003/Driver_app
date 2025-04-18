@@ -54,7 +54,6 @@ class LoginBody extends StatelessWidget {
 
       return userCredential;
     } catch (e) {
-      print("🚨 Error during Google Sign-In: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Sign-in failed: $e")),
       );
