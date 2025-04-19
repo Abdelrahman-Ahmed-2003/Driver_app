@@ -1,4 +1,6 @@
-import 'package:dirver/features/passenger_home/presentation/provider/trip_provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dirver/features/passenger_home/presentation/provider/content_of_trip_provider.dart';
+import 'package:dirver/features/passenger_home/presentation/provider/tripProvider.dart';
 import 'package:dirver/features/passenger_home/presentation/views/widgets/address_field.dart';
 import 'package:dirver/features/passenger_home/presentation/views/widgets/list_view_widget.dart';
 import 'package:dirver/features/passenger_home/presentation/views/widgets/price_field.dart';
@@ -9,65 +11,162 @@ import 'package:provider/provider.dart';
 
 class BottomSheetWidget extends StatelessWidget {
   const BottomSheetWidget({super.key});
-  // TextEditingController fromController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
-    debugPrint('build bottom sheet widget ');
     return Align(
       alignment: Alignment.bottomCenter,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Align(
-            alignment: Alignment.bottomRight,
-            child: 
-            Container(
-                decoration: const BoxDecoration(
-                    color: Color(0XFF661AFD),
-                    borderRadius: BorderRadius.all(Radius.circular(25))),
-                // alignment: Alignment.bottomRight,
-                height: 50,
-                width: 50,
-                child: IconButton(
-                  onPressed: () {
-                    var provider = context.read<TripProvider>();
-                    provider.toController.clear();
-                    provider.priceController.clear();
-                    provider.setFrom('');
-                    provider.setPrice('');
-                    provider.setDest(LatLng(0, 0));
-                    provider.setCurrentPoints(LatLng(0, 0));
-                    provider.points.clear();
-                    provider.lastDest = null;
-                  },
-                  icon: Icon(
-                    Icons.wrong_location_outlined,
-                    color: Colors.white,
-                  ),
-                )),
-          ),
-          Container(
-            decoration: const BoxDecoration(
-              color: Colors.black,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
-              ),
-            ),
-            height: 250,
-            width: double.infinity,
-            child: Column(
-              children: [
-                ListViewWidget(),
-                // AddressField(hintText: 'From', controller: fromController),
-                AddressField(hintText: 'To',),
-                PriceField(),
-                SearchButton(),
-              ],
-            ),
-          ),
+          const TripStatusStreamer(),
+          _buildClearLocationButton(context),
+          _buildMainContent(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildClearLocationButton(BuildContext context) {
+    return Align(
+      alignment: Alignment.bottomRight,
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Color(0XFF661AFD),
+          borderRadius: BorderRadius.all(Radius.circular(25)),
+        ),
+        height: 50,
+        width: 50,
+        margin: const EdgeInsets.only(right: 12, bottom: 8),
+        child: IconButton(
+          onPressed: () {
+            final provider = context.read<ContentOfTripProvider>();
+            provider.toController.clear();
+            provider.priceController.clear();
+            provider.setFrom('');
+            provider.setPrice('');
+            provider.setDest(LatLng(0, 0));
+            provider.setCurrentPoints(LatLng(0, 0));
+            provider.points.clear();
+            provider.lastDest = null;
+          },
+          icon: const Icon(Icons.wrong_location_outlined, color: Colors.white),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMainContent() {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.black,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      height: 250,
+      width: double.infinity,
+      child: const Column(
+        children: [
+          ListViewWidget(),
+          AddressField(hintText: 'To'),
+          PriceField(),
+          SearchButton(),
         ],
       ),
     );
   }
 }
+
+class TripStatusStreamer extends StatelessWidget {
+  const TripStatusStreamer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final tripProvider = context.watch<TripProvider>();
+
+    return StreamBuilder<DocumentSnapshot>(
+      stream: tripProvider.tripStream,
+      builder: (context, snapshot) {
+        final status = tripProvider.getCurrentStatus(snapshot.data);
+
+        if (status == 'not_created' || status == 'unknown' || status == 'cancelled') {
+          return const SizedBox.shrink(); // Hide when no trip or cancelled
+        }
+
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          margin: const EdgeInsets.only(bottom: 8),
+          decoration: BoxDecoration(
+            color: _getStatusColor(status).withOpacity(0.2),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                _getStatusIcon(status),
+                color: _getStatusColor(status),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                _getStatusText(status),
+                style: TextStyle(
+                  color: _getStatusColor(status),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'waiting':
+        return Colors.orange;
+      case 'in_progress':
+        return Colors.blue;
+      case 'completed':
+        return Colors.green;
+      case 'cancelled':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  IconData _getStatusIcon(String status) {
+    switch (status) {
+      case 'waiting':
+        return Icons.access_time;
+      case 'in_progress':
+        return Icons.directions_car;
+      case 'completed':
+        return Icons.check_circle;
+      case 'cancelled':
+        return Icons.cancel;
+      default:
+        return Icons.help_outline;
+    }
+  }
+
+  String _getStatusText(String status) {
+    switch (status) {
+      case 'waiting':
+        return 'Waiting for driver';
+      case 'in_progress':
+        return 'Trip in progress';
+      case 'completed':
+        return 'Trip completed';
+      case 'cancelled':
+        return 'Trip cancelled';
+      default:
+        return 'Status: ${status.toUpperCase()}';
+    }
+  }
+}
+

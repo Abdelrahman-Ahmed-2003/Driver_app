@@ -1,85 +1,85 @@
 
-import 'dart:convert';
+// import 'dart:convert';
 
-import 'package:dirver/features/passenger_home/presentation/views/widgets/show_map.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:latlong2/latlong.dart';
-import 'package:provider/provider.dart';
-import 'package:http/http.dart' as http;
+// import 'package:dirver/features/passenger_home/presentation/views/widgets/show_map.dart';
+// import 'package:flutter/cupertino.dart';
+// import 'package:flutter/material.dart';
+// import 'package:latlong2/latlong.dart';
+// import 'package:provider/provider.dart';
+// import 'package:http/http.dart' as http;
 
-import '../../../../../core/utils/utils.dart';
-import '../../../../passenger_home/presentation/provider/trip_provider.dart';
+// import '../../../../../core/utils/utils.dart';
+// import '../../../../passenger_home/presentation/provider/trip_provider.dart';
 
-class TripBottomSheet extends StatelessWidget {
-  const TripBottomSheet({super.key});
+// class TripBottomSheet extends StatelessWidget {
+//   const TripBottomSheet({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    Future.microtask(() => setLocation(context)); // ✅ Run once when the widget builds
+//   @override
+//   Widget build(BuildContext context) {
+//     Future.microtask(() => setLocation(context)); // ✅ Run once when the widget builds
 
-    return Column(
-      children: [
-        SizedBox(
-          height: 350,
-          child: ShowMap(),
-        ),
-      ],
-    );
-  }
+//     return Column(
+//       children: [
+//         SizedBox(
+//           height: 350,
+//           child: ShowMap(),
+//         ),
+//       ],
+//     );
+//   }
 
-  Future<void> setLocation(BuildContext context) async {
-    var tripProvider = context.read<TripProvider>();
-    try {
-      tripProvider.toController.text = 'الدقي مصر';
-      String query = 'الدقي مصر';
+//   Future<void> setLocation(BuildContext context) async {
+//     var ContentOfTripProvider = context.read<ContentOfTripProvider>();
+//     try {
+//       ContentOfTripProvider.toController.text = 'الدقي مصر';
+//       String query = 'الدقي مصر';
 
-      if (query.isEmpty) {
-        Future.delayed(Duration.zero, () {
-          errorMessage(context, 'Please enter a location');
-        });
-        return;
-      }
+//       if (query.isEmpty) {
+//         Future.delayed(Duration.zero, () {
+//           errorMessage(context, 'Please enter a location');
+//         });
+//         return;
+//       }
 
-      final url = Uri.parse(
-          'https://nominatim.openstreetmap.org/search?q=$query&format=json&limit=1');
-
-
-        errorMessage(context, '🔍 Searching location: $query'); // Debug log
+//       final url = Uri.parse(
+//           'https://nominatim.openstreetmap.org/search?q=$query&format=json&limit=1');
 
 
-      final response = await http.get(url);
+//         errorMessage(context, '🔍 Searching location: $query'); // Debug log
 
 
-        errorMessage(context, '📩 Response received: ${response.statusCode}');
+//       final response = await http.get(url);
 
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data.isNotEmpty) {
-          final lat = double.parse(data[0]['lat']);
-          final lon = double.parse(data[0]['lon']);
+//         errorMessage(context, '📩 Response received: ${response.statusCode}');
 
-          Future.delayed(Duration.zero, () {
-            errorMessage(context, '📍 Location found: Lat: $lat, Lon: $lon');
-          });
 
-          tripProvider.setCoordinatesPoint(LatLng(lat, lon));
-        } else {
+//       if (response.statusCode == 200) {
+//         final data = json.decode(response.body);
+//         if (data.isNotEmpty) {
+//           final lat = double.parse(data[0]['lat']);
+//           final lon = double.parse(data[0]['lon']);
 
-            errorMessage(context, 'Location not found, try another location');
+//           Future.delayed(Duration.zero, () {
+//             errorMessage(context, '📍 Location found: Lat: $lat, Lon: $lon');
+//           });
 
-        }
-      } else {
+//           ContentOfTripProvider.setCoordinatesPoint(LatLng(lat, lon));
+//         } else {
 
-          errorMessage(context, 'Error in search');
+//             errorMessage(context, 'Location not found, try another location');
 
-      }
-    } catch (e, stackTrace) {
-      debugPrint(stackTrace.toString());
+//         }
+//       } else {
 
-        errorMessage(context, 'Something went wrong. Please try again. $e');
+//           errorMessage(context, 'Error in search');
 
-    }
-  }
-}
+//       }
+//     } catch (e, stackTrace) {
+//       debugPrint(stackTrace.toString());
+
+//         errorMessage(context, 'Something went wrong. Please try again. $e');
+
+//     }
+//   }
+// }
