@@ -1,7 +1,6 @@
 import 'package:dirver/core/constant/asset_images.dart';
 import 'package:dirver/core/services/sharedPref/store_user_type.dart';
 import 'package:dirver/core/sharedWidgets/logo_widget.dart';
-import 'package:dirver/features/auth/presentation/views/widgets/fields.dart';
 import 'package:dirver/features/auth/presentation/views/widgets/way_to_login.dart';
 import 'package:dirver/features/driver_or_rider/presentation/views/driver_or_rider.dart';
 import 'package:dirver/features/splash_screen/presentation/views/widgets/text_in_splash.dart';
@@ -47,9 +46,9 @@ class LoginBody extends StatelessWidget {
       await StoreUserType.saveUserId(email??'');
 
       // Navigate to DriverOrRider Page
-      Navigator.pushReplacement(
+      Navigator.pushReplacementNamed(
         context,
-        MaterialPageRoute(builder: (context) => DriverOrRider()),
+        DriverOrRider.routeName,
       );
 
       return userCredential;
@@ -72,17 +71,17 @@ class LoginBody extends StatelessWidget {
           Image.asset(AssetImages.handShake, height: 300),
           TextInSplash(text: 'Ease your Transportation with us'),
           const Spacer(),
-          WayToLogin(
-            text: 'Phone number',
-            colorButton: Colors.black,
-            colorText: Colors.white,
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const Fields()),
-              );
-            },
-          ),
+          // WayToLogin(
+          //   text: 'Phone number',
+          //   colorButton: Colors.black,
+          //   colorText: Colors.white,
+          //   onPressed: () {
+          //     Navigator.pushReplacementNamed(
+          //       context,
+          //       MaterialPageRoute(builder: (context) => const Fields()),
+          //     );
+          //   },
+          // ),
           const SizedBox(height: 10),
           WayToLogin(
             text: "Google",

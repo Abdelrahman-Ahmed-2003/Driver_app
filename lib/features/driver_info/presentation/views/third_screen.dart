@@ -7,9 +7,10 @@ import 'package:provider/provider.dart';
 import '../provider/driver_provider.dart';
 import 'fourth_screen.dart';
 
-class ThirdScreen extends StatelessWidget {
-  ThirdScreen({super.key});
-  var formKey = GlobalKey<FormState>();
+class DriverInfoView3 extends StatelessWidget {
+  DriverInfoView3({super.key});
+  final formKey = GlobalKey<FormState>();
+  static const String routeName = '/driver_info_view3';
 
   @override
   Widget build(BuildContext context) {
@@ -68,9 +69,9 @@ class ThirdScreen extends StatelessWidget {
                 buildNextButton(() {
                   if (formKey.currentState!.validate()) {
                     formKey.currentState!.save();
-                    Navigator.push(
+                    Navigator.pushNamed(
                       context,
-                      MaterialPageRoute(builder: (context) => FourthScreen()),
+                      DriverInfoView4.routeName
                     );
                   }
                 }),

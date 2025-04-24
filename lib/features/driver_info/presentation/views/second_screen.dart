@@ -6,9 +6,10 @@ import 'package:dirver/features/driver_info/presentation/views/widgets/text_fiel
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class SecondScreen extends StatelessWidget {
-  SecondScreen({super.key});
-  var formKey = GlobalKey<FormState>();
+class DriverInfoView2 extends StatelessWidget {
+  DriverInfoView2({super.key});
+  final formKey = GlobalKey<FormState>();
+  static const String routeName = '/driver_info_view2';
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +64,7 @@ class SecondScreen extends StatelessWidget {
                 buildNextButton(() {
                   if (formKey.currentState!.validate()) {
                     formKey.currentState!.save();
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => ThirdScreen()));
+                    Navigator.pushNamed(context, DriverInfoView3.routeName);
                   }
                 }),
               ],

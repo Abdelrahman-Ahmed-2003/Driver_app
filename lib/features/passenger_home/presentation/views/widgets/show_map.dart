@@ -25,6 +25,7 @@ class _ShowMapState extends State<ShowMap> {
   bool _isLoading = true;
   LatLng? _lastUpdatedLocation;
   final Distance _distanceCalculator = Distance();
+  late ContentOfTripProvider contentProvider;
 
   @override
   void initState() {
@@ -39,10 +40,16 @@ class _ShowMapState extends State<ShowMap> {
   }
 
   @override
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+  contentProvider = Provider.of<ContentOfTripProvider>(context, listen: false);
+  }
+
+  @override
   void dispose() {
     _locationSubscription?.cancel();
-    var provider = context.read<ContentOfTripProvider>();
-    provider.clear();
+    contentProvider.clear(); // ✅ Safe now
     super.dispose();
   }
 

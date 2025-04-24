@@ -14,7 +14,7 @@ class LoginRow extends StatelessWidget {
         ,style: TextStyle(fontWeight: FontWeight.w500,fontSize: 15),),
         TextButton(
           onPressed: () {
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>const LoginView()));
+            Navigator.pushReplacementNamed(context, LoginView.routeName);
           },
           child: Text('Login here',
           style: Styles.textSytle15),

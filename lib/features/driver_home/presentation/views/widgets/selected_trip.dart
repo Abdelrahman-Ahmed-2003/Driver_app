@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 class SelectedTrip extends StatefulWidget {
   final Map<String, dynamic> trip;
   const SelectedTrip({super.key, required this.trip});
+  static const String routeName = '/selected_trip';
 
   @override
   State<SelectedTrip> createState() => _SelectedTripState();

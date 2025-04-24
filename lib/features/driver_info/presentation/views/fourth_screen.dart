@@ -3,7 +3,6 @@ import 'package:dirver/features/driver_home/presentation/views/driver_home.dart'
 import 'package:dirver/features/driver_info/presentation/views/widgets/next_button.dart';
 import 'package:dirver/features/driver_info/presentation/views/widgets/pick_picture.dart';
 import 'package:dirver/features/driver_info/presentation/views/widgets/text_field_widger.dart';
-import 'package:dirver/features/passenger_home/presentation/views/passenger_home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -11,9 +10,10 @@ import 'package:provider/provider.dart';
 import '../../../../core/services/sharedPref/store_user_type.dart';
 import '../provider/driver_provider.dart';
 
-class FourthScreen extends StatelessWidget {
-  FourthScreen({super.key});
-  var formKey = GlobalKey<FormState>();
+class DriverInfoView4 extends StatelessWidget {
+  DriverInfoView4({super.key});
+  final formKey = GlobalKey<FormState>();
+  static const String routeName = '/driver_info_view4';
 
   @override
   Widget build(BuildContext context) {
@@ -114,9 +114,10 @@ class FourthScreen extends StatelessWidget {
                       'email':user?.email,
                       'rate': 4.5,
                     });
-                    Navigator.pushReplacement(
+                    Navigator.pushNamedAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (context) => DriverHome()),
+                      DriverHome.routeName
+                      , (route) => false
                     );
                   }
                 }),

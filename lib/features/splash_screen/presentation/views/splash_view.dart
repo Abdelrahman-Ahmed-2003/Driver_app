@@ -15,6 +15,7 @@ import 'package:geolocator/geolocator.dart';
 
 class SplashView extends StatefulWidget {
   const SplashView({super.key});
+  static const routeName = '/splash-screen';
 
   @override
   State<SplashView> createState() => _SplashViewState();
@@ -68,23 +69,23 @@ class _SplashViewState extends State<SplashView>
       if (FirebaseAuth.instance.currentUser != null) {
         String? userType = await StoreUserType.getLastSignIn();
         if(userType == 'passenger') {
-          Navigator.pushReplacement(
+          Navigator.pushReplacementNamed(
               context,
-              MaterialPageRoute(builder: (context) => const PassengerHome()));
+              PassengerHome.routeName);
         }
         else if(userType == 'driver'){
-          Navigator.pushReplacement(
+          Navigator.pushReplacementNamed(
               context,
-              MaterialPageRoute(builder: (context) => const DriverHome()));
+              DriverHome.routeName);
         }
         else{
           errorMessage(context, 'sorry error occurred can\'t catch your account');
-          Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) => const DriverOrRider()));
+          Navigator.pushReplacementNamed(context,
+              DriverOrRider.routeName);
         }
       } else {
-        Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) => const LoginView()));
+        Navigator.pushReplacementNamed(context,
+            LoginView.routeName);
       }
     });
   }

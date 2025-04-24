@@ -1,3 +1,4 @@
+import 'package:dirver/core/utils/app_route.dart';
 import 'package:dirver/features/splash_screen/presentation/views/splash_view.dart';
 import 'package:flutter/material.dart';
 
@@ -14,6 +15,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
       ),
       home: SplashView(),
+      onGenerateRoute: AppRoutes.onGenerateRoute,
     );
   }
 }

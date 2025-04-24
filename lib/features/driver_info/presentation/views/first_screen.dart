@@ -7,9 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 
-class FirstScreen extends StatelessWidget {
-  FirstScreen({super.key});
-  var formKey = GlobalKey<FormState>();
+class DriverInfoView1 extends StatelessWidget {
+  DriverInfoView1({super.key});
+  static const String routeName = '/driver_info_view1';
+  final formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +40,7 @@ class FirstScreen extends StatelessWidget {
                 buildNextButton((){
                   if (formKey.currentState!.validate()) {
                     formKey.currentState!.save();
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => SecondScreen()));
+                    Navigator.pushNamed(context, DriverInfoView2.routeName);
                   }
                 }),
               ],

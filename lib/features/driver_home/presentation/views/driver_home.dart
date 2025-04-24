@@ -8,6 +8,7 @@ import 'package:shimmer/shimmer.dart';
 
 class DriverHome extends StatelessWidget {
   const DriverHome({super.key});
+  static const String routeName = '/driver_home';
 
 
   @override
@@ -19,9 +20,9 @@ class DriverHome extends StatelessWidget {
           IconButton(
             onPressed: () async {
               await StoreUserType.saveLastSignIn('null');
-              Navigator.pushReplacement(
+              Navigator.pushReplacementNamed(
                 context, 
-                MaterialPageRoute(builder: (context) => const DriverOrRider()),
+                DriverOrRider.routeName,
               );
             }, 
             icon: const Icon(Icons.logout_outlined),
@@ -51,9 +52,10 @@ class DriverHome extends StatelessWidget {
               final trip = trips[index];
               return InkWell(
                 onTap: (){
-                  Navigator.push(
+                  Navigator.pushNamed(
                 context, 
-                MaterialPageRoute(builder: (context) => SelectedTrip(trip: trip,)),
+                SelectedTrip.routeName,
+                arguments: trip, // Pass the trip data to the next screen
               );
                 },
                 child: TripCard(trip: trip));

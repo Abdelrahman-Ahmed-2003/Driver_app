@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 
 class PassengerHome extends StatelessWidget {
   const PassengerHome({super.key});
+  static const String routeName = '/passengerHome';
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,11 +24,9 @@ class PassengerHome extends StatelessWidget {
               // await FirebaseAuth.instance.signOut(); // Sign out from Firebase
               await StoreUserType.saveLastSignIn('null');
               // Clear the user type from shared preferences
-              Navigator.pushReplacement(
+              Navigator.pushReplacementNamed(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => DriverOrRider(),
-                  ));
+                  DriverOrRider.routeName); // Navigate to DriverOrRider page
             },
             icon: const Icon(Icons.logout),
           ),

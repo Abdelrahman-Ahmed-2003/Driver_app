@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 
 class DriverOrRider extends StatelessWidget {
   const DriverOrRider({super.key});
+  static const String routeName = '/driver_or_rider';
 
   @override
   Widget build(BuildContext context) {
@@ -34,13 +35,13 @@ class DriverOrRider extends StatelessWidget {
 
                   bool? isDriver = await StoreUserType.getDriver();
                   if(isDriver == true){
-                      Navigator.pushReplacement(context,
-                          MaterialPageRoute(builder: (context) => DriverHome()));
+                      Navigator.pushReplacementNamed(context,
+                          DriverHome.routeName);
                   }
                   else {
                     await StoreUserType.saveDriver(true);
-                    Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder: (context) => FirstScreen()));
+                    Navigator.pushReplacementNamed(context,
+                      DriverInfoView1.routeName);
                   }
                 },
               ),
@@ -68,8 +69,8 @@ class DriverOrRider extends StatelessWidget {
                       });
                     }
 
-                  Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder: (context) => const PassengerHome()));
+                  Navigator.pushReplacementNamed(context,
+                      PassengerHome.routeName);
                 },
               ),
             ],

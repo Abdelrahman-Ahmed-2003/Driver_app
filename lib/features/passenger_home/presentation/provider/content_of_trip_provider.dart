@@ -138,6 +138,5 @@ class ContentOfTripProvider with ChangeNotifier {
     lastDest = null;
     toController.clear();
     priceController.clear();
-    notifyListeners();
   }
 }
