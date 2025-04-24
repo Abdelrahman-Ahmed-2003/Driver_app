@@ -1,3 +1,4 @@
+import 'package:dirver/core/utils/colors_app.dart';
 import 'package:flutter/material.dart';
 
 class LogoAnimation extends StatelessWidget {
@@ -27,7 +28,7 @@ class LogoAnimation extends StatelessWidget {
                             height: heightVal,
                             decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: Colors.white),
+                                color: AppColors.whiteColor),
                           ),
                         ),
                       ),
@@ -36,7 +37,7 @@ class LogoAnimation extends StatelessWidget {
                           width: 50,
                           height: 10,
                           decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(.2),
+                              color: AppColors.blackColor,
                               borderRadius: BorderRadius.circular(100)),
                         )
                     ],

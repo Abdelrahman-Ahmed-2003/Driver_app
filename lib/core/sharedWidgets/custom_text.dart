@@ -1,3 +1,4 @@
+import 'package:dirver/core/utils/colors_app.dart';
 import 'package:flutter/material.dart';
 
 Widget customText({
@@ -43,7 +44,7 @@ Widget customText({
         focusedBorder: const OutlineInputBorder(
           //borderRadius: BorderRadius.circular(30),
           borderSide: BorderSide(
-            color: Color(0XFF661AFD),
+            color: AppColors.primaryColor,
             width: 2,
           ),
         ),

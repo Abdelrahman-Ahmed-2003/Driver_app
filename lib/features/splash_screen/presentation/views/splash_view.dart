@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:dirver/core/services/sharedPref/store_user_type.dart';
+import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/core/utils/utils.dart';
 import 'package:dirver/features/auth/presentation/views/login_view.dart';
 import 'package:dirver/features/driver_home/presentation/views/driver_home.dart';
@@ -93,7 +94,7 @@ class _SplashViewState extends State<SplashView>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0XFFC1CDCB),
+      backgroundColor: AppColors.backgroundColor,
       body: LayoutBuilder(
         builder: (context, constraints) {
           double screenWidth = constraints.maxWidth;
@@ -128,12 +129,12 @@ class _SplashViewState extends State<SplashView>
                           const Icon(
                             Icons.directions_car_filled,
                             size: 60,
-                            color: Color(0XFF661AFD),
+                            color: AppColors.primaryColor,
                           ),
                           const SizedBox(width: 10),
                           DefaultTextStyle(
                             style: const TextStyle(
-                              color: Color.fromARGB(255, 49, 47, 47),
+                              color: AppColors.blackColor,
                               fontSize: 30.0,
                               fontFamily: 'Bobbers',
                             ),

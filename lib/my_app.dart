@@ -1,4 +1,5 @@
 import 'package:dirver/core/utils/app_route.dart';
+import 'package:dirver/core/utils/theme.dart';
 import 'package:dirver/features/splash_screen/presentation/views/splash_view.dart';
 import 'package:flutter/material.dart';
 
@@ -10,12 +11,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Car Management',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: Colors.white,
-      ),
+      theme: lightTheme,
       home: SplashView(),
       onGenerateRoute: AppRoutes.onGenerateRoute,
+      
     );
   }
 }

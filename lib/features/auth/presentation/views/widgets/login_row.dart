@@ -1,4 +1,4 @@
-import 'package:dirver/core/themes/styles.dart';
+import 'package:dirver/core/utils/styles.dart';
 import 'package:dirver/features/auth/presentation/views/login_view.dart';
 import 'package:flutter/material.dart';
 

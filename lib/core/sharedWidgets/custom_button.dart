@@ -39,7 +39,8 @@
 //     );
 
 
-import 'package:dirver/core/themes/styles.dart';
+import 'package:dirver/core/utils/colors_app.dart';
+import 'package:dirver/core/utils/styles.dart';
 import 'package:flutter/material.dart';
 
 class CustomButton extends StatelessWidget {
@@ -61,7 +62,7 @@ class CustomButton extends StatelessWidget {
         child: ElevatedButton(
           onPressed: func,
           style: ElevatedButton.styleFrom(
-            backgroundColor: Color(0XFF661AFD),
+            backgroundColor: AppColors.primaryColor,
             padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 48),
             shape: RoundedRectangleBorder(
               borderRadius: borderRadius ?? BorderRadius.circular(24),

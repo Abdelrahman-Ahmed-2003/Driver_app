@@ -1,3 +1,4 @@
+import 'package:dirver/core/utils/colors_app.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_timer_countdown/flutter_timer_countdown.dart';
@@ -104,7 +105,7 @@ class _OTPScreenState extends State<OTPScreen> {
                 height: 50,
                 textStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.blue),
+                  border: Border.all(color: AppColors.blueColor),
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
@@ -138,7 +139,7 @@ class _OTPScreenState extends State<OTPScreen> {
               child: Text(
                 "Resend OTP",
                 style: TextStyle(
-                  color: isResendEnabled ? Colors.blue : Colors.grey,
+                  color: isResendEnabled ? AppColors.blueColor : AppColors.greyColor,
                 ),
               ),
             ),

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/features/passenger_home/presentation/provider/content_of_trip_provider.dart';
 import 'package:dirver/features/passenger_home/presentation/provider/tripProvider.dart';
 import 'package:dirver/features/passenger_home/presentation/views/widgets/address_field.dart';
@@ -32,7 +33,7 @@ class BottomSheetWidget extends StatelessWidget {
       alignment: Alignment.bottomRight,
       child: Container(
         decoration: const BoxDecoration(
-          color: Color(0XFF661AFD),
+          color: AppColors.primaryColor,
           borderRadius: BorderRadius.all(Radius.circular(25)),
         ),
         height: 50,
@@ -50,7 +51,7 @@ class BottomSheetWidget extends StatelessWidget {
             provider.points.clear();
             provider.lastDest = null;
           },
-          icon: const Icon(Icons.wrong_location_outlined, color: Colors.white),
+          icon: const Icon(Icons.wrong_location_outlined, color: AppColors.whiteColor),
         ),
       ),
     );
@@ -59,7 +60,7 @@ class BottomSheetWidget extends StatelessWidget {
   Widget _buildMainContent() {
     return Container(
       decoration: const BoxDecoration(
-        color: Colors.black,
+        color: AppColors.blackColor,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20),
           topRight: Radius.circular(20),
@@ -127,15 +128,15 @@ class TripStatusStreamer extends StatelessWidget {
   Color _getStatusColor(String status) {
     switch (status) {
       case 'waiting':
-        return Colors.orange;
+        return AppColors.orangeColor;
       case 'in_progress':
-        return Colors.blue;
+        return AppColors.blueColor;
       case 'completed':
-        return Colors.green;
+        return AppColors.grenColor;
       case 'cancelled':
-        return Colors.red;
+        return AppColors.redColor;
       default:
-        return Colors.grey;
+        return AppColors.greyColor;
     }
   }
 

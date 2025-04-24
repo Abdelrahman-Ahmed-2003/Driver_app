@@ -1,6 +1,7 @@
 import 'package:dirver/core/constant/asset_images.dart';
 import 'package:dirver/core/services/sharedPref/store_user_type.dart';
 import 'package:dirver/core/sharedWidgets/logo_widget.dart';
+import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/features/auth/presentation/views/widgets/way_to_login.dart';
 import 'package:dirver/features/driver_or_rider/presentation/views/driver_or_rider.dart';
 import 'package:dirver/features/splash_screen/presentation/views/widgets/text_in_splash.dart';
@@ -85,8 +86,8 @@ class LoginBody extends StatelessWidget {
           const SizedBox(height: 10),
           WayToLogin(
             text: "Google",
-            colorButton: const Color(0XFF661AFD),
-            colorText: Colors.black,
+            colorButton: AppColors.primaryColor,
+            colorText: AppColors.blackColor,
             onPressed: () async {
               await signInWithGoogle(context);
             },

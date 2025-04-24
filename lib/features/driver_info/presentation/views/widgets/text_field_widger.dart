@@ -1,3 +1,4 @@
+import 'package:dirver/core/utils/colors_app.dart';
 import 'package:flutter/material.dart';
 Widget buildTextField({required String label, required Function(String?) onSaved}) {
     return Padding(
@@ -6,14 +7,14 @@ Widget buildTextField({required String label, required Function(String?) onSaved
         decoration: InputDecoration(
           labelText: label,
           filled: true,
-          fillColor: Colors.grey[800],
+          fillColor: AppColors.darkGrey,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
             borderSide: BorderSide.none,
           ),
-          labelStyle: const TextStyle(color: Color(0XFF661AFD)),
+          labelStyle: const TextStyle(color: AppColors.primaryColor),
         ),
-        style: const TextStyle(color: Colors.white),
+        style: const TextStyle(color: AppColors.whiteColor),
         validator: (value) {
           if (value == null || value.trim().isEmpty) {
             return 'This field is required';

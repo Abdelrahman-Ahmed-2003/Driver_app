@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/core/utils/utils.dart';
 import 'package:dirver/features/passenger_home/presentation/provider/content_of_trip_provider.dart';
 import 'package:flutter/material.dart';
@@ -161,7 +162,7 @@ class _ShowMapState extends State<ShowMap> {
         CurrentLocationLayer(
           style: LocationMarkerStyle(
             marker: DefaultLocationMarker(
-              color: Colors.white,
+              color: AppColors.whiteColor,
               child: const Icon(Icons.location_pin),
             ),
             markerSize: const Size(35, 35),
@@ -177,7 +178,7 @@ class _ShowMapState extends State<ShowMap> {
                 point: provider.dest,
                 child: const Icon(
                   Icons.location_pin,
-                  color: Colors.blue,
+                  color: AppColors.blueColor,
                   size: 40,
                 ),
               ),
@@ -189,7 +190,7 @@ class _ShowMapState extends State<ShowMap> {
               Polyline(
                 points: provider.points,
                 strokeWidth: 5,
-                color: Colors.red,
+                color: AppColors.redColor,
               ),
             ],
           ),

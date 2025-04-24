@@ -1,4 +1,5 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
+import 'package:dirver/core/utils/colors_app.dart';
 import 'package:flutter/material.dart';
 
 class TextInSplash extends StatelessWidget {
@@ -10,7 +11,7 @@ class TextInSplash extends StatelessWidget {
     return DefaultTextStyle(
       textAlign: TextAlign.center,
       style: const TextStyle(
-        color: Color.fromARGB(221, 35, 34, 34),
+        color: AppColors.blackColor,
         fontSize: 24,
         // fontFamily: 'Agne',
       ),

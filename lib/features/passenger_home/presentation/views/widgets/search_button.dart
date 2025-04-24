@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/features/passenger_home/presentation/provider/tripProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -30,7 +31,7 @@ class SearchButton extends StatelessWidget {
                       await tripProvider.cancelTrip();
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
+                      backgroundColor: AppColors.redColor,
                       padding: const EdgeInsets.symmetric(vertical: 15),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(11),
@@ -39,7 +40,7 @@ class SearchButton extends StatelessWidget {
                     child: const Text(
                       "Cancel Trip",
                       style: TextStyle(
-                        color: Colors.white,
+                        color: AppColors.whiteColor,
                         fontSize: 20,
                       ),
                     ),
@@ -49,7 +50,7 @@ class SearchButton extends StatelessWidget {
                 return ElevatedButton(
                   onPressed: () => _createTrip(context, contentProvider, tripProvider),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0XFF661AFD),
+                    backgroundColor: AppColors.primaryColor,
                     padding: const EdgeInsets.symmetric(vertical: 15),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(11),
@@ -58,7 +59,7 @@ class SearchButton extends StatelessWidget {
                   child: const Text(
                     "Create Trip",
                     style: TextStyle(
-                      color: Colors.white,
+                      color: AppColors.whiteColor,
                       fontSize: 20,
                     ),
                   ),

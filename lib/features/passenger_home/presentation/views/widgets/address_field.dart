@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/core/utils/utils.dart';
 import 'package:dirver/features/passenger_home/presentation/provider/content_of_trip_provider.dart';
 import 'package:flutter/material.dart';
@@ -35,7 +36,7 @@ class _AddressFieldState extends State<AddressField> {
               decoration: InputDecoration(
                 filled: true,
                 hintText: widget.hintText,
-                fillColor: const Color(0XFFC1CDCB),
+                fillColor: AppColors.greyColor,
               ),
             ),
           ),

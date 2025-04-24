@@ -1,4 +1,5 @@
 
+import 'package:dirver/core/utils/colors_app.dart';
 import 'package:flutter/material.dart';
 
 Widget buildNextButton(VoidCallback onPressed) {
@@ -7,14 +8,14 @@ Widget buildNextButton(VoidCallback onPressed) {
     width: double.infinity,
     child: ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: Color(0XFF661AFD),
+        backgroundColor: AppColors.primaryColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
       onPressed: onPressed, // Calls the function passed from parent
 
       child: const Text(
         'Next',
-        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+        style: TextStyle(color: AppColors.whiteColor, fontWeight: FontWeight.bold, fontSize: 20),
       ),
     ),
   );

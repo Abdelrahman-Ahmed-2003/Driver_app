@@ -1,3 +1,4 @@
+import 'package:dirver/core/utils/colors_app.dart';
 import 'package:flutter/material.dart';
 
 class PhoneField extends StatelessWidget {
@@ -37,7 +38,7 @@ class PhoneField extends StatelessWidget {
         focusedBorder: const OutlineInputBorder(
           //borderRadius: BorderRadius.circular(30),
           borderSide: BorderSide(
-            color: Color(0XFF661AFD),
+            color: AppColors.primaryColor,
             width: 2,
           ),
         ),

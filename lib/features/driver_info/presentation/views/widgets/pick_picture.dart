@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/features/driver_info/presentation/provider/driver_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -25,11 +26,11 @@ class PickPicture extends StatelessWidget {
                 width: 100,
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: Color(0XFF661AFD), // ✅ Change border color here
+                    color: AppColors.primaryColor, // ✅ Change border color here
                     width: 3, // Border width
                   ),
                   borderRadius: BorderRadius.circular(20),
-                  color: Colors.grey,
+                  color: AppColors.greyColor,
                   image: imagePath != null
                       ? DecorationImage(
                     image: FileImage(File(imagePath!)),

@@ -1,4 +1,4 @@
-import 'package:dirver/core/themes/styles.dart';
+import 'package:dirver/core/utils/styles.dart';
 import 'package:flutter/material.dart';
 
 class SignupTitle extends StatelessWidget {

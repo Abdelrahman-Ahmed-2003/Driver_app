@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dirver/core/constant/asset_images.dart';
 import 'package:dirver/core/services/sharedPref/store_user_type.dart';
 import 'package:dirver/core/sharedWidgets/logo_widget.dart';
+import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/features/driver_home/presentation/views/driver_home.dart';
 import 'package:dirver/features/driver_info/presentation/views/first_screen.dart';
 import 'package:dirver/features/driver_or_rider/presentation/views/widgets/how_are_you.dart';
@@ -28,8 +29,8 @@ class DriverOrRider extends StatelessWidget {
               const Spacer(),
               HowAreYou(
                 text: 'Driver',
-                colorButton: Color(0XFF661AFD),
-                colorText: Colors.white,
+                colorButton: AppColors.primaryColor,
+                colorText: AppColors.whiteColor,
                 onPressed: () async {
 
 
@@ -48,8 +49,8 @@ class DriverOrRider extends StatelessWidget {
               const SizedBox(height: 10),
               HowAreYou(
                 text: 'Passenger',
-                colorButton: Color(0XFF661AFD),
-                colorText: Colors.white,
+                colorButton: AppColors.primaryColor,
+                colorText: AppColors.whiteColor,
                 onPressed: () async {
 
                     await StoreUserType.saveLastSignIn('passenger');

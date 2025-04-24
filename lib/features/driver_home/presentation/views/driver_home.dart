@@ -1,4 +1,5 @@
 import 'package:dirver/core/services/sharedPref/store_user_type.dart';
+import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/features/driver_home/presentation/views/widgets/selected_trip.dart';
 import 'package:dirver/features/driver_or_rider/presentation/views/driver_or_rider.dart';
 import 'package:flutter/material.dart';
@@ -86,7 +87,7 @@ class _TripCardState extends State<TripCard> {
       elevation: 4,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.shade300, width: 1),
+        side: BorderSide(color: AppColors.greyColor, width: 1),
       ),
       margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
@@ -146,14 +147,14 @@ class _TripCardState extends State<TripCard> {
             const SizedBox(height: 8),
             Text(
               "Passenger: ${widget.trip['passengerName']}",
-              style: TextStyle(color: Colors.grey.shade700),
+              style: TextStyle(color: AppColors.darkGrey),
             ),
             const SizedBox(height: 12),
             Align(
               alignment: Alignment.centerRight,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
+                  backgroundColor: AppColors.grenColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8)),
                   padding: const EdgeInsets.symmetric(
@@ -189,21 +190,21 @@ class ShimmerTripCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Shimmer.fromColors(
-          baseColor: Colors.grey.shade300,
-          highlightColor: Colors.grey.shade100,
+          baseColor: AppColors.greyColor,
+          highlightColor: AppColors.greyColor,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
                 width: double.infinity,
                 height: 20,
-                color: Colors.white,
+                color: AppColors.whiteColor,
               ),
               const SizedBox(height: 10),
               Container(
                 width: 100,
                 height: 15,
-                color: Colors.white,
+                color: AppColors.whiteColor,
               ),
               const SizedBox(height: 20),
               Align(
@@ -212,7 +213,7 @@ class ShimmerTripCard extends StatelessWidget {
                   width: 100,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.whiteColor,
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),

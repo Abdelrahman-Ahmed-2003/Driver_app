@@ -1,3 +1,4 @@
+import 'package:dirver/core/utils/colors_app.dart';
 import 'package:flutter/material.dart';
 
 class ListViewWidget extends StatefulWidget {
@@ -33,7 +34,7 @@ class _ListViewWidgetState extends State<ListViewWidget> {
                 child: Center(
                   child: Text(
                     items[index],
-                    style: const TextStyle(color: Colors.white),
+                    style: const TextStyle(color: AppColors.whiteColor),
                   ),
                 ),
               ),
