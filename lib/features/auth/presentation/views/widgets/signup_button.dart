@@ -21,7 +21,7 @@ class SignupButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomButton(
         text: 'Signup',
-        func: () {
+        onPressed: () {
           if (usernameController.text.isEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: Text('Please enter your name',style: TextStyle(fontSize: 20),),

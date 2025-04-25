@@ -109,11 +109,13 @@ class DriverInfoView4 extends StatelessWidget {
                         FirebaseFirestore.instance.collection('drivers');
                     User? user = FirebaseAuth.instance.currentUser;
                     await StoreUserType.saveLastSignIn('driver');
+                    await StoreUserType.saveDriver(true);
                     await drivers.add({
                       'name': userProvider.name,
                       'email':user?.email,
                       'rate': 4.5,
                     });
+                    if(!context.mounted) return;
                     Navigator.pushNamedAndRemoveUntil(
                       context,
                       DriverHome.routeName

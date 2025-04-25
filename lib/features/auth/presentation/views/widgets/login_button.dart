@@ -16,7 +16,7 @@ class LoginButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomButton(
         text: 'Send',
-        func: () async {
+        onPressed: () async {
           String trimmedUserName = userNameController.text.trim();
           String trimmedPhone = phoneController.text.trim();
           if (trimmedUserName.isEmpty) {

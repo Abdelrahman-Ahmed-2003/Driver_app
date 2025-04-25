@@ -1,5 +1,3 @@
-// ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
-
 import 'package:dirver/features/driver_info/presentation/provider/driver_provider.dart';
 import 'package:dirver/features/passenger_home/presentation/provider/content_of_trip_provider.dart';
 import 'package:dirver/features/passenger_home/presentation/provider/tripProvider.dart';

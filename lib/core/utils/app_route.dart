@@ -5,7 +5,7 @@ import 'package:dirver/features/driver_info/presentation/views/first_screen.dart
 import 'package:dirver/features/driver_info/presentation/views/fourth_screen.dart';
 import 'package:dirver/features/driver_info/presentation/views/second_screen.dart';
 import 'package:dirver/features/driver_info/presentation/views/third_screen.dart';
-import 'package:dirver/features/driver_or_rider/presentation/views/driver_or_rider.dart';
+import 'package:dirver/features/driver_or_rider/presentation/views/driver_or_rider_view.dart';
 import 'package:dirver/features/passenger_home/presentation/views/passenger_home.dart';
 import 'package:dirver/features/splash_screen/presentation/views/splash_view.dart';
 import 'package:flutter/material.dart';
@@ -17,8 +17,8 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const SplashView());
       case LoginView.routeName:
         return MaterialPageRoute(builder: (_) => LoginView());
-      case DriverOrRider.routeName:
-        return MaterialPageRoute(builder: (_) => const DriverOrRider());
+      case DriverOrRiderView.routeName:
+        return MaterialPageRoute(builder: (_) => const DriverOrRiderView());
       case PassengerHome.routeName:
         return MaterialPageRoute(builder: (_) => const PassengerHome());
       case DriverHome.routeName:

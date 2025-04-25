@@ -11,7 +11,8 @@ import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
 class BottomSheetWidget extends StatelessWidget {
-  const BottomSheetWidget({super.key});
+  BottomSheetWidget({super.key});
+  bool isTripCreated = false;
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +42,7 @@ class BottomSheetWidget extends StatelessWidget {
         margin: const EdgeInsets.only(right: 12, bottom: 8),
         child: IconButton(
           onPressed: () {
+            if(isTripCreated) return;
             final provider = context.read<ContentOfTripProvider>();
             provider.toController.clear();
             provider.priceController.clear();

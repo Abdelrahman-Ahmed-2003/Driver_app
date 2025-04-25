@@ -28,7 +28,7 @@ class SearchButton extends StatelessWidget {
                 if (status == 'waiting') {
                   return ElevatedButton(
                     onPressed: () async {
-                      await tripProvider.cancelTrip();
+                      await tripProvider.deleteTrip();
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.redColor,

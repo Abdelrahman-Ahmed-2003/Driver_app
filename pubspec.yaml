@@ -55,6 +55,8 @@ dependencies:
   cloud_firestore: ^5.6.5
   shared_preferences: ^2.5.2
   shimmer: ^3.0.0
+  flutter_bloc: ^9.1.0
+  bloc: ^9.0.0
 
 dev_dependencies:
   flutter_test:

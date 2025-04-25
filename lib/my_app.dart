@@ -10,7 +10,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Car Management',
+      title: 'Driver APP',
       theme: lightTheme,
       home: SplashView(),
       onGenerateRoute: AppRoutes.onGenerateRoute,

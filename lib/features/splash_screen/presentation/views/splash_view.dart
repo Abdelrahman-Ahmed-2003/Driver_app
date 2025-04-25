@@ -5,7 +5,7 @@ import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/core/utils/utils.dart';
 import 'package:dirver/features/auth/presentation/views/login_view.dart';
 import 'package:dirver/features/driver_home/presentation/views/driver_home.dart';
-import 'package:dirver/features/driver_or_rider/presentation/views/driver_or_rider.dart';
+import 'package:dirver/features/driver_or_rider/presentation/views/driver_or_rider_view.dart';
 import 'package:dirver/features/passenger_home/presentation/views/passenger_home.dart';
 import 'package:dirver/features/splash_screen/presentation/views/widgets/logo_animation.dart';
 import 'package:dirver/features/splash_screen/presentation/views/widgets/text_in_splash.dart';
@@ -65,30 +65,29 @@ class _SplashViewState extends State<SplashView>
           });
 
     _controller.repeat();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+  await Future.delayed(const Duration(seconds: 4));
 
-    Timer(const Duration(seconds: 4), () async {
-      if (FirebaseAuth.instance.currentUser != null) {
-        String? userType = await StoreUserType.getLastSignIn();
-        if(userType == 'passenger') {
-          Navigator.pushReplacementNamed(
-              context,
-              PassengerHome.routeName);
-        }
-        else if(userType == 'driver'){
-          Navigator.pushReplacementNamed(
-              context,
-              DriverHome.routeName);
-        }
-        else{
-          errorMessage(context, 'sorry error occurred can\'t catch your account');
-          Navigator.pushReplacementNamed(context,
-              DriverOrRider.routeName);
-        }
-      } else {
-        Navigator.pushReplacementNamed(context,
-            LoginView.routeName);
-      }
-    });
+  if (!mounted) return; // ✅ Ensure context is still valid
+
+  if (FirebaseAuth.instance.currentUser != null) {
+    String? userType = await StoreUserType.getLastSignIn();
+
+    if (!mounted) return; // ✅ Again after async
+
+    if (userType == 'passenger') {
+      Navigator.pushReplacementNamed(context, PassengerHome.routeName);
+    } else if (userType == 'driver') {
+      Navigator.pushReplacementNamed(context, DriverHome.routeName);
+    } else {
+      // errorMessage(context, 'Sorry, error occurred.');
+      Navigator.pushReplacementNamed(context, DriverOrRiderView.routeName);
+    }
+  } else {
+    Navigator.pushReplacementNamed(context, LoginView.routeName);
+  }
+});
+
   }
 
   @override
@@ -179,7 +178,10 @@ Future<String?> getUserAddress() async {
     }
 
     Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
+      locationSettings: AndroidSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 10,
+      ),
     );
 
     List<Placemark> placemarks = await placemarkFromCoordinates(

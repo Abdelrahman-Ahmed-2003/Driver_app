@@ -40,6 +40,7 @@ class TripProvider with ChangeNotifier {
       notifyListeners();
 
     } catch (e) {
+      
       debugPrint("Error creating trip: $e");
       rethrow;
     }
@@ -52,12 +53,19 @@ class TripProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> cancelTrip() async {
-  if (_currentTrip != null) {
-    await _currentTrip!.update({'status': 'cancelled'});
-    cancelStream();
+//   Future<void> cancelTrip() async {
+//   if (_currentTrip != null) {
+//     await _currentTrip!.update({'status': 'cancelled'});
+//     cancelStream();
+//   }
+// }
+
+  Future<void> deleteTrip() async {
+    if (_currentTrip != null) {
+      await _currentTrip!.delete();
+      cancelStream();
+    }
   }
-}
 
 
   // Helper to get current status
