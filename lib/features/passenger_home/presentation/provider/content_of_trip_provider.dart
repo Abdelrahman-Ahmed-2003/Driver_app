@@ -28,16 +28,7 @@ class ContentOfTripProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  bool checkChange(LatLng currentLocation) {
-    if (_points.isEmpty) {
-      return true;
-    }
-    if (_points.last.latitude - currentLocation.latitude > .5 &&
-        _points.last.longitude - currentLocation.longitude > .5) {
-      return true;
-    }
-    return false;
-  }
+
 
   void setDest(LatLng value) {
     _dest = value;
@@ -86,19 +77,6 @@ class ContentOfTripProvider with ChangeNotifier {
     // await fetchRoute();
   }
 
-  // Future<void> _fetchRoute() async {
-  //   if (currentLocation == null || dest == LatLng(0, 0)) return;
-  //   final url = Uri.parse(
-  //       'https://router.project-osrm.org/route/v1/driving/${currentLocation!.longitude},${currentLocation!.latitude};${dest!.longitude},${dest!.latitude}?overview=full&geometries=polyline&steps=true');
-  //   final response = await http.get(url);
-  //   if (response.statusCode == 200) {
-  //     final data = json.decode(response.body);
-  //     final geometry = data['routes'][0]['geometry'];
-  //     _decodePolyline(geometry);
-  //   } else {
-  //     debugPrint('error in fetch route');
-  //   }
-  // }
 
   Future<void> fetchRoute() async {
     if (currentLocation == null || dest == LatLng(0, 0)) return;

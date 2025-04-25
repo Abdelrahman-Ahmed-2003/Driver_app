@@ -1,7 +1,7 @@
-import 'package:dirver/features/auth/presentation/state_managment/auth_bloc.dart';
+import 'package:dirver/features/auth/presentation/state_managment/auth_provider.dart';
 import 'package:dirver/features/auth/presentation/views/widgets/login_body.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
 
 class LoginView extends StatelessWidget {
   const LoginView({super.key});
@@ -11,8 +11,8 @@ class LoginView extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        body: BlocProvider(
-          create: (context) => AuthBloc(),
+        body: ChangeNotifierProvider(
+          create: (context) => AuthProvider(),
           child: const LoginBody(),
         ),
       ),
