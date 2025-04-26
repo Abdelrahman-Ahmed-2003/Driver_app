@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/core/utils/utils.dart';
 import 'package:dirver/features/passenger_home/presentation/provider/content_of_trip_provider.dart';
+import 'package:dirver/features/passenger_home/presentation/provider/tripProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
@@ -119,12 +120,13 @@ class _ShowMapState extends State<ShowMap> {
   Widget build(BuildContext context) {
     return Consumer<ContentOfTripProvider>(
       builder: (context, ContentOfTripProvider, child) {
-        return _buildMap(ContentOfTripProvider);
+        var tripProvider = Provider.of<TripProvider>(context);
+        return _buildMap(ContentOfTripProvider,tripProvider);
       },
     );
   }
 
-  Widget _buildMap(ContentOfTripProvider provider) {
+  Widget _buildMap(ContentOfTripProvider provider,TripProvider tripProvider) {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -134,6 +136,7 @@ class _ShowMapState extends State<ShowMap> {
       options: MapOptions(
         onTap:(TapPosition tapPosition, LatLng latLng) async {
           if(widget.isDriver) return;
+          if(tripProvider.tripStream != null) return;
           provider.setCoordinatesPoint(latLng);
           try {
             List<Placemark> placemarks = await placemarkFromCoordinates(

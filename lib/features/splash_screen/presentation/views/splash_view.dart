@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:dirver/core/services/sharedPref/store_user_type.dart';
 import 'package:dirver/core/utils/colors_app.dart';
-import 'package:dirver/core/utils/utils.dart';
 import 'package:dirver/features/auth/presentation/views/login_view.dart';
 import 'package:dirver/features/driver_home/presentation/views/driver_home.dart';
 import 'package:dirver/features/driver_or_rider/presentation/views/driver_or_rider_view.dart';

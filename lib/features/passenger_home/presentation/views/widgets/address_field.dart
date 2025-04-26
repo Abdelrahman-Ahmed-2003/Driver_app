@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/core/utils/utils.dart';
 import 'package:dirver/features/passenger_home/presentation/provider/content_of_trip_provider.dart';
+import 'package:dirver/features/passenger_home/presentation/provider/tripProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:free_map/free_map.dart';
 import 'package:provider/provider.dart';
@@ -24,6 +25,7 @@ class _AddressFieldState extends State<AddressField> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<ContentOfTripProvider>(context); // Use context.read<ContentOfTripProvider>;
+    final tripProvider = Provider.of<TripProvider>(context);
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -31,6 +33,7 @@ class _AddressFieldState extends State<AddressField> {
         children: [
           Expanded(
             child: TextFormField(
+              readOnly: tripProvider.tripStream != null,
               keyboardType: TextInputType.text,
               controller: provider.toController,
               decoration: InputDecoration(
@@ -47,6 +50,7 @@ class _AddressFieldState extends State<AddressField> {
   }
 
   Widget _buildSearchButton(ContentOfTripProvider provider) {
+    final tripProvider = Provider.of<TripProvider>(context, listen: false);
     return _isSearching
         ? const Padding(
             padding: EdgeInsets.all(8.0),
@@ -57,13 +61,13 @@ class _AddressFieldState extends State<AddressField> {
             ),
           )
         : IconButton(
-            onPressed: _isSearching ? null : () => _handleSearch(provider),
+            onPressed: _isSearching ? null : tripProvider.tripStream!= null?null:() => _handleSearch(provider),
             icon: const Icon(Icons.search),
           );
   }
 
-  Future<void> _handleSearch(ContentOfTripProvider ContentOfTripProvider) async {
-  final query = ContentOfTripProvider.toController.text.trim();
+  Future<void> _handleSearch(ContentOfTripProvider contentOfTripProvider) async {
+  final query = contentOfTripProvider.toController.text.trim();
   
   if (query.isEmpty) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -99,7 +103,7 @@ class _AddressFieldState extends State<AddressField> {
             : (data[0]['lon'] as num).toDouble();
 
         debugPrint('📍 Location found: Lat: $lat, Lon: $lon');
-        ContentOfTripProvider.setCoordinatesPoint(LatLng(lat, lon));
+        contentOfTripProvider.setCoordinatesPoint(LatLng(lat, lon));
       } else {
         debugPrint('⚠️ Location not found');
         ScaffoldMessenger.of(context).showSnackBar(

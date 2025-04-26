@@ -11,8 +11,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
 class BottomSheetWidget extends StatelessWidget {
-  BottomSheetWidget({super.key});
-  bool isTripCreated = false;
+  const BottomSheetWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -30,19 +29,20 @@ class BottomSheetWidget extends StatelessWidget {
   }
 
   Widget _buildClearLocationButton(BuildContext context) {
+    final tripProvider = context.watch<TripProvider>();
     return Align(
       alignment: Alignment.bottomRight,
       child: Container(
-        decoration: const BoxDecoration(
-          color: AppColors.primaryColor,
-          borderRadius: BorderRadius.all(Radius.circular(25)),
+        decoration: BoxDecoration(
+          color: tripProvider.tripStream != null ? AppColors.greyColor : AppColors.primaryColor,
+          borderRadius: const BorderRadius.all(Radius.circular(25)),
         ),
         height: 50,
         width: 50,
         margin: const EdgeInsets.only(right: 12, bottom: 8),
         child: IconButton(
           onPressed: () {
-            if(isTripCreated) return;
+            if(tripProvider.tripStream != null) return;
             final provider = context.read<ContentOfTripProvider>();
             provider.toController.clear();
             provider.priceController.clear();
@@ -102,7 +102,11 @@ class TripStatusStreamer extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
           margin: const EdgeInsets.only(bottom: 8),
           decoration: BoxDecoration(
-            color: _getStatusColor(status).withOpacity(0.2),
+            color: _getStatusColor(status).withValues(
+  alpha: 0.4, // 0.2 * 255
+  
+),
+
             borderRadius: BorderRadius.circular(20),
           ),
           child: Row(

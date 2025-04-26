@@ -1,5 +1,7 @@
 import 'package:dirver/core/utils/colors_app.dart';
+import 'package:dirver/features/passenger_home/presentation/provider/tripProvider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class ListViewWidget extends StatefulWidget {
   const ListViewWidget({super.key});
@@ -13,6 +15,7 @@ class _ListViewWidgetState extends State<ListViewWidget> {
   List<String> items = ["Car", "Motocycle"];
   @override
   Widget build(BuildContext context) {
+    final TripProvider tripProvider = context.watch<TripProvider>();
     return SizedBox(
       height: 50, // ✅ Constrain height
       child: Row(
@@ -20,6 +23,7 @@ class _ListViewWidgetState extends State<ListViewWidget> {
           return Expanded(
             child: GestureDetector(
               onTap: () {
+                if(tripProvider.tripStream != null) return; // ✅ Prevent selection if trip is active
                 setState(() {
                   selectedIndex = index; // ✅ Update selected item
                 });

@@ -21,10 +21,7 @@ void main() async{
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => ContentOfTripProvider()),
         ChangeNotifierProvider(create: (_) => DriverProvider()),
-        ChangeNotifierProvider(create: (_) => TripProvider()),
-        
       ],
       child: MyApp(),
     ),

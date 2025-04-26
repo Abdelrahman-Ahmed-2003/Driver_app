@@ -1,4 +1,5 @@
 import 'package:dirver/core/utils/colors_app.dart';
+import 'package:dirver/core/utils/utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_timer_countdown/flutter_timer_countdown.dart';
@@ -27,14 +28,11 @@ class _OTPScreenState extends State<OTPScreen> {
 
     try {
       await auth.signInWithCredential(credential);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("OTP Verified Successfully!")),
-      );
+      if(!context.mounted) return;
+      errorMessage(context, "OTP Verified Successfully!");
       Navigator.pop(context);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Invalid OTP!")),
-      );
+      errorMessage(context, "Invalid OTP! Please try again.");
     }
   }
 
