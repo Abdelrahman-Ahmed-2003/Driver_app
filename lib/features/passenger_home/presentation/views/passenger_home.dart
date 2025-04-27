@@ -7,45 +7,50 @@ import 'package:dirver/features/passenger_home/presentation/views/widgets/show_m
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-
 class PassengerHome extends StatelessWidget {
   const PassengerHome({super.key});
+
   static const String routeName = '/passengerHome';
+
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(create:(_)=> ContentOfTripProvider(), 
-    child: Scaffold(
-      appBar: AppBar(
-        actions: [
-          IconButton(
-            onPressed: () async {
-              var provider = context.read<ContentOfTripProvider>();
-              provider.clear();
-              // await GoogleSignIn().signOut(); // Sign out from Google account
-              // await FirebaseAuth.instance.signOut(); // Sign out from Firebase
-              await StoreUserType.saveLastSignIn('null');
-              // Clear the user type from shared preferences
-              if(!context.mounted) return;
-              Navigator.pushReplacementNamed(
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ContentOfTripProvider()),
+        ChangeNotifierProvider(create: (_) => TripProvider()),
+      ],
+      builder: (context, child) => Scaffold(
+        appBar: AppBar(
+          actions: [
+            IconButton(
+              onPressed: () async {
+                var contentProvider = context.read<ContentOfTripProvider>();
+                var tripProvider = context.read<TripProvider>();
+                if (tripProvider.tripStream != null) return;
+                contentProvider.clear();
+                await StoreUserType.saveLastSignIn('null');
+                if (!context.mounted) return;
+                Navigator.pushReplacementNamed(
                   context,
-                  DriverOrRiderView.routeName); // Navigate to DriverOrRider page
-            },
-            icon: const Icon(Icons.logout),
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height - 25,
-          child: ChangeNotifierProvider(create:(_) => TripProvider(),
-          child:Stack(
-            children: [
-              ShowMap(isDriver: false,),
-              BottomSheetWidget()
-            ],
+                  DriverOrRiderView.routeName,
+                );
+              },
+              icon: const Icon(Icons.logout),
+            ),
+          ],
+        ),
+        body: SafeArea(
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height - 25,
+            child: Stack(
+              children: const [
+                ShowMap(isDriver: false),
+                BottomSheetWidget(),
+              ],
+            ),
           ),
         ),
       ),
-    )));
+    );
   }
 }

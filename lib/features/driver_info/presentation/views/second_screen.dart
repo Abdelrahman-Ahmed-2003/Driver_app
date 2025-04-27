@@ -1,3 +1,4 @@
+import 'package:dirver/core/utils/utils.dart';
 import 'package:dirver/features/driver_info/presentation/provider/driver_provider.dart';
 import 'package:dirver/features/driver_info/presentation/views/third_screen.dart';
 import 'package:dirver/features/driver_info/presentation/views/widgets/next_button.dart';
@@ -17,9 +18,9 @@ class DriverInfoView2 extends StatelessWidget {
 
     // List of images for PickPicture (Handling null values safely)
     final List<Map<String, String?>> pickPictures = [
-      {'text': 'Driving License', 'id': '21', 'imagePath': userProvider.frontLicenseDrivingImagePath ?? ''},
-      {'text': 'Back Driving License', 'id': '22', 'imagePath': userProvider.backLicenseDrivingImagePath ?? ''},
-      {'text': 'Selfie with License', 'id': '23', 'imagePath': userProvider.selfieImageWithLicense ?? ''},
+      {'text': 'Driving License', 'id': '21', 'imagePath': userProvider.frontLicenseDrivingImagePath},
+      {'text': 'Back Driving License', 'id': '22', 'imagePath': userProvider.backLicenseDrivingImagePath},
+      {'text': 'Selfie with License', 'id': '23', 'imagePath': userProvider.selfieImageWithLicense},
     ];
 
     return Scaffold(
@@ -47,7 +48,7 @@ class DriverInfoView2 extends StatelessWidget {
                         child: PickPicture(
                           text: pickPictures[index]['text']!,
                           id: pickPictures[index]['id']!,
-                          imagePath: pickPictures[index]['imagePath']!.isNotEmpty ? pickPictures[index]['imagePath'] : null,
+                          imagePath: pickPictures[index]['imagePath'],
                         ),
                       );
                     },
@@ -61,17 +62,24 @@ class DriverInfoView2 extends StatelessWidget {
 
                 SizedBox(height: MediaQuery.of(context).size.height * 0.3),
 
-                buildNextButton(() {
-                  if (formKey.currentState!.validate()) {
-                    formKey.currentState!.save();
-                    Navigator.pushNamed(context, DriverInfoView3.routeName);
-                  }
-                }),
+                
               ],
             ),
           ),
         ),
       ),
+      bottomNavigationBar: buildNextButton(() {
+                  if (formKey.currentState!.validate()) {
+                    formKey.currentState!.save();
+                    if (userProvider.frontLicenseDrivingImagePath == null ||
+                        userProvider.backLicenseDrivingImagePath == null ||
+                        userProvider.selfieImageWithLicense == null) {
+                      errorMessage(context, 'Please pick all images');
+                      return;
+                    }
+                    Navigator.pushNamed(context, DriverInfoView3.routeName);
+                  }
+                }),
     );
   }
 }

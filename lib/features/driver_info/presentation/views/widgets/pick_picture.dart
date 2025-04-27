@@ -106,9 +106,10 @@ class PickPicture extends StatelessWidget {
         provider.setLicensePlateImage(pickedFile.path);
       }      else if(id == '43') {
         provider.setBackLicensePlateImage(pickedFile.path);
-      }    }
+      }}
 
     // Close bottom sheet
+    if(!context.mounted) return;
     Navigator.of(context).pop();
   }
 }

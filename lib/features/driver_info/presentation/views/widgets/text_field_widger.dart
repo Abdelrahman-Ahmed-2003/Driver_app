@@ -4,6 +4,7 @@ Widget buildTextField({required String label, required Function(String?) onSaved
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: TextFormField(
+        textInputAction: TextInputAction.next,
         decoration: InputDecoration(
           labelText: label,
           filled: true,

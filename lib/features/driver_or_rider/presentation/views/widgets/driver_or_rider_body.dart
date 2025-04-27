@@ -57,9 +57,10 @@ class DriverOrRiderBody extends StatelessWidget {
                       PassengerHome.routeName);
                 },
               ),
+              const SizedBox(height: 10),
               HowAreYou(
                 text: 'Driver',
-                colorButton: AppColors.primaryColor,
+                colorButton: AppColors.blueColor,
                 colorText: AppColors.whiteColor,
                 onPressed: () async {
 
@@ -71,7 +72,7 @@ class DriverOrRiderBody extends StatelessWidget {
                           DriverHome.routeName);
                   }
                   else {
-                    bool? isOnline = await searchAboutUserOffline(
+                    bool? isOnline = await searchAboutUserOnline(
                       type: 'drivers',
                       email: FirebaseAuth.instance.currentUser!.email!,
                     );
@@ -87,15 +88,13 @@ class DriverOrRiderBody extends StatelessWidget {
                       if(!context.mounted) return;
                       errorMessage(context, 'We Welcome you to out app as new driver');
                       if(!context.mounted) return;
-                    Navigator.pushReplacementNamed(context,
+                    Navigator.pushNamed(context,
                       DriverInfoView1.routeName);
                     }
                     else {
                       if(!context.mounted) return;
                       errorMessage(context, 'Error occurred while searching for user');
                     }
-                    await StoreUserType.saveDriver(true);
-                    
                   }
                 },
               )

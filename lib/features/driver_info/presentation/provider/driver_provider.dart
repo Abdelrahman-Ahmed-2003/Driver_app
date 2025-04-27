@@ -1,26 +1,26 @@
 import 'package:flutter/material.dart';
 
 class DriverProvider extends ChangeNotifier {
-  String name = "";
-  String birthDate = "";
+  String? name;
+  String? birthDate;
   String? profileImagePath;
   String? frontLicenseDrivingImagePath;
   String? backLicenseDrivingImagePath;
-  String selfieImageWithLicense = "";
-  String numberOfLicense = "";
-  String expirationDate = "";
-  String IDImagePath = "";
-  String backIDImagePath = "";
-  String feshPath = "";
-  String ID = '';
-  String carLicense = "";
-  String backCarLicense = "";
-  String carModel = "";
-  String carIcon = "";
-  String carColor = "";
-  String carYear = "";
-  String carPlate = "";
-  String carImagePath = "";
+  String? selfieImageWithLicense;
+  String? numberOfLicense;
+  String? expirationDate;
+  String? IDImagePath;
+  String? backIDImagePath;
+  String? feshPath;
+  String? ID;
+  String? carLicense;
+  String? backCarLicense;
+  String? carModel;
+  String? carIcon;
+  String? carColor;
+  String? carYear;
+  String? carPlate;
+  String? carImagePath;
 
   // Setters for Text Fields
   void setName(String value) {

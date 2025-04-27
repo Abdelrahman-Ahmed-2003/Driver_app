@@ -1,3 +1,4 @@
+import 'package:dirver/core/utils/utils.dart';
 import 'package:dirver/features/driver_info/presentation/provider/driver_provider.dart';
 import 'package:dirver/features/driver_info/presentation/views/second_screen.dart';
 import 'package:dirver/features/driver_info/presentation/views/widgets/next_button.dart';
@@ -37,17 +38,23 @@ class DriverInfoView1 extends StatelessWidget {
                 // const Spacer(),
                 SizedBox(height: MediaQuery.of(context).size.height*0.3),
         
-                buildNextButton((){
-                  if (formKey.currentState!.validate()) {
-                    formKey.currentState!.save();
-                    Navigator.pushNamed(context, DriverInfoView2.routeName);
-                  }
-                }),
+                
               ],
             ),
           ),
         ),
       ),
+      bottomNavigationBar: buildNextButton((){
+                  if (formKey.currentState!.validate()) {
+                    formKey.currentState!.save();
+                    var provider = Provider.of<DriverProvider>(context, listen: false);
+                    if(provider.profileImagePath == null) {
+                      errorMessage(context, 'Please pick a image');
+                      return;
+                    }
+                    Navigator.pushNamed(context, DriverInfoView2.routeName);
+                  }
+                }),
     );
   }
 }

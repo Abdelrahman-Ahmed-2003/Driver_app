@@ -1,3 +1,4 @@
+import 'package:dirver/core/utils/utils.dart';
 import 'package:dirver/features/driver_info/presentation/views/widgets/next_button.dart';
 import 'package:dirver/features/driver_info/presentation/views/widgets/pick_picture.dart';
 import 'package:dirver/features/driver_info/presentation/views/widgets/text_field_widger.dart';
@@ -48,9 +49,7 @@ class DriverInfoView3 extends StatelessWidget {
                         child: PickPicture(
                           text: pickPictures[index]['text']!,
                           id: pickPictures[index]['id']!,
-                          imagePath: pickPictures[index]['imagePath']!.isNotEmpty
-                              ? pickPictures[index]['imagePath']
-                              : null, // Pass null if imagePath is empty
+                          imagePath: pickPictures[index]['imagePath'], // Pass null if imagePath is empty
                         ),
                       );
                     },
@@ -66,20 +65,27 @@ class DriverInfoView3 extends StatelessWidget {
 
                 SizedBox(height: MediaQuery.of(context).size.height * 0.3),
 
-                buildNextButton(() {
+                
+              ],
+            ),
+          ),
+        ),
+      ),
+      bottomNavigationBar: buildNextButton(() {
                   if (formKey.currentState!.validate()) {
                     formKey.currentState!.save();
+                    if (userProvider.IDImagePath == null ||
+                        userProvider.backIDImagePath == null ||
+                        userProvider.feshPath == null) {
+                      errorMessage(context, 'Please pick all images');
+                      return;
+                    }
                     Navigator.pushNamed(
                       context,
                       DriverInfoView4.routeName
                     );
                   }
                 }),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

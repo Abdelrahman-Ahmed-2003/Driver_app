@@ -118,12 +118,15 @@ class _ShowMapState extends State<ShowMap> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ContentOfTripProvider>(
-      builder: (context, ContentOfTripProvider, child) {
-        var tripProvider = Provider.of<TripProvider>(context);
-        return _buildMap(ContentOfTripProvider,tripProvider);
-      },
-    );
+    // return Consumer<ContentOfTripProvider>(
+    //   builder: (context, ContentOfTripProvider, child) {
+    //     var tripProvider = Provider.of<TripProvider>(context);
+    //     return _buildMap(ContentOfTripProvider,tripProvider);
+    //   },
+    // );
+    final tripProvider = Provider.of<TripProvider>(context);
+    final contentProvider = Provider.of<ContentOfTripProvider>(context);
+    return _buildMap(contentProvider,tripProvider);
   }
 
   Widget _buildMap(ContentOfTripProvider provider,TripProvider tripProvider) {

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dirver/core/utils/utils.dart';
 import 'package:dirver/features/driver_home/presentation/views/driver_home.dart';
 import 'package:dirver/features/driver_info/presentation/views/widgets/next_button.dart';
 import 'package:dirver/features/driver_info/presentation/views/widgets/pick_picture.dart';
@@ -66,9 +67,7 @@ class DriverInfoView4 extends StatelessWidget {
                           text: pickPictures[index]['text']!,
                           id: pickPictures[index]['id']!,
                           imagePath:
-                              pickPictures[index]['imagePath']!.isNotEmpty
-                                  ? pickPictures[index]['imagePath']
-                                  : null, // Pass null if imagePath is empty
+                              pickPictures[index]['imagePath'], // Pass null if imagePath is empty
                         ),
                       );
                     },
@@ -100,11 +99,21 @@ class DriverInfoView4 extends StatelessWidget {
 
                 SizedBox(height: MediaQuery.of(context).size.height * 0.3),
 
-                buildNextButton(() async {
+                
+              ],
+            ),
+          ),
+        ),
+      ),
+      bottomNavigationBar: buildNextButton(() async {
                   if (formKey.currentState!.validate()) {
                     formKey.currentState!.save();
-                        var userProvider = Provider.of<DriverProvider>(context,listen: false);
-
+                    final userProvider = Provider.of<DriverProvider>(context, listen: false);
+                    if (userProvider.carImagePath == null ||
+                        userProvider.carLicense == null ||
+                        userProvider.backCarLicense == null) {
+                      errorMessage(context, 'Please pick all images');
+                      return;}
                     CollectionReference drivers =
                         FirebaseFirestore.instance.collection('drivers');
                     User? user = FirebaseAuth.instance.currentUser;
@@ -123,11 +132,6 @@ class DriverInfoView4 extends StatelessWidget {
                     );
                   }
                 }),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
