@@ -1,6 +1,5 @@
 
 import 'package:dirver/core/utils/colors_app.dart';
-import 'package:dirver/features/passenger_home/presentation/provider/content_of_trip_provider.dart';
 import 'package:dirver/features/passenger_home/presentation/provider/tripProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -12,14 +11,13 @@ class PriceField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var provider = context.read<ContentOfTripProvider>();
     final tripProvider = context.watch<TripProvider>();
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: TextFormField(
         readOnly: tripProvider.tripStream != null,
         keyboardType: TextInputType.number,
-        controller: provider.priceController,
+        controller: tripProvider.priceController,
         decoration: InputDecoration(
           filled: true,
           hintText: 'price of trip',

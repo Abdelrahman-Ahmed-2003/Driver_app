@@ -1,6 +1,4 @@
 import 'package:dirver/features/driver_info/presentation/provider/driver_provider.dart';
-import 'package:dirver/features/passenger_home/presentation/provider/content_of_trip_provider.dart';
-import 'package:dirver/features/passenger_home/presentation/provider/tripProvider.dart';
 import 'package:dirver/my_app.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';

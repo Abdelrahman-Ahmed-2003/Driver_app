@@ -4,13 +4,11 @@ import 'package:dirver/features/passenger_home/presentation/provider/tripProvide
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:dirver/core/utils/utils.dart';
-import 'package:dirver/features/passenger_home/presentation/provider/content_of_trip_provider.dart';
 class TripButton extends StatelessWidget {
   const TripButton({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final contentProvider = context.read<ContentOfTripProvider>();
     final tripProvider = context.watch<TripProvider>(); // WATCH to reflect UI changes
 
     return Padding(
@@ -48,7 +46,7 @@ class TripButton extends StatelessWidget {
                 }
 
                 return ElevatedButton(
-                  onPressed: () => _createTrip(context, contentProvider, tripProvider),
+                  onPressed: () => _createTrip(context,tripProvider),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryColor,
                     padding: const EdgeInsets.symmetric(vertical: 15),
@@ -74,18 +72,18 @@ class TripButton extends StatelessWidget {
 
   Future<void> _createTrip(
     BuildContext context,
-    ContentOfTripProvider contentProvider,
     TripProvider tripProvider,
   ) async {
-    if (contentProvider.toController.text.isEmpty || 
-        contentProvider.priceController.text.isEmpty) {
+    if (tripProvider.toController.text.isEmpty || 
+        tripProvider.priceController.text.isEmpty) {
       errorMessage(context, 'Please fill all fields');
       return;
     }
 
     try {
-      await tripProvider.createNewTrip(contentProvider);
+      await tripProvider.createNewTrip();
     } catch (e) {
+      if (!context.mounted) return;
       errorMessage(context, 'Failed to create trip: $e');
     }
   }

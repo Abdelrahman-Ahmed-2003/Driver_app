@@ -21,7 +21,7 @@ class _ListViewWidgetState extends State<ListViewWidget> {
     return Container(
       height: 48,
       decoration: BoxDecoration(
-        color: AppColors.opalGrey.withOpacity(0.3),
+        color: AppColors.opalGrey.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -45,7 +45,7 @@ class _ListViewWidgetState extends State<ListViewWidget> {
                   boxShadow: selectedIndex == index
                       ? [
                           BoxShadow(
-                            color: AppColors.blackColor.withOpacity(0.1),
+                            color: AppColors.blackColor.withValues(alpha: 0.1),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),

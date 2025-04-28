@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/core/utils/utils.dart';
-import 'package:dirver/features/passenger_home/presentation/provider/content_of_trip_provider.dart';
 import 'package:dirver/features/passenger_home/presentation/provider/tripProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:free_map/free_map.dart';
@@ -24,7 +23,6 @@ class _AddressFieldState extends State<AddressField> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<ContentOfTripProvider>(context); // Use context.read<ContentOfTripProvider>;
     final tripProvider = Provider.of<TripProvider>(context);
 
     return Padding(
@@ -35,7 +33,7 @@ class _AddressFieldState extends State<AddressField> {
             child: TextFormField(
               readOnly: tripProvider.tripStream != null,
               keyboardType: TextInputType.text,
-              controller: provider.toController,
+              controller: tripProvider.toController,
               decoration: InputDecoration(
                 filled: true,
                 hintText: widget.hintText,
@@ -43,13 +41,13 @@ class _AddressFieldState extends State<AddressField> {
               ),
             ),
           ),
-          _buildTripButton(provider),
+          _buildTripButton(tripProvider),
         ],
       ),
     );
   }
 
-  Widget _buildTripButton(ContentOfTripProvider provider) {
+  Widget _buildTripButton(TripProvider provider) {
     final tripProvider = Provider.of<TripProvider>(context, listen: false);
     return _isSearching
         ? const Padding(
@@ -66,8 +64,8 @@ class _AddressFieldState extends State<AddressField> {
           );
   }
 
-  Future<void> _handleSearch(ContentOfTripProvider contentOfTripProvider) async {
-  final query = contentOfTripProvider.toController.text.trim();
+  Future<void> _handleSearch(TripProvider tripProvider) async {
+  final query = tripProvider.toController.text.trim();
   
   if (query.isEmpty) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -103,7 +101,7 @@ class _AddressFieldState extends State<AddressField> {
             : (data[0]['lon'] as num).toDouble();
 
         debugPrint('📍 Location found: Lat: $lat, Lon: $lon');
-        contentOfTripProvider.setCoordinatesPoint(LatLng(lat, lon));
+        tripProvider.setCoordinatesPoint(LatLng(lat, lon));
       } else {
         debugPrint('⚠️ Location not found');
         ScaffoldMessenger.of(context).showSnackBar(

@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/core/utils/utils.dart';
-import 'package:dirver/features/passenger_home/presentation/provider/content_of_trip_provider.dart';
 import 'package:dirver/features/passenger_home/presentation/provider/tripProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -27,12 +26,12 @@ class _ShowMapState extends State<ShowMap> {
   bool _isLoading = true;
   LatLng? _lastUpdatedLocation;
   final Distance _distanceCalculator = Distance();
-  late ContentOfTripProvider contentProvider;
+  late TripProvider provider;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    contentProvider = Provider.of<ContentOfTripProvider>(context, listen: false);
+    provider = Provider.of<TripProvider>(context, listen: false);
   }
 
   @override
@@ -41,7 +40,7 @@ class _ShowMapState extends State<ShowMap> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeLocation();
       if (widget.isDriver && widget.destination != null) {
-        contentProvider.setCoordinatesPoint(widget.destination!);
+        provider.setCoordinatesPoint(widget.destination!);
       }
     });
   }
@@ -63,8 +62,8 @@ class _ShowMapState extends State<ShowMap> {
         );
 
         if (_shouldUpdateLocation(newLocation)) {
-          contentProvider.currentLocation = newLocation;
-          contentProvider.setCurrentPoints(newLocation);
+          provider.currentLocation = newLocation;
+          provider.setCurrentPoints(newLocation);
           _lastUpdatedLocation = newLocation;
 
           if (_isLoading) {
@@ -93,8 +92,8 @@ class _ShowMapState extends State<ShowMap> {
   }
 
   Future<void> _centerOnUserLocation() async {
-    if (contentProvider.currentLocation != null) {
-      _mapController.move(contentProvider.currentLocation!, 15);
+    if (provider.currentLocation != null) {
+      _mapController.move(provider.currentLocation!, 15);
     } else {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -105,15 +104,14 @@ class _ShowMapState extends State<ShowMap> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ContentOfTripProvider>(
-      builder: (context, contentOfTripProvider, child) {
-        var tripProvider = Provider.of<TripProvider>(context);
-        return _buildMap(contentOfTripProvider,tripProvider);
+    return Consumer<TripProvider>(
+      builder: (context, tripProvider, child) {
+        return _buildMap(tripProvider);
       },
     );
   }
 
-  Widget _buildMap(ContentOfTripProvider provider, TripProvider tripProvider) {
+  Widget _buildMap(TripProvider provider) {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -122,7 +120,7 @@ class _ShowMapState extends State<ShowMap> {
       mapController: _mapController,
       options: MapOptions(
         onTap: (tapPosition, latLng) async {
-          if (widget.isDriver || tripProvider.tripStream != null) return;
+          if (widget.isDriver || provider.tripStream != null) return;
           provider.setCoordinatesPoint(latLng);
           try {
             List<Placemark> placemarks = await placemarkFromCoordinates(

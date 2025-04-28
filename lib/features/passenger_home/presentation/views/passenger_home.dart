@@ -1,7 +1,6 @@
 import 'package:dirver/core/services/sharedPref/store_user_type.dart';
 import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/features/driver_or_rider/presentation/views/driver_or_rider_view.dart';
-import 'package:dirver/features/passenger_home/presentation/provider/content_of_trip_provider.dart';
 import 'package:dirver/features/passenger_home/presentation/provider/tripProvider.dart';
 import 'package:dirver/features/passenger_home/presentation/views/widgets/bottom_sheet_app.dart';
 import 'package:dirver/features/passenger_home/presentation/views/widgets/show_map.dart';
@@ -17,7 +16,6 @@ class PassengerHome extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => ContentOfTripProvider()),
         ChangeNotifierProvider(create: (_) => TripProvider()),
       ],
       builder: (context, child) => Scaffold(
@@ -34,7 +32,7 @@ class PassengerHome extends StatelessWidget {
           actions: [
             IconButton(
               onPressed: () async {
-                var contentProvider = context.read<ContentOfTripProvider>();
+                var contentProvider = context.read<TripProvider>();
                 var tripProvider = context.read<TripProvider>();
                 if (tripProvider.tripStream != null) return;
                 contentProvider.clear();
