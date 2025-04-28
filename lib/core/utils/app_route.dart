@@ -1,12 +1,13 @@
 import 'package:dirver/features/auth/presentation/views/login_view.dart';
-import 'package:dirver/features/driver_home/presentation/views/driver_home.dart';
+import 'package:dirver/features/driver/presentation/views/driver_home.dart';
+import 'package:dirver/features/passenger/presentation/views/select_driver.dart';
 import 'package:dirver/features/selected_trip/presentation/views/selected_trip.dart';
 import 'package:dirver/features/driver_info/presentation/views/first_screen.dart';
 import 'package:dirver/features/driver_info/presentation/views/fourth_screen.dart';
 import 'package:dirver/features/driver_info/presentation/views/second_screen.dart';
 import 'package:dirver/features/driver_info/presentation/views/third_screen.dart';
 import 'package:dirver/features/driver_or_rider/presentation/views/driver_or_rider_view.dart';
-import 'package:dirver/features/passenger_home/presentation/views/passenger_home.dart';
+import 'package:dirver/features/passenger/presentation/views/passenger_home.dart';
 import 'package:dirver/features/splash_screen/presentation/views/splash_view.dart';
 import 'package:flutter/material.dart';
 
@@ -34,6 +35,9 @@ class AppRoutes {
       case SelectedTrip.routeName:
         return MaterialPageRoute(
             builder: (_) => SelectedTrip(trip: settings.arguments as Map<String, dynamic>));
+      case SelectDriver.routeName:
+        return MaterialPageRoute(
+            builder: (_) => const SelectDriver());
       default:
         return MaterialPageRoute(builder: (_) => errorRoute());
     }

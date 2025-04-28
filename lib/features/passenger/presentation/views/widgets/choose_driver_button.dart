@@ -1,14 +1,13 @@
 import 'package:dirver/core/utils/colors_app.dart';
-import 'package:dirver/features/passenger_home/presentation/provider/tripProvider.dart';
+import 'package:dirver/features/passenger/presentation/provider/tripProvider.dart';
 import 'package:flutter/material.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
-class ClearLocationButton extends StatelessWidget {
-  const ClearLocationButton({super.key});
+class ChooseDriverButton extends StatelessWidget {
+  const ChooseDriverButton({super.key});
 
   @override
-  Widget build(BuildContext context) {
+ Widget build(BuildContext context) {
     final tripProvider = context.watch<TripProvider>();
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0, right: 16.0),
@@ -16,7 +15,7 @@ class ClearLocationButton extends StatelessWidget {
         alignment: Alignment.bottomRight,
         child: Container(
           decoration: BoxDecoration(
-            color: tripProvider.tripStream != null 
+            color: tripProvider.tripStream == null 
                 ? AppColors.greyColor 
                 : AppColors.primaryColor,
             borderRadius: BorderRadius.circular(25),
@@ -32,17 +31,11 @@ class ClearLocationButton extends StatelessWidget {
           width: 50,
           child: IconButton(
             onPressed: () {
-              if (tripProvider.tripStream != null) return;
-              tripProvider.toController.clear();
-              tripProvider.priceController.clear();
-              tripProvider.setFrom('');
-              tripProvider.setPrice('');
-              tripProvider.setDest(LatLng(0, 0));
-              tripProvider.setCurrentPoints(LatLng(0, 0));
-              tripProvider.points.clear();
-              tripProvider.lastDest = null;
+              if (tripProvider.tripStream == null) return;
+              Navigator.pushNamed(context, '/select-driver');
+              
             },
-            icon: const Icon(Icons.clear, color: AppColors.whiteColor),
+            icon: const Icon(Icons.directions_bus, color: AppColors.whiteColor),
           ),
         ),
       ),

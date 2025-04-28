@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dirver/core/utils/utils.dart';
-import 'package:dirver/features/driver_home/presentation/views/driver_home.dart';
+import 'package:dirver/features/driver/presentation/views/driver_home.dart';
 import 'package:dirver/features/driver_info/presentation/views/widgets/next_button.dart';
 import 'package:dirver/features/driver_info/presentation/views/widgets/pick_picture.dart';
 import 'package:dirver/features/driver_info/presentation/views/widgets/text_field_widger.dart';

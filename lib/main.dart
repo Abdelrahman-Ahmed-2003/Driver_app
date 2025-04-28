@@ -1,4 +1,5 @@
 import 'package:dirver/features/driver_info/presentation/provider/driver_provider.dart';
+import 'package:dirver/features/passenger/presentation/provider/tripProvider.dart';
 import 'package:dirver/my_app.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +21,7 @@ void main() async{
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => DriverProvider()),
+        ChangeNotifierProvider(create: (_) => TripProvider()),
       ],
       child: MyApp(),
     ),

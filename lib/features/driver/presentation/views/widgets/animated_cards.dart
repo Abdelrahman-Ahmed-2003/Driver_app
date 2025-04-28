@@ -1,6 +1,6 @@
 import 'package:dirver/features/selected_trip/presentation/views/selected_trip.dart';
-import 'package:dirver/features/driver_home/presentation/views/widgets/trip_card.dart';
-import 'package:dirver/features/passenger_home/presentation/provider/tripProvider.dart';
+import 'package:dirver/features/driver/presentation/views/widgets/trip_card.dart';
+import 'package:dirver/features/passenger/presentation/provider/tripProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

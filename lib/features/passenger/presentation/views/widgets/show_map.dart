@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/core/utils/utils.dart';
-import 'package:dirver/features/passenger_home/presentation/provider/tripProvider.dart';
+import 'package:dirver/features/passenger/presentation/provider/tripProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';

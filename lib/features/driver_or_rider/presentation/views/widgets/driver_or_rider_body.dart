@@ -4,11 +4,11 @@ import 'package:dirver/core/services/sharedPref/store_user_type.dart';
 import 'package:dirver/core/sharedWidgets/logo_widget.dart';
 import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/core/utils/utils.dart';
-import 'package:dirver/features/driver_home/presentation/views/driver_home.dart';
+import 'package:dirver/features/driver/presentation/views/driver_home.dart';
 import 'package:dirver/features/driver_info/presentation/views/first_screen.dart';
 import 'package:dirver/core/utils/search_about_user.dart';
 import 'package:dirver/features/driver_or_rider/presentation/views/widgets/how_are_you.dart';
-import 'package:dirver/features/passenger_home/presentation/views/passenger_home.dart';
+import 'package:dirver/features/passenger/presentation/views/passenger_home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 

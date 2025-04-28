@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dirver/core/models/driver.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
@@ -7,12 +8,16 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class TripProvider with ChangeNotifier {
-  // Firestore and Auth instances
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   
   // Trip management properties
   Stream<DocumentSnapshot>? _tripStream;
   DocumentReference? _currentTrip;
+  String? _currentTripId;
+  
+  // Driver management
+  List<Driver> _drivers = [];
+  List<Driver> get drivers => _drivers;
   
   // Trip content properties
   final TextEditingController toController = TextEditingController();
@@ -23,6 +28,7 @@ class TripProvider with ChangeNotifier {
   List<LatLng> _points = [];
   LatLng? currentLocation;
   LatLng? lastDest;
+  String _status = 'not_created';
 
   // Getters
   Stream<DocumentSnapshot>? get tripStream => _tripStream;
@@ -30,12 +36,45 @@ class TripProvider with ChangeNotifier {
   LatLng get dest => _dest;
   String get price => _price;
   List<LatLng> get points => _points;
+  String get status => _status;
+  String? get currentTripId => _currentTripId;
 
-  // Trip status methods
-  String getCurrentStatus(DocumentSnapshot? snapshot) {
-    if (snapshot == null || !snapshot.exists) return 'not_created';
-    return (snapshot.data() as Map<String, dynamic>)['status'] ?? 'unknown';
+  // Initialize trip stream
+  void _initializeTripStream() {
+    _tripStream = _currentTrip?.snapshots().asyncMap((snapshot) async {
+      if (snapshot.exists) {
+        final data = snapshot.data() as Map<String, dynamic>;
+        _status = data['status'] ?? 'unknown';
+        _price = data['price']?.toString() ?? '';
+        
+        // Update drivers list
+        final driverEmails = List<String>.from(data['driversMails'] ?? []);
+        await updateDriversList(driverEmails);
+        
+        notifyListeners();
+      }
+      return snapshot;
+    });
   }
+
+  // Fetch and update drivers details
+  Future<void> updateDriversList(List<String> driverEmails) async {
+  final List<Driver> updatedDrivers = [];
+
+  for (final email in driverEmails) {
+    try {
+      final doc = await _firestore.collection('drivers').doc(email).get();
+      updatedDrivers.add(Driver.fromMap(doc.data(), email));
+    } catch (e) {
+      debugPrint('Error fetching driver $email: $e');
+      updatedDrivers.add(Driver(email: email)); // fallback
+    }
+  }
+
+  _drivers = updatedDrivers;
+  notifyListeners();
+}
+
 
   // Trip creation and management
   Future<void> createNewTrip() async {
@@ -57,9 +96,11 @@ class TripProvider with ChangeNotifier {
         'price': priceController.text,
         'status': 'waiting',
         'driversMails': [],
+        'createdAt': FieldValue.serverTimestamp(),
       });
-
-      _tripStream = _currentTrip?.snapshots();
+      
+      _currentTripId = _currentTrip?.id;
+      _initializeTripStream();
       notifyListeners();
     } catch (e) {
       debugPrint("Error creating trip: $e");
@@ -67,17 +108,47 @@ class TripProvider with ChangeNotifier {
     }
   }
 
-  Future<void> deleteTrip() async {
+  Future<void> updateSelectedDriver(String driverEmail) async {
+  if (_currentTrip == null) return;
+  
+  await _currentTrip!.update({
+    'selectedDriver': driverEmail,
+    'status': 'accepted',
+    'updatedAt': FieldValue.serverTimestamp(),
+  });
+  
+  
+}
+
+  Future<void> updateTripPrice(String newPrice) async {
+    if (_currentTrip == null) return;
+    
+    await _currentTrip!.update({
+      'price': newPrice,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> updateTripStatus(String newStatus) async {
+    if (_currentTrip == null) return;
+    
+    await _currentTrip!.update({
+      'status': newStatus,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+    Future<void> deleteTrip() async {
     if (_currentTrip != null) {
       await _currentTrip!.delete();
       cancelStream();
     }
   }
 
-  void cancelStream() {
-    _tripStream = null;
-    _currentTrip = null;
-    notifyListeners();
+  // Get current status from snapshot
+  String getCurrentStatus(DocumentSnapshot? snapshot) {
+    if (snapshot == null || !snapshot.exists) return 'not_created';
+    return (snapshot.data() as Map<String, dynamic>)['status'] ?? 'unknown';
   }
 
   // Trip content methods
@@ -156,6 +227,17 @@ class TripProvider with ChangeNotifier {
     setDestinations(result.map((e) => LatLng(e.latitude, e.longitude)).toList());
   }
 
+  // Clean up
+  void cancelStream() {
+    _tripStream = null;
+    _currentTrip = null;
+    _currentTripId = null;
+    _drivers = [];
+    _price = '';
+    _status = 'not_created';
+    notifyListeners();
+  }
+
   void clear() {
     _from = '';
     _dest = const LatLng(0, 0);
@@ -165,6 +247,6 @@ class TripProvider with ChangeNotifier {
     lastDest = null;
     toController.clear();
     priceController.clear();
-    notifyListeners();
+    cancelStream();
   }
 }

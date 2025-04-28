@@ -1,5 +1,5 @@
 import 'package:dirver/core/utils/colors_app.dart';
-import 'package:dirver/features/passenger_home/presentation/provider/tripProvider.dart';
+import 'package:dirver/features/passenger/presentation/provider/tripProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

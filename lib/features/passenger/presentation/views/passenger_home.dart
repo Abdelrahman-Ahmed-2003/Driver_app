@@ -1,9 +1,9 @@
 import 'package:dirver/core/services/sharedPref/store_user_type.dart';
 import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/features/driver_or_rider/presentation/views/driver_or_rider_view.dart';
-import 'package:dirver/features/passenger_home/presentation/provider/tripProvider.dart';
-import 'package:dirver/features/passenger_home/presentation/views/widgets/bottom_sheet_app.dart';
-import 'package:dirver/features/passenger_home/presentation/views/widgets/show_map.dart';
+import 'package:dirver/features/passenger/presentation/provider/tripProvider.dart';
+import 'package:dirver/features/passenger/presentation/views/widgets/bottom_sheet_app.dart';
+import 'package:dirver/features/passenger/presentation/views/widgets/show_map.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -14,11 +14,7 @@ class PassengerHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => TripProvider()),
-      ],
-      builder: (context, child) => Scaffold(
+    return Scaffold(
         appBar: AppBar(
           title: const Text('Ride Hailing', 
               style: TextStyle(
@@ -58,7 +54,6 @@ class PassengerHome extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 }

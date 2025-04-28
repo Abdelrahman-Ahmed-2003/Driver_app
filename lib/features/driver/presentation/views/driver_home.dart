@@ -1,6 +1,6 @@
 import 'package:dirver/core/utils/utils.dart';
-import 'package:dirver/features/driver_home/presentation/views/widgets/animated_cards.dart';
-import 'package:dirver/features/driver_home/presentation/views/widgets/shimmer_trip_card.dart';
+import 'package:dirver/features/driver/presentation/views/widgets/animated_cards.dart';
+import 'package:dirver/core/sharedWidgets/shimmer_trip_card.dart';
 import 'package:flutter/material.dart';
 import 'package:dirver/core/services/sharedPref/store_user_type.dart';
 import 'package:dirver/features/driver_or_rider/presentation/views/driver_or_rider_view.dart';
