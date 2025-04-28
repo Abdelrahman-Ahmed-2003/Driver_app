@@ -1,13 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dirver/core/utils/colors_app.dart';
-import 'package:dirver/features/passenger_home/presentation/provider/content_of_trip_provider.dart';
 import 'package:dirver/features/passenger_home/presentation/provider/tripProvider.dart';
 import 'package:dirver/features/passenger_home/presentation/views/widgets/address_field.dart';
+import 'package:dirver/features/passenger_home/presentation/views/widgets/clear_location_button.dart';
 import 'package:dirver/features/passenger_home/presentation/views/widgets/list_view_widget.dart';
 import 'package:dirver/features/passenger_home/presentation/views/widgets/price_field.dart';
-import 'package:dirver/features/passenger_home/presentation/views/widgets/search_button.dart';
+import 'package:dirver/features/passenger_home/presentation/views/widgets/trip_button.dart';
 import 'package:flutter/material.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
 class BottomSheetWidget extends StatelessWidget {
@@ -21,61 +20,44 @@ class BottomSheetWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           const TripStatusStreamer(),
-          _buildClearLocationButton(context),
-          _buildMainContent(),
+          ClearLocationButton(),
+          _buildMainContent(context),
         ],
       ),
     );
   }
 
-  Widget _buildClearLocationButton(BuildContext context) {
-    final tripProvider = context.watch<TripProvider>();
-    return Align(
-      alignment: Alignment.bottomRight,
-      child: Container(
-        decoration: BoxDecoration(
-          color: tripProvider.tripStream != null ? AppColors.greyColor : AppColors.primaryColor,
-          borderRadius: const BorderRadius.all(Radius.circular(25)),
-        ),
-        height: 50,
-        width: 50,
-        margin: const EdgeInsets.only(right: 12, bottom: 8),
-        child: IconButton(
-          onPressed: () {
-            if(tripProvider.tripStream != null) return;
-            final provider = context.read<ContentOfTripProvider>();
-            provider.toController.clear();
-            provider.priceController.clear();
-            provider.setFrom('');
-            provider.setPrice('');
-            provider.setDest(LatLng(0, 0));
-            provider.setCurrentPoints(LatLng(0, 0));
-            provider.points.clear();
-            provider.lastDest = null;
-          },
-          icon: const Icon(Icons.wrong_location_outlined, color: AppColors.whiteColor),
-        ),
-      ),
-    );
-  }
 
-  Widget _buildMainContent() {
+
+  Widget _buildMainContent(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.blackColor,
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: AppColors.whiteColor,
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(20),
           topRight: Radius.circular(20),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.blackColor.withValues(alpha: 0.1),
+            blurRadius: 16,
+            spreadRadius: 0,
+            offset: const Offset(0, -4),
+          ),
+        ],
       ),
-      height: 250,
-      width: double.infinity,
-      child: const Column(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          ListViewWidget(),
-          AddressField(hintText: 'To'),
-          PriceField(),
-          SearchButton(),
+          const ListViewWidget(),
+          const SizedBox(height: 12),
+          const AddressField(hintText: 'Destination'),
+          const SizedBox(height: 12),
+          const PriceField(),
+          const SizedBox(height: 16),
+          const TripButton(),
+          SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
         ],
       ),
     );
@@ -95,33 +77,42 @@ class TripStatusStreamer extends StatelessWidget {
         final status = tripProvider.getCurrentStatus(snapshot.data);
 
         if (status == 'not_created' || status == 'unknown' || status == 'cancelled') {
-          return const SizedBox.shrink(); // Hide when no trip or cancelled
+          return const SizedBox.shrink();
         }
 
         return Container(
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+          margin: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
           decoration: BoxDecoration(
-            color: _getStatusColor(status).withValues(
-  alpha: 0.4, // 0.2 * 255
-  
-),
-
-            borderRadius: BorderRadius.circular(20),
+            color: _getStatusColor(status).withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: _getStatusColor(status).withValues(alpha: 0.2),
+              width: 1,
+            ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                _getStatusIcon(status),
-                color: _getStatusColor(status),
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: _getStatusColor(status).withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  _getStatusIcon(status),
+                  color: _getStatusColor(status),
+                  size: 18,
+                ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               Text(
                 _getStatusText(status),
                 style: TextStyle(
                   color: _getStatusColor(status),
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
                 ),
               ),
             ],
@@ -136,7 +127,7 @@ class TripStatusStreamer extends StatelessWidget {
       case 'waiting':
         return AppColors.orangeColor;
       case 'in_progress':
-        return AppColors.blueColor;
+        return AppColors.primaryColor;
       case 'completed':
         return AppColors.grenColor;
       case 'cancelled':
@@ -176,4 +167,3 @@ class TripStatusStreamer extends StatelessWidget {
     }
   }
 }
-

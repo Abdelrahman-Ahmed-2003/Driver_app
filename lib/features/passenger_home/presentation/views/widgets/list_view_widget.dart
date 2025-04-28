@@ -11,34 +11,59 @@ class ListViewWidget extends StatefulWidget {
 }
 
 class _ListViewWidgetState extends State<ListViewWidget> {
-  int selectedIndex = 0; // ✅ Track selected item
-  List<String> items = ["Car", "Motocycle"];
+  int selectedIndex = 0;
+  List<String> items = ["Car", "Motorcycle"];
+  
   @override
   Widget build(BuildContext context) {
     final TripProvider tripProvider = context.watch<TripProvider>();
-    return SizedBox(
-      height: 50, // ✅ Constrain height
+    
+    return Container(
+      height: 48,
+      decoration: BoxDecoration(
+        color: AppColors.opalGrey.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Row(
         children: List.generate(items.length, (index) {
           return Expanded(
             child: GestureDetector(
               onTap: () {
-                if(tripProvider.tripStream != null) return; // ✅ Prevent selection if trip is active
+                if (tripProvider.tripStream != null) return;
                 setState(() {
-                  selectedIndex = index; // ✅ Update selected item
+                  selectedIndex = index;
                 });
               },
-              child: Container(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeInOut,
                 decoration: BoxDecoration(
                   color: selectedIndex == index
-                      ? Color(0XFFC1CDCB)// ✅ Selected item color
+                      ? AppColors.whiteColor
                       : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: selectedIndex == index
+                      ? [
+                          BoxShadow(
+                            color: AppColors.blackColor.withOpacity(0.1),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
                 ),
+                margin: const EdgeInsets.all(4),
                 child: Center(
                   child: Text(
                     items[index],
-                    style: const TextStyle(color: AppColors.whiteColor),
+                    style: TextStyle(
+                      color: selectedIndex == index
+                          ? AppColors.primaryColor
+                          : AppColors.darkGrey,
+                      fontWeight: selectedIndex == index
+                          ? FontWeight.w600
+                          : FontWeight.normal,
+                    ),
                   ),
                 ),
               ),

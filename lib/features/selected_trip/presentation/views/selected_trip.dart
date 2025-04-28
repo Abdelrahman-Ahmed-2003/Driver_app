@@ -18,12 +18,20 @@ class _SelectedTripState extends State<SelectedTrip> {
   @override
   void initState() {
     super.initState();
-    var provider = context.read<ContentOfTripProvider>();
+    
+    final provider = context.read<ContentOfTripProvider>();
     provider.toController.text = widget.trip['destination'];
     provider.priceController.text = widget.trip['price'];
+    
+    
   }
   @override
   Widget build(BuildContext context) {
-    return ShowMap(isDriver: true,destination: LatLng(widget.trip['userLocation']['lat'], widget.trip['userLocation']['long']));
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Trip Details"),
+      ),
+      body: ShowMap(isDriver: true,destination: LatLng(widget.trip['userLocation']['lat'], widget.trip['userLocation']['long']))
+    );
   }
 }

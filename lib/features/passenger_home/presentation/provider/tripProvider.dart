@@ -31,8 +31,8 @@ class TripProvider with ChangeNotifier {
         },
         'price': contentProvider.priceController.text,
         'status': 'waiting',
-        'driverId': null,
-        'createdAt': FieldValue.serverTimestamp(),
+        'driversMails':[],
+        // 'createdAt': FieldValue.serverTimestamp(),
       });
 
       // Start listening to the created trip

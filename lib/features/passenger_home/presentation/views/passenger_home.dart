@@ -1,4 +1,5 @@
 import 'package:dirver/core/services/sharedPref/store_user_type.dart';
+import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/features/driver_or_rider/presentation/views/driver_or_rider_view.dart';
 import 'package:dirver/features/passenger_home/presentation/provider/content_of_trip_provider.dart';
 import 'package:dirver/features/passenger_home/presentation/provider/tripProvider.dart';
@@ -21,6 +22,15 @@ class PassengerHome extends StatelessWidget {
       ],
       builder: (context, child) => Scaffold(
         appBar: AppBar(
+          title: const Text('Ride Hailing', 
+              style: TextStyle(
+                color: AppColors.blackColor,
+                fontWeight: FontWeight.bold,
+              )),
+          backgroundColor: AppColors.whiteColor,
+          elevation: 1,
+          centerTitle: true,
+          iconTheme: const IconThemeData(color: AppColors.primaryColor),
           actions: [
             IconButton(
               onPressed: () async {
@@ -35,13 +45,13 @@ class PassengerHome extends StatelessWidget {
                   DriverOrRiderView.routeName,
                 );
               },
-              icon: const Icon(Icons.logout),
+              icon: const Icon(Icons.logout, color: AppColors.primaryColor),
             ),
           ],
         ),
-        body: SafeArea(
-          child: SizedBox(
-            height: MediaQuery.of(context).size.height - 25,
+        body: Container(
+          color: AppColors.backgroundColor,
+          child: SafeArea(
             child: Stack(
               children: const [
                 ShowMap(isDriver: false),

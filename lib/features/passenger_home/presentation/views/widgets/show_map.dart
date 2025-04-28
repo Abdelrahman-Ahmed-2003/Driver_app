@@ -14,7 +14,7 @@ import 'package:provider/provider.dart';
 class ShowMap extends StatefulWidget {
   final bool isDriver;
   final LatLng? destination;
-  const ShowMap({super.key,required this.isDriver,this.destination});
+  const ShowMap({super.key, required this.isDriver, this.destination});
 
   @override
   State<ShowMap> createState() => _ShowMapState();
@@ -22,7 +22,7 @@ class ShowMap extends StatefulWidget {
 
 class _ShowMapState extends State<ShowMap> {
   final MapController _mapController = MapController();
-  final  _location = location_package.Location();
+  final location_package.Location _location = location_package.Location();
   StreamSubscription<location_package.LocationData>? _locationSubscription;
   bool _isLoading = true;
   LatLng? _lastUpdatedLocation;
@@ -30,47 +30,43 @@ class _ShowMapState extends State<ShowMap> {
   late ContentOfTripProvider contentProvider;
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    contentProvider = Provider.of<ContentOfTripProvider>(context, listen: false);
+  }
+
+  @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeLocation();
-      if (widget.isDriver) {
-        final provider = Provider.of<ContentOfTripProvider>(context, listen: false);
-        provider.setCoordinatesPoint(widget.destination!);
+      if (widget.isDriver && widget.destination != null) {
+        contentProvider.setCoordinatesPoint(widget.destination!);
       }
     });
   }
 
   @override
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-  contentProvider = Provider.of<ContentOfTripProvider>(context, listen: false);
-  }
-
-  @override
   void dispose() {
-    _locationSubscription?.cancel();
-    contentProvider.clear(); // ✅ Safe now
+    _locationSubscription?.cancel(); //✅ فقط نلغي الاشتراك، بدون التعامل مع context
     super.dispose();
   }
 
   Future<void> _initializeLocation() async {
     if (!await _checkPermissions()) return;
+
     _locationSubscription = _location.onLocationChanged.listen((currentLocation) {
       if (currentLocation.latitude != null && currentLocation.longitude != null) {
         final newLocation = LatLng(
-          currentLocation.latitude!, 
-          currentLocation.longitude!
+          currentLocation.latitude!,
+          currentLocation.longitude!,
         );
 
-        // Check if we should update based on distance threshold
-        if (_shouldUpdateLocation(newLocation)){
-          final provider = Provider.of<ContentOfTripProvider>(context, listen: false);
-          provider.currentLocation = newLocation;
-          provider.setCurrentPoints(newLocation);
+        if (_shouldUpdateLocation(newLocation)) {
+          contentProvider.currentLocation = newLocation;
+          contentProvider.setCurrentPoints(newLocation);
           _lastUpdatedLocation = newLocation;
-          
+
           if (_isLoading) {
             setState(() => _isLoading = false);
           }
@@ -80,16 +76,8 @@ class _ShowMapState extends State<ShowMap> {
   }
 
   bool _shouldUpdateLocation(LatLng newLocation) {
-    // If first location or no previous location, always update
     if (_lastUpdatedLocation == null) return true;
-    
-    // Calculate distance in meters between last point and new point
-    final distance = _distanceCalculator(
-      _lastUpdatedLocation!, 
-      newLocation
-    );
-    
-    // Only update if moved more than 15 meters
+    final distance = _distanceCalculator(_lastUpdatedLocation!, newLocation);
     return distance > 5;
   }
 
@@ -105,11 +93,10 @@ class _ShowMapState extends State<ShowMap> {
   }
 
   Future<void> _centerOnUserLocation() async {
-    final provider = Provider.of<ContentOfTripProvider>(context, listen: false);
-    
-    if (provider.currentLocation != null) {
-      _mapController.move(provider.currentLocation!, 15);
+    if (contentProvider.currentLocation != null) {
+      _mapController.move(contentProvider.currentLocation!, 15);
     } else {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Current location not available')),
       );
@@ -118,18 +105,15 @@ class _ShowMapState extends State<ShowMap> {
 
   @override
   Widget build(BuildContext context) {
-    // return Consumer<ContentOfTripProvider>(
-    //   builder: (context, ContentOfTripProvider, child) {
-    //     var tripProvider = Provider.of<TripProvider>(context);
-    //     return _buildMap(ContentOfTripProvider,tripProvider);
-    //   },
-    // );
-    final tripProvider = Provider.of<TripProvider>(context);
-    final contentProvider = Provider.of<ContentOfTripProvider>(context);
-    return _buildMap(contentProvider,tripProvider);
+    return Consumer<ContentOfTripProvider>(
+      builder: (context, contentOfTripProvider, child) {
+        var tripProvider = Provider.of<TripProvider>(context);
+        return _buildMap(contentOfTripProvider,tripProvider);
+      },
+    );
   }
 
-  Widget _buildMap(ContentOfTripProvider provider,TripProvider tripProvider) {
+  Widget _buildMap(ContentOfTripProvider provider, TripProvider tripProvider) {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -137,23 +121,21 @@ class _ShowMapState extends State<ShowMap> {
     return FlutterMap(
       mapController: _mapController,
       options: MapOptions(
-        onTap:(TapPosition tapPosition, LatLng latLng) async {
-          if(widget.isDriver) return;
-          if(tripProvider.tripStream != null) return;
+        onTap: (tapPosition, latLng) async {
+          if (widget.isDriver || tripProvider.tripStream != null) return;
           provider.setCoordinatesPoint(latLng);
           try {
             List<Placemark> placemarks = await placemarkFromCoordinates(
               latLng.latitude,
-              latLng.longitude
+              latLng.longitude,
             );
-            
             Placemark place = placemarks.first;
             provider.toController.text = place.street ?? 'Unknown location';
           } catch (e) {
-            debugPrint("Error: $e");
+            debugPrint("Error getting place name: $e");
+            if (!mounted) return;
             errorMessage(context, e.toString());
           }
-
         },
         initialCenter: provider.currentLocation ?? const LatLng(0, 0),
         initialZoom: 15,
@@ -179,13 +161,13 @@ class _ShowMapState extends State<ShowMap> {
           MarkerLayer(
             markers: [
               Marker(
-                width: 50,
-                height: 50,
+                width: 35,
+                height: 35,
                 point: provider.dest,
                 child: const Icon(
                   Icons.location_pin,
                   color: AppColors.blueColor,
-                  size: 40,
+                  size: 35,
                 ),
               ),
             ],

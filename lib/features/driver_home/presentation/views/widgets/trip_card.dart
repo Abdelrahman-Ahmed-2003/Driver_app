@@ -45,6 +45,30 @@ class TripCard extends StatelessWidget {
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                   style: ElevatedButton.styleFrom(
+                     backgroundColor: Colors.green,
+                    //  backgroundColor: AppColors.grenColor,
+                     shape: RoundedRectangleBorder(
+                       borderRadius: BorderRadius.circular(8)),
+                     padding: const EdgeInsets.symmetric(
+                       horizontal: 24, vertical: 12),
+                   ),
+                   onPressed: () {
+                     // Update the price in the trip document
+                    //  if(nameOfButton == 'update price'){
+                    //  FirebaseFirestore.instance.collection('trips').doc(widget.trip['tripId']).update({
+                    //    'updatedPrice': priceController.text,
+                    //  });}
+                    //  acceptTrip(widget.trip['tripId']);
+                     },
+                   child: Text('Accept Trip', style: TextStyle(fontSize: 16)),
+                 ),
+            ),
+             
           ],
         ),
       ),

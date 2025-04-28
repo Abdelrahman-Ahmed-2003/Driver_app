@@ -43,13 +43,13 @@ class _AddressFieldState extends State<AddressField> {
               ),
             ),
           ),
-          _buildSearchButton(provider),
+          _buildTripButton(provider),
         ],
       ),
     );
   }
 
-  Widget _buildSearchButton(ContentOfTripProvider provider) {
+  Widget _buildTripButton(ContentOfTripProvider provider) {
     final tripProvider = Provider.of<TripProvider>(context, listen: false);
     return _isSearching
         ? const Padding(

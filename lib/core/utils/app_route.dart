@@ -1,6 +1,6 @@
 import 'package:dirver/features/auth/presentation/views/login_view.dart';
 import 'package:dirver/features/driver_home/presentation/views/driver_home.dart';
-import 'package:dirver/features/driver_home/presentation/views/widgets/selected_trip.dart';
+import 'package:dirver/features/selected_trip/presentation/views/selected_trip.dart';
 import 'package:dirver/features/driver_info/presentation/views/first_screen.dart';
 import 'package:dirver/features/driver_info/presentation/views/fourth_screen.dart';
 import 'package:dirver/features/driver_info/presentation/views/second_screen.dart';

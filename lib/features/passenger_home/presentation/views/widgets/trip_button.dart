@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:dirver/core/utils/utils.dart';
 import 'package:dirver/features/passenger_home/presentation/provider/content_of_trip_provider.dart';
-class SearchButton extends StatelessWidget {
-  const SearchButton({super.key});
+class TripButton extends StatelessWidget {
+  const TripButton({super.key});
 
   @override
   Widget build(BuildContext context) {

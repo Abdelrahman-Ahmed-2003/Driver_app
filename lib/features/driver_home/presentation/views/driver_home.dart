@@ -5,11 +5,23 @@ import 'package:flutter/material.dart';
 import 'package:dirver/core/services/sharedPref/store_user_type.dart';
 import 'package:dirver/features/driver_or_rider/presentation/views/driver_or_rider_view.dart';
 
-class DriverHome extends StatelessWidget {
+class DriverHome extends StatefulWidget {
   const DriverHome({super.key});
   static const String routeName = '/driver_home';
-  
 
+  @override
+  State<DriverHome> createState() => _DriverHomeState();
+}
+
+class _DriverHomeState extends State<DriverHome> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async{
+      await StoreUserType.saveDriver(true);
+      await StoreUserType.saveLastSignIn('driver');
+    });
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(

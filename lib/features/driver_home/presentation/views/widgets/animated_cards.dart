@@ -1,6 +1,9 @@
-import 'package:dirver/features/driver_home/presentation/views/widgets/selected_trip.dart';
+import 'package:dirver/features/selected_trip/presentation/views/selected_trip.dart';
 import 'package:dirver/features/driver_home/presentation/views/widgets/trip_card.dart';
+import 'package:dirver/features/passenger_home/presentation/provider/content_of_trip_provider.dart';
+import 'package:dirver/features/passenger_home/presentation/provider/tripProvider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class AnimatedCards extends StatefulWidget {
   final List<Map<String, dynamic>> trips;
@@ -46,12 +49,20 @@ class _AnimatedCardsState extends State<AnimatedCards> {
                     scale: scale,
                     child: GestureDetector(
                       onTap: () {
-                        Navigator.pushNamed(
-                          context,
-                          SelectedTrip.routeName,
-                          arguments: widget.trips[index],
-                        );
-                      },
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => ContentOfTripProvider()),
+          ChangeNotifierProvider(create: (_) => TripProvider()),
+        ],
+        child: SelectedTrip(trip: widget.trips[index]),
+      ),
+    ),
+  );
+},
+
                       child: TripCard(trip: widget.trips[index]),
                     ),
                   );
