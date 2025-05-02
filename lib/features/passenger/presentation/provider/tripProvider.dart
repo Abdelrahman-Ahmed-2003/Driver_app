@@ -56,6 +56,12 @@ class TripProvider with ChangeNotifier {
       return snapshot;
     });
   }
+  void reconnectTripStream() {
+  
+    _tripStream = _currentTrip!.snapshots();
+    // notifyListeners();
+  
+}
 
   // Fetch and update drivers details
   Future<void> updateDriversList(List<String> driverEmails) async {
@@ -63,17 +69,26 @@ class TripProvider with ChangeNotifier {
 
   for (final email in driverEmails) {
     try {
-      final doc = await _firestore.collection('drivers').doc(email).get();
-      updatedDrivers.add(Driver.fromMap(doc.data(), email));
+      final result = await _firestore
+          .collection('drivers')
+          .where('email', isEqualTo: email)
+          .limit(1)
+          .get();
+
+      if (result.docs.isNotEmpty) {
+        updatedDrivers.add(Driver.fromMap(result.docs.first.data(), email));
+      } else {
+        debugPrint('❌ No driver found with email: $email');
+      }
     } catch (e) {
-      debugPrint('Error fetching driver $email: $e');
-      updatedDrivers.add(Driver(email: email)); // fallback
+      debugPrint('🔥 Error fetching driver $email: $e');
     }
   }
 
   _drivers = updatedDrivers;
-  notifyListeners();
+  notifyListeners(); // Trigger UI update
 }
+
 
 
   // Trip creation and management
@@ -95,7 +110,7 @@ class TripProvider with ChangeNotifier {
         },
         'price': priceController.text,
         'status': 'waiting',
-        'driversMails': [],
+        'drivers': {},
         'createdAt': FieldValue.serverTimestamp(),
       });
       
@@ -114,11 +129,17 @@ class TripProvider with ChangeNotifier {
   await _currentTrip!.update({
     'selectedDriver': driverEmail,
     'status': 'accepted',
-    'updatedAt': FieldValue.serverTimestamp(),
+    // 'updatedAt': FieldValue.serverTimestamp(),
   });
-  
-  
 }
+
+Future<void> updateUserPrice(String newPrice) async {
+    if (_currentTrip == null) return;
+    
+    await _currentTrip!.update({
+      'price': newPrice,
+    });
+  }
 
   Future<void> updateTripPrice(String newPrice) async {
     if (_currentTrip == null) return;

@@ -1,9 +1,11 @@
+import 'package:flutter/material.dart';
+
 class Driver {
   final String email;
   final String? name;
   final String? phone;
   final String? vehicleType;
-  final double? rating;
+  final String? rating;
   final String? imageUrl;
 
   Driver({
@@ -16,12 +18,13 @@ class Driver {
   });
 
   factory Driver.fromMap(Map<String, dynamic>? data, String email) {
+    debugPrint('Driver data: $data');
     return Driver(
       email: email,
       name: data?['name'],
       phone: data?['phone'],
-      vehicleType: data?['vehicleType'],
-      rating: data?['rating']?.toDouble(),
+      vehicleType: data?['vehicle'],
+      rating: data?['rate'],
       imageUrl: data?['imageUrl'],
     );
   }
