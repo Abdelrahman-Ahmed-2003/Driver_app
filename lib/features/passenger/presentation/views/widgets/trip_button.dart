@@ -11,7 +11,7 @@ class TripButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final tripProvider = context.watch<TripProvider>(); // WATCH to reflect UI changes
 
-    return Padding(
+    return tripProvider.isLoading?LinearProgressIndicator():Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10),
       child: SizedBox(
         width: double.infinity,

@@ -9,7 +9,7 @@ import 'dart:convert';
 
 class TripProvider with ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  
+  bool _isLoading = false;
   // Trip management properties
   Stream<DocumentSnapshot>? _tripStream;
   DocumentReference? _currentTrip;
@@ -31,6 +31,7 @@ class TripProvider with ChangeNotifier {
   String _status = 'not_created';
 
   // Getters
+  bool get isLoading => _isLoading;
   Stream<DocumentSnapshot>? get tripStream => _tripStream;
   String get from => _from;
   LatLng get dest => _dest;
@@ -48,8 +49,8 @@ class TripProvider with ChangeNotifier {
         _price = data['price']?.toString() ?? '';
         
         // Update drivers list
-        final driverEmails = List<String>.from(data['driversMails'] ?? []);
-        await updateDriversList(driverEmails);
+        // final driverEmails = Map<String, String>.from(data['drivers'] ?? {});
+        // await updateDrivers(driverEmails);
         
         notifyListeners();
       }
@@ -64,11 +65,16 @@ class TripProvider with ChangeNotifier {
 }
 
   // Fetch and update drivers details
-  Future<void> updateDriversList(List<String> driverEmails) async {
+  Future<void> updateDrivers(Map<String, Map<String, String>> driverEmailsWithPrices) async {
   final List<Driver> updatedDrivers = [];
 
-  for (final email in driverEmails) {
+  for (final entry in driverEmailsWithPrices.entries) {
+    var email = entry.key;
+    final priceMap = entry.value;
+
     try {
+      email = email.replaceAll('_', '.');
+      debugPrint('🔍 Fetching driver with email: $email');
       final result = await _firestore
           .collection('drivers')
           .where('email', isEqualTo: email)
@@ -76,7 +82,17 @@ class TripProvider with ChangeNotifier {
           .get();
 
       if (result.docs.isNotEmpty) {
-        updatedDrivers.add(Driver.fromMap(result.docs.first.data(), email));
+        final driverData = result.docs.first.data();
+        
+        // You can either extend the Driver model to include proposedPrice
+        final driver = Driver.fromMap(driverData, email).copyWith(
+          proposedPrice: priceMap['proposedPrice'],
+          proposedPriceStatus: priceMap['proposedPriceStatus'],
+          passengerProposedPrice: priceMap['passengerProposedPrice'],
+        );
+
+        debugPrint('✅ Driver found: ${driver.name} with rank: ${driver.rating}');
+        updatedDrivers.add(driver);
       } else {
         debugPrint('❌ No driver found with email: $email');
       }
@@ -91,8 +107,11 @@ class TripProvider with ChangeNotifier {
 
 
 
+
   // Trip creation and management
   Future<void> createNewTrip() async {
+    _isLoading = true;
+    notifyListeners();
     try {
       final user = FirebaseAuth.instance.currentUser;
       
@@ -118,8 +137,13 @@ class TripProvider with ChangeNotifier {
       _initializeTripStream();
       notifyListeners();
     } catch (e) {
+      notifyListeners();
       debugPrint("Error creating trip: $e");
       rethrow;
+    }
+    finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
@@ -133,20 +157,28 @@ class TripProvider with ChangeNotifier {
   });
 }
 
+
+
+Future<void> changePassengerProposalPrice(String email, String newPrice) async {
+  try {
+    email = email.replaceAll('.', '_'); // Replace '.' with '_' in email
+    await _currentTrip!.update({
+      FieldPath.fromString('drivers.$email.passengerProposedPrice'): newPrice,
+      FieldPath.fromString('drivers.$email.proposedPriceStatus'): 'pending',
+    });
+  } catch (e) {
+    debugPrint('Error updating price: $e');
+  }
+}
+
+
+
+
 Future<void> updateUserPrice(String newPrice) async {
     if (_currentTrip == null) return;
     
     await _currentTrip!.update({
       'price': newPrice,
-    });
-  }
-
-  Future<void> updateTripPrice(String newPrice) async {
-    if (_currentTrip == null) return;
-    
-    await _currentTrip!.update({
-      'price': newPrice,
-      'updatedAt': FieldValue.serverTimestamp(),
     });
   }
 

@@ -23,7 +23,7 @@ class _DriverCardState extends State<DriverCard> {
   @override
   void initState() {
     super.initState();
-    priceController = TextEditingController();
+    priceController = TextEditingController(text: widget.driver.passengerProposedPrice);
   }
 
   @override
@@ -32,10 +32,12 @@ class _DriverCardState extends State<DriverCard> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final provider = Provider.of<TripProvider>(context, listen: false);
-    return Card(
+@override
+Widget build(BuildContext context) {
+  final provider = Provider.of<TripProvider>(context, listen: false);
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: Card(
       elevation: 4,
       margin: const EdgeInsets.only(bottom: 16),
       shape: RoundedRectangleBorder(
@@ -51,7 +53,6 @@ class _DriverCardState extends State<DriverCard> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Name + Avatar
                 Row(
                   children: [
                     CircleAvatar(
@@ -72,22 +73,50 @@ class _DriverCardState extends State<DriverCard> {
                     ),
                   ],
                 ),
-                // Rating if available
-                if (widget.driver.rating != null)
-                  Row(
-                    children: [
-                      const Icon(Icons.star, size: 16, color: Colors.amber),
-                      Text(widget.driver.rating!),
-                    ],
-                  ),
+                (widget.driver.rating != null &&
+                        widget.driver.rating != 'no rate till now')
+                    ? Row(
+                        children: [
+                          const Icon(Icons.star,
+                              size: 16, color: Colors.amber),
+                          Text(widget.driver.rating!),
+                        ],
+                      )
+                    : const Text('New Driver'),
               ],
             ),
 
             const SizedBox(height: 12),
 
-            // Vehicle Info
-            if (widget.driver.vehicleType != null)
-              Text("Vehicle: ${widget.driver.vehicleType!}"),
+            // Display Pricing & Status Info
+            if (widget.driver.passengerProposedPrice != null)
+              Text(
+                "📢 Passenger Proposed: ${widget.driver.passengerProposedPrice} EGP",
+                style:
+                    const TextStyle(fontSize: 14, color: Colors.blueGrey),
+              ),
+            if (widget.driver.proposedPrice != null)
+              Text(
+                "🚕 Driver Offered: ${widget.driver.proposedPrice} EGP",
+                style: const TextStyle(fontSize: 14, color: Colors.black87),
+              ),
+            if (widget.driver.proposedPriceStatus != null)
+              RichText(
+                text: TextSpan(
+                  style: const TextStyle(fontSize: 14, color: Colors.black),
+                  children: [
+                    const TextSpan(text: "📌 Proposal Status: "),
+                    TextSpan(
+                      text: widget.driver.proposedPriceStatus!,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: _getStatusColor(
+                            widget.driver.proposedPriceStatus),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
             const SizedBox(height: 12),
 
@@ -100,53 +129,75 @@ class _DriverCardState extends State<DriverCard> {
                 filled: true,
                 fillColor: Color(0XFFC1CDCB),
                 suffixText: 'EGP',
-                suffixStyle: TextStyle(color: Color.fromARGB(255, 131, 18, 18)),
+                suffixStyle: TextStyle(
+                    color: Color.fromARGB(255, 131, 18, 18)),
               ),
               onChanged: (value) {
-                setState(() {
-                  buttonText = 'Update price';
-                });
+                setState(() {});
               },
             ),
 
             const SizedBox(height: 12),
 
-            // Button to accept/select driver
-            Align(
-              alignment: Alignment.centerRight,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.grenColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+            // Buttons
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                ElevatedButton(
+                  onPressed: (priceController.text.trim() !=
+                              (widget.driver.passengerProposedPrice ?? '')
+                                  .trim() &&
+                          priceController.text.trim().isNotEmpty)
+                      ? () {
+                          provider.changePassengerProposalPrice(
+                              widget.driver.email,
+                              priceController.text.trim());
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Price updated')),
+                          );
+                        }
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    disabledBackgroundColor: Colors.grey,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
                   ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
+                  child: const Text('Update Price'),
                 ),
-                onPressed: () async {
-                  if(buttonText == 'Update price'&& provider.priceController.text != priceController.text.trim()){
-                    
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please enter a price')),
-                    );
-                    return;
-                  }
-                  else if(buttonText == 'Select Driver') {
+                const SizedBox(width: 12),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.grenColor,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 12),
+                  ),
+                  onPressed: () {
                     provider.updateSelectedDriver(widget.driver.email);
-                    // ScaffoldMessenger.of(context).showSnackBar(
-                    //   const SnackBar(content: Text('Please enter a price')),
-                    // );
-                    return;
-                  }
-                },
-                child: Text(buttonText),
-              ),
+                  },
+                  child: const Text('Select Driver'),
+                ),
+              ],
             ),
           ],
         ),
       ),
-    );
+    ),
+  );
+}
+Color _getStatusColor(String? status) {
+  switch (status?.toLowerCase()) {
+    case 'accepted':
+      return Colors.green;
+    case 'rejected':
+      return Colors.red;
+    case 'pending':
+    default:
+      return Colors.orange;
   }
+}
+
+
 }

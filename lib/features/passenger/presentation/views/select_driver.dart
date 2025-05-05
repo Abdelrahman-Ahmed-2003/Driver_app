@@ -4,9 +4,24 @@ import 'package:dirver/features/passenger/presentation/views/widgets/driver_card
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class SelectDriver extends StatelessWidget {
+class SelectDriver extends StatefulWidget {
   const SelectDriver({super.key});
   static const String routeName = '/select-driver';
+
+  @override
+  State<SelectDriver> createState() => _SelectDriverState();
+}
+
+class _SelectDriverState extends State<SelectDriver> {
+  late final TripProvider _tripProvider;
+
+  @override
+  void initState() {
+    super.initState();
+    _tripProvider = Provider.of<TripProvider>(context, listen: false);
+    _tripProvider.reconnectTripStream();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -14,78 +29,56 @@ class SelectDriver extends StatelessWidget {
         centerTitle: true,
         title: const Text("Available Drivers"),
       ),
-      body: Consumer<TripProvider>(
-        builder: (context, tripProvider, _) {
-          tripProvider.reconnectTripStream();
-          return StreamBuilder<DocumentSnapshot>(
-  stream: tripProvider.tripStream,
-  builder: (context, snapshot) {
-    if (snapshot.connectionState == ConnectionState.waiting) {
-      return const Center(child: CircularProgressIndicator());
-    }
+      body: StreamBuilder<DocumentSnapshot>(
+        stream: _tripProvider.tripStream,
+        builder: (context, snapshot) {
+          // Show loading only for initial connection
+          if (snapshot.connectionState == ConnectionState.waiting && 
+              snapshot.data == null) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-    if (snapshot.hasError) {
-      return Center(child: Text('Error: ${snapshot.error}'));
-    }
+          // Handle errors
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
 
-    if (!snapshot.hasData || !snapshot.data!.exists) {
-      return const Center(child: Text('No trip data available'));
-    }
+          // Handle case where no trip document exists
+          if (!snapshot.hasData || !snapshot.data!.exists) {
+            return const Center(child: Text('No trip data available'));
+          }
 
-    // 🔥 New code: Fetch drivers when snapshot updates
-    final tripData = snapshot.data!.data() as Map<String, dynamic>;
-    final driverEmails = List<String>.from(tripData['driversMails'] ?? []);
+          final tripData = snapshot.data!.data() as Map<String, dynamic>;
+          final rawDrivers = tripData['drivers'] as Map<String, dynamic>? ?? {};
 
-    if (tripProvider.drivers.length != driverEmails.length) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        tripProvider.updateDriversList(driverEmails);
-      });
-    }
+          // Immediately show if no drivers are available
+          if (rawDrivers.isEmpty) {
+            return const Center(child: Text('No drivers available yet'));
+          }
 
-    if (tripProvider.drivers.isEmpty) {
-      return const Center(child: Text('No drivers available yet'));
-    }
+          // Convert drivers into the proper format
+          final driverMap = rawDrivers.map<String, Map<String, String>>(
+            (key, value) => MapEntry(key, Map<String, String>.from(value)),
+          );
 
-    return ListView.builder(
-      itemCount: tripProvider.drivers.length,
-      itemBuilder: (context, index) {
-        final driver = tripProvider.drivers[index];
-        return DriverCard(
-          driver: driver,
-        );
-      },
-    );
-  },
-);
+          // Update provider with new driver data
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _tripProvider.updateDrivers(driverMap);
+          });
 
+          return Consumer<TripProvider>(
+            builder: (context, tripProvider, _) {
+              return ListView.builder(
+                itemCount: tripProvider.drivers.length,
+                itemBuilder: (context, index) {
+                  final driver = tripProvider.drivers[index];
+                  return DriverCard(driver: driver);
+                },
+              );
+            },
+          );
         },
       ),
     );
   }
-
-  // void _selectDriver(BuildContext context, TripProvider tripProvider, Driver driver) {
-  //   showDialog(
-  //     context: context,
-  //     builder: (context) => AlertDialog(
-  //       title: const Text('Confirm Driver'),
-  //       content: Text('Select ${driver.name ?? driver.email} for this trip?'),
-  //       actions: [
-  //         TextButton(
-  //           onPressed: () => Navigator.pop(context),
-  //           child: const Text('Cancel'),
-  //         ),
-  //         TextButton(
-  //           onPressed: () {
-  //             tripProvider.updateSelectedDriver(driver.email);
-  //             Navigator.pop(context);
-  //             ScaffoldMessenger.of(context).showSnackBar(
-  //               SnackBar(content: Text('${driver.name ?? driver.email} selected')),
-  //             );
-  //           },
-  //           child: const Text('Confirm'),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
 }
