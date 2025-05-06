@@ -37,21 +37,26 @@ class DriverOrRiderBody extends StatelessWidget {
                 colorButton: AppColors.primaryColor,
                 colorText: AppColors.whiteColor,
                 onPressed: () async {
-
                     await StoreUserType.saveLastSignIn('passenger');
                     bool? pass = await StoreUserType.getPassenger();
-                    if(pass != true){
+                    if (pass != true) {
                       await StoreUserType.savePassenger(true);
-                      CollectionReference passenger =
-                      FirebaseFirestore.instance.collection('passengers');
+                      CollectionReference passenger = FirebaseFirestore.instance.collection('passengers');
                       User? user = FirebaseAuth.instance.currentUser;
 
-                      await passenger.add({
+                      DocumentReference newPassengerRef = await passenger.add({
                         'name': user?.displayName,
                         'phone': user?.phoneNumber,
-                        'email':user?.email,
+                        'email': user?.email,
                       });
+
+                      String newPassengerId = newPassengerRef.id; // ✅ This is the new document ID
+                      await StoreUserType.savePassengerDocId(newPassengerId);
+                      debugPrint("New passenger document ID: $newPassengerId");
+
+                      // You can now use `newPassengerId` to reference or store the ID
                     }
+
                   if(!context.mounted) return;
                   Navigator.pushReplacementNamed(context,
                       PassengerHome.routeName);
@@ -63,8 +68,6 @@ class DriverOrRiderBody extends StatelessWidget {
                 colorButton: AppColors.blueColor,
                 colorText: AppColors.whiteColor,
                 onPressed: () async {
-
-
                   bool? isDriver = await StoreUserType.getDriver();
                   if(isDriver == true ){
                       if(!context.mounted) return;

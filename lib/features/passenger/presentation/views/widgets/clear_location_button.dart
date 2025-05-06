@@ -32,7 +32,6 @@ class ClearLocationButton extends StatelessWidget {
           tripProvider.toController.clear();
           tripProvider.priceController.clear();
           tripProvider.setFrom('');
-          tripProvider.setPrice('');
           tripProvider.setDest(LatLng(0, 0));
           tripProvider.setCurrentPoints(LatLng(0, 0));
           tripProvider.points.clear();

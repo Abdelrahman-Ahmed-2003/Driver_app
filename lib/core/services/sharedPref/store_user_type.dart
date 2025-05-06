@@ -3,8 +3,32 @@ import 'package:shared_preferences/shared_preferences.dart';
 class StoreUserType {
   static const String _lastSignIn = "LASTSIGNIN"; // Stores last selected role
   static const String _userEmail = "USER_ID"; // Stores last logged-in user
+  static const String _PassengerDocId = "DOC_ID_PASSENGER"; // Stores Document ID of last logged-in Passenger
+  static const String _driverDocId = "DOC_ID_DRIVER"; // Stores Document ID of last logged-in Driver
   static const String _driver = "DRIVER";
   static const String _passenger ='PASSENGER';
+
+
+
+  static Future<void> savePassengerDocId(String docId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_PassengerDocId, docId);
+  }
+
+  static Future<String?> getPassengerDocId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_PassengerDocId);
+  }
+
+  static Future<void> saveDriverDocId(String docId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_driverDocId, docId);
+  }
+
+  static Future<String?> getDriverDocId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_driverDocId);
+  }
 
   /// Save if user signed in as passenger
   static Future<void> saveLastSignIn(String userType) async {
@@ -60,5 +84,7 @@ class StoreUserType {
     await prefs.remove(_lastSignIn);
     await prefs.remove(_driver);
     await prefs.remove(_userEmail);
+    await prefs.remove(_PassengerDocId);
+    await prefs.remove(_driverDocId);
   }
 }

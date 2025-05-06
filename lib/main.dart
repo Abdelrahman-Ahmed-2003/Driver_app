@@ -8,10 +8,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
-  await Supabase.initialize(url: 'https://roqhphnlmagvhxfhncaw.supabase.co', anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvcWhwaG5sbWFndmh4ZmhuY2F3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAxNTExNDUsImV4cCI6MjA1NTcyNzE0NX0.d-DyQVT2gEh7FRTErDVFy00D9t4t9fdLML3ErUd-BtQ');
+  // await Supabase.initialize(url: 'https://roqhphnlmagvhxfhncaw.supabase.co', anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvcWhwaG5sbWFndmh4ZmhuY2F3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAxNTExNDUsImV4cCI6MjA1NTcyNzE0NX0.d-DyQVT2gEh7FRTErDVFy00D9t4t9fdLML3ErUd-BtQ');
   try {
     await Firebase.initializeApp(
-      
     );
   } catch (e) {
     throw Exception('Failed to initialize Firebase: $e');

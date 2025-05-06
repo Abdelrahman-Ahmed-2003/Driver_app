@@ -31,6 +31,7 @@ class _DriverHomeState extends State<DriverHome> {
           IconButton(
             onPressed: () async {
               await StoreUserType.saveLastSignIn('null');
+              await StoreUserType.saveDriverDocId('null');
               if (!context.mounted) return;
               Navigator.pushReplacementNamed(
                 context,

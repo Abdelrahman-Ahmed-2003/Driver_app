@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dirver/core/models/driver.dart';
+import 'package:dirver/core/services/sharedPref/store_user_type.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
@@ -13,7 +14,6 @@ class TripProvider with ChangeNotifier {
   // Trip management properties
   Stream<DocumentSnapshot>? _tripStream;
   DocumentReference? _currentTrip;
-  String? _currentTripId;
   
   // Driver management
   List<Driver> _drivers = [];
@@ -24,7 +24,7 @@ class TripProvider with ChangeNotifier {
   final TextEditingController priceController = TextEditingController();
   String _from = '';
   LatLng _dest = const LatLng(0, 0);
-  String _price = '';
+  // String _price = '';
   List<LatLng> _points = [];
   LatLng? currentLocation;
   LatLng? lastDest;
@@ -35,10 +35,10 @@ class TripProvider with ChangeNotifier {
   Stream<DocumentSnapshot>? get tripStream => _tripStream;
   String get from => _from;
   LatLng get dest => _dest;
-  String get price => _price;
+  // String get price => _price;
   List<LatLng> get points => _points;
   String get status => _status;
-  String? get currentTripId => _currentTripId;
+  DocumentReference? get currentTrip => _currentTrip;
 
   // Initialize trip stream
   void _initializeTripStream() {
@@ -46,22 +46,18 @@ class TripProvider with ChangeNotifier {
       if (snapshot.exists) {
         final data = snapshot.data() as Map<String, dynamic>;
         _status = data['status'] ?? 'unknown';
-        _price = data['price']?.toString() ?? '';
-        
+        // _price = data['price']?.toString() ?? '';
         // Update drivers list
         // final driverEmails = Map<String, String>.from(data['drivers'] ?? {});
         // await updateDrivers(driverEmails);
-        
         notifyListeners();
       }
       return snapshot;
     });
   }
   void reconnectTripStream() {
-  
     _tripStream = _currentTrip!.snapshots();
     // notifyListeners();
-  
 }
 
   // Fetch and update drivers details
@@ -73,7 +69,7 @@ class TripProvider with ChangeNotifier {
     final priceMap = entry.value;
 
     try {
-      email = email.replaceAll('_', '.');
+      
       debugPrint('🔍 Fetching driver with email: $email');
       final result = await _firestore
           .collection('drivers')
@@ -105,9 +101,6 @@ class TripProvider with ChangeNotifier {
   notifyListeners(); // Trigger UI update
 }
 
-
-
-
   // Trip creation and management
   Future<void> createNewTrip() async {
     _isLoading = true;
@@ -133,7 +126,13 @@ class TripProvider with ChangeNotifier {
         'createdAt': FieldValue.serverTimestamp(),
       });
       
-      _currentTripId = _currentTrip?.id;
+      var passengerId = await StoreUserType.getPassengerDocId();
+      final passengerRef = FirebaseFirestore.instance.collection('passengers').doc(passengerId);
+
+      await passengerRef.update({
+        'tripId': _currentTrip?.id,
+      });
+
       _initializeTripStream();
       notifyListeners();
     } catch (e) {
@@ -152,6 +151,7 @@ class TripProvider with ChangeNotifier {
   
   await _currentTrip!.update({
     'selectedDriver': driverEmail,
+    'driverDistination':'toUser',
     'status': 'accepted',
     // 'updatedAt': FieldValue.serverTimestamp(),
   });
@@ -161,39 +161,100 @@ class TripProvider with ChangeNotifier {
 
 Future<void> changePassengerProposalPrice(String email, String newPrice) async {
   try {
-    email = email.replaceAll('.', '_'); // Replace '.' with '_' in email
-    await _currentTrip!.update({
-      FieldPath.fromString('drivers.$email.passengerProposedPrice'): newPrice,
-      FieldPath.fromString('drivers.$email.proposedPriceStatus'): 'pending',
-    });
+
+    await _currentTrip!.set({
+      'drivers': {
+        email: {
+          'passengerProposedPrice': newPrice,
+          'proposedPriceStatus': 'pending',
+        }
+      }
+    }, SetOptions(merge: true));
   } catch (e) {
     debugPrint('Error updating price: $e');
   }
 }
 
+Future<void> fetchTripFromFirebase(String tripId) async {
+  try {
+    _isLoading = true;
+    notifyListeners();
 
-
-
-Future<void> updateUserPrice(String newPrice) async {
-    if (_currentTrip == null) return;
+    _currentTrip = _firestore.collection('trips').doc(tripId);
+    final snapshot = await _currentTrip!.get();
     
-    await _currentTrip!.update({
-      'price': newPrice,
-    });
-  }
-
-  Future<void> updateTripStatus(String newStatus) async {
-    if (_currentTrip == null) return;
+    if (snapshot.exists) {
+      final data = snapshot.data() as Map<String, dynamic>;
+      
+      // Set basic trip information
+      _status = data['status'] ?? 'unknown';
+      // _price = data['price']?.toString() ?? '';
+      priceController.text = data['price']?.toString() ?? '';
+      
+      // Set destination information
+      toController.text = data['destination']?.toString() ?? '';
+      if (data['destinationCoords'] != null) {
+        final coords = data['destinationCoords'] as Map<String, dynamic>;
+        _dest = LatLng(
+          (coords['lat'] as num).toDouble(),
+          (coords['long'] as num).toDouble(),
+        );
+      }
+      
+      // Set user location
+      if (data['userLocation'] != null) {
+        final location = data['userLocation'] as Map<String, dynamic>;
+        currentLocation = LatLng(
+          (location['lat'] as num).toDouble(),
+          (location['long'] as num).toDouble(),
+        );
+      }
+      
+      // Set drivers information
+      final rawDrivers = data['drivers'] as Map<String, dynamic>? ?? {};
+      final driverMap = rawDrivers.map<String, Map<String, String>>(
+        (key, value) => MapEntry(key, Map<String, String>.from(value)),
+      );
+      await updateDrivers(driverMap);
+      
+      // Fetch route if we have both locations
+      if (currentLocation != null && _dest != const LatLng(0, 0)) {
+        await fetchRoute();
+      }
+      
+      debugPrint('Successfully fetched trip from Firebase: $tripId');
+    } else {
+      debugPrint('Trip document does not exist: $tripId');
+    }
     
-    await _currentTrip!.update({
-      'status': newStatus,
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
+    _initializeTripStream();
+  } catch (e) {
+    debugPrint('Error fetching trip from Firebase: $e');
+    rethrow;
+  } finally {
+    _isLoading = false;
+    notifyListeners();
   }
+}
+
+Future<String?> checkUserInTrip(String id, String iam) async {
+  final query = await _firestore.collection(iam).doc(id).get();
+  if(query['tripId'] != null && query['tripId'] != '') {
+    return query['tripId'];
+  }
+  return null;
+}
+
 
     Future<void> deleteTrip() async {
     if (_currentTrip != null) {
       await _currentTrip!.delete();
+      var passengerId = await StoreUserType.getPassengerDocId();
+      final passengerRef = FirebaseFirestore.instance.collection('passengers').doc(passengerId);
+
+      await passengerRef.update({
+        'tripId': null,
+      });
       cancelStream();
     }
   }
@@ -213,10 +274,6 @@ Future<void> updateUserPrice(String newPrice) async {
   void setDest(LatLng value) {
     _dest = value;
     notifyListeners();
-  }
-
-  void setPrice(String value) {
-    _price = value;
   }
 
   void setCurrentPoints(LatLng newPoints) async {
@@ -284,9 +341,8 @@ Future<void> updateUserPrice(String newPrice) async {
   void cancelStream() {
     _tripStream = null;
     _currentTrip = null;
-    _currentTripId = null;
     _drivers = [];
-    _price = '';
+    // _price = '';
     _status = 'not_created';
     notifyListeners();
   }
@@ -294,7 +350,7 @@ Future<void> updateUserPrice(String newPrice) async {
   void clear() {
     _from = '';
     _dest = const LatLng(0, 0);
-    _price = '';
+    // _price = '';
     _points = [];
     currentLocation = null;
     lastDest = null;

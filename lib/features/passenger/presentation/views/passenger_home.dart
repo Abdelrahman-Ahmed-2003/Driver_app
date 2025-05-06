@@ -33,6 +33,7 @@ class PassengerHome extends StatelessWidget {
                 if (tripProvider.tripStream != null) return;
                 contentProvider.clear();
                 await StoreUserType.saveLastSignIn('null');
+                await StoreUserType.savePassengerDocId('null');
                 if (!context.mounted) return;
                 Navigator.pushReplacementNamed(
                   context,
