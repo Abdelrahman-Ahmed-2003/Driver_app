@@ -1,4 +1,4 @@
-import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
+import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
 import 'package:dirver/features/passenger/presentation/views/widgets/show_map.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
@@ -19,7 +19,7 @@ class _SelectedTripState extends State<SelectedTrip> {
   void initState() {
     super.initState();
     
-    final provider = context.read<PassengerTripProvider>();
+    final provider = context.read<DriverTripProvider>();
     provider.toController.text = widget.trip['destination'];
     provider.priceController.text = widget.trip['price'];
     
@@ -31,7 +31,9 @@ class _SelectedTripState extends State<SelectedTrip> {
       appBar: AppBar(
         title: const Text("Trip Details"),
       ),
-      body: ShowMap(isDriver: true,destination: LatLng(widget.trip['userLocation']['lat'], widget.trip['userLocation']['long']))
+      body: ShowMap(isDriver: true,destination: LatLng(widget.trip['userLocation']['lat'], widget.trip['userLocation']['long']),
+       tripProvider:Provider.of<DriverTripProvider>(context, listen: false)
+      )
     );
   }
 }

@@ -1,19 +1,25 @@
 import 'dart:async';
+import 'package:dirver/core/sharedProvider/trip_provider.dart';
 import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/core/utils/utils.dart';
-import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart' as location_package;
-import 'package:provider/provider.dart';
 
 class ShowMap extends StatefulWidget {
   final bool isDriver;
   final LatLng? destination;
-  const ShowMap({super.key, required this.isDriver, this.destination});
+  final TripProvider tripProvider; // Receive the provider in the constructor
+
+  const ShowMap({
+    super.key,
+    required this.isDriver,
+    required this.tripProvider, // Pass the provider here
+    this.destination,
+  });
 
   @override
   State<ShowMap> createState() => _ShowMapState();
@@ -26,13 +32,6 @@ class _ShowMapState extends State<ShowMap> {
   bool _isLoading = true;
   LatLng? _lastUpdatedLocation;
   final Distance _distanceCalculator = Distance();
-  late PassengerTripProvider provider;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    provider = Provider.of<PassengerTripProvider>(context, listen: false);
-  }
 
   @override
   void initState() {
@@ -40,14 +39,14 @@ class _ShowMapState extends State<ShowMap> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeLocation();
       if (widget.isDriver && widget.destination != null) {
-        provider.setCoordinatesPoint(widget.destination!);
+        widget.tripProvider.setCoordinatesPoint(widget.destination!);
       }
     });
   }
 
   @override
   void dispose() {
-    _locationSubscription?.cancel(); //✅ فقط نلغي الاشتراك، بدون التعامل مع context
+    _locationSubscription?.cancel(); //✅ Only cancel the subscription without handling context
     super.dispose();
   }
 
@@ -62,8 +61,8 @@ class _ShowMapState extends State<ShowMap> {
         );
 
         if (_shouldUpdateLocation(newLocation)) {
-          provider.currentLocation = newLocation;
-          provider.setCurrentPoints(newLocation);
+          widget.tripProvider.currentLocation = newLocation;
+          widget.tripProvider.setCurrentPoints(newLocation);
           _lastUpdatedLocation = newLocation;
 
           if (_isLoading) {
@@ -92,8 +91,8 @@ class _ShowMapState extends State<ShowMap> {
   }
 
   Future<void> _centerOnUserLocation() async {
-    if (provider.currentLocation != null) {
-      _mapController.move(provider.currentLocation!, 15);
+    if (widget.tripProvider.currentLocation != null) {
+      _mapController.move(widget.tripProvider.currentLocation!, 15);
     } else {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -104,14 +103,10 @@ class _ShowMapState extends State<ShowMap> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<PassengerTripProvider>(
-      builder: (context, tripProvider, child) {
-        return _buildMap(tripProvider);
-      },
-    );
+    return _buildMap(widget.tripProvider); // Directly use the passed provider
   }
 
-  Widget _buildMap(PassengerTripProvider provider) {
+  Widget _buildMap(TripProvider provider) {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }

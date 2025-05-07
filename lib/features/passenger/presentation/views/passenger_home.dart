@@ -48,8 +48,10 @@ class PassengerHome extends StatelessWidget {
           color: AppColors.backgroundColor,
           child: SafeArea(
             child: Stack(
-              children: const [
-                ShowMap(isDriver: false),
+              children: [
+                ShowMap(isDriver: false,
+                tripProvider:  Provider.of<PassengerTripProvider>(context, listen: false),
+                ),
                 BottomSheetWidget(),
               ],
             ),

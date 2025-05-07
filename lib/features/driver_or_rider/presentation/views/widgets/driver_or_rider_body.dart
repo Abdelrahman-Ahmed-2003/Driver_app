@@ -4,6 +4,7 @@ import 'package:dirver/core/services/sharedPref/store_user_type.dart';
 import 'package:dirver/core/sharedWidgets/logo_widget.dart';
 import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/core/utils/utils.dart';
+import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
 import 'package:dirver/features/driver/presentation/views/driver_home.dart';
 import 'package:dirver/features/driver_info/presentation/views/first_screen.dart';
 import 'package:dirver/core/utils/search_about_user.dart';
@@ -11,6 +12,7 @@ import 'package:dirver/features/driver_or_rider/presentation/views/widgets/how_a
 import 'package:dirver/features/passenger/presentation/views/passenger_home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class DriverOrRiderBody extends StatelessWidget {
   const DriverOrRiderBody({super.key});
@@ -64,43 +66,51 @@ class DriverOrRiderBody extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               HowAreYou(
-                text: 'Driver',
-                colorButton: AppColors.blueColor,
-                colorText: AppColors.whiteColor,
-                onPressed: () async {
-                  bool? isDriver = await StoreUserType.getDriver();
-                  if(isDriver == true ){
-                      if(!context.mounted) return;
-                      Navigator.pushReplacementNamed(context,
-                          DriverHome.routeName);
-                  }
-                  else {
-                    bool? isOnline = await searchAboutUserOnline(
-                      type: 'drivers',
-                      email: FirebaseAuth.instance.currentUser!.email!,
-                    );
-                    if(isOnline == true){
-                      if(!context.mounted) return;
-                      errorMessage(context, 'Welcome back driver');
-                      
-                    Navigator.pushReplacementNamed(context,
-                      DriverHome.routeName);
-                      
-                    }
-                    else if(isOnline == false){
-                      if(!context.mounted) return;
-                      errorMessage(context, 'We Welcome you to out app as new driver');
-                      if(!context.mounted) return;
-                    Navigator.pushNamed(context,
-                      DriverInfoView1.routeName);
-                    }
-                    else {
-                      if(!context.mounted) return;
-                      errorMessage(context, 'Error occurred while searching for user');
-                    }
-                  }
-                },
-              )
+  text: 'Driver',
+  colorButton: AppColors.blueColor,
+  colorText: AppColors.whiteColor,
+  onPressed: () async {
+    bool? isDriver = await StoreUserType.getDriver();
+    if (isDriver == true) {
+      if (!context.mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ChangeNotifierProvider(
+            create: (_) => DriverTripProvider(),
+            child: const DriverHome(),
+          ),
+        ),
+      );
+    } else {
+      bool? isOnline = await searchAboutUserOnline(
+        type: 'drivers',
+        email: FirebaseAuth.instance.currentUser!.email!,
+      );
+      if (isOnline == true) {
+        if (!context.mounted) return;
+        errorMessage(context, 'Welcome back driver');
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ChangeNotifierProvider(
+              create: (_) => DriverTripProvider(),
+              child: const DriverHome(),
+            ),
+          ),
+        );
+      } else if (isOnline == false) {
+        if (!context.mounted) return;
+        errorMessage(context, 'We Welcome you to our app as new driver');
+        Navigator.pushNamed(context, DriverInfoView1.routeName);
+      } else {
+        if (!context.mounted) return;
+        errorMessage(context, 'Error occurred while searching for user');
+      }
+    }
+  },
+),
+
             ],
           ),
         ),

@@ -1,4 +1,3 @@
-import 'package:dirver/core/utils/utils.dart';
 import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
 import 'package:dirver/features/driver/presentation/views/widgets/animated_cards.dart';
 import 'package:dirver/core/sharedWidgets/shimmer_trip_card.dart';
@@ -10,15 +9,19 @@ import 'package:provider/provider.dart';
 class DriverHome extends StatefulWidget {
   const DriverHome({super.key});
   static const String routeName = '/driver_home';
+  
 
   @override
   State<DriverHome> createState() => _DriverHomeState();
 }
 
 class _DriverHomeState extends State<DriverHome> {
+  late final DriverTripProvider _provider;
   @override
   void initState() {
     super.initState();
+    _provider = Provider.of<DriverTripProvider>(context, listen: false);
+      _provider.reconnectTripStream();
     WidgetsBinding.instance.addPostFrameCallback((_) async{
       await StoreUserType.saveDriver(true);
       await StoreUserType.saveLastSignIn('driver');
@@ -26,8 +29,7 @@ class _DriverHomeState extends State<DriverHome> {
   }
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(create: (_) => DriverTripProvider(),
-    child:Scaffold(
+    return Scaffold(
       appBar: AppBar(
         title: const Text("Available Trips"),
         actions: [
@@ -45,27 +47,32 @@ class _DriverHomeState extends State<DriverHome> {
           ),
         ],
       ),
-      body: StreamBuilder<List<Map<String, dynamic>>>(
-        stream: listenForAvailableTrips(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return ListView.builder(
-              padding: const EdgeInsets.all(12),
-              itemCount: 5,
-              itemBuilder: (context, index) => const ShimmerTripCard(),
-            );
-          }
+      body:Consumer<DriverTripProvider>(
+  builder: (context, provider, _) {
+    if (!provider.isDriverDocIdFetched) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text("No available trips"));
-          }
+    return StreamBuilder<List<Map<String, dynamic>>>(
+      stream: provider.listenForAvailableTrips(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-          final trips = snapshot.data!;
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Center(child: Text("No available trips"));
+        }
 
-          return AnimatedCards(trips: trips);
-        },
-      ),
-    )
+        final trips = snapshot.data!;
+        debugPrint("Trips: $trips");
+
+        return AnimatedCards(trips: trips);
+      },
+    );
+  },
+),
+
     );
   }
 }
