@@ -1,5 +1,5 @@
 import 'package:dirver/core/utils/colors_app.dart';
-import 'package:dirver/features/passenger/presentation/provider/tripProvider.dart';
+import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -16,7 +16,7 @@ class _ListViewWidgetState extends State<ListViewWidget> {
   
   @override
   Widget build(BuildContext context) {
-    final TripProvider tripProvider = context.watch<TripProvider>();
+    final provider = context.watch<PassengerTripProvider>();
     
     return Container(
       height: 48,
@@ -29,7 +29,7 @@ class _ListViewWidgetState extends State<ListViewWidget> {
           return Expanded(
             child: GestureDetector(
               onTap: () {
-                if (tripProvider.tripStream != null) return;
+                if (provider.tripStream != null) return;
                 setState(() {
                   selectedIndex = index;
                 });

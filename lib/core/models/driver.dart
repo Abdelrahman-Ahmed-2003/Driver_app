@@ -1,54 +1,43 @@
+// driver_model.dart
 class Driver {
+  final String id;
+  final String name;
   final String email;
-  final String? name;
+  final String? phone;
   final String? imageUrl;
-  final String? vehicleType;
-  final String? rating; // ✅ Now it's a String
-  final String? proposedPrice;
-  final String? proposedPriceStatus;
-  final String?passengerProposedPrice;
+  final bool isAvailable;
+  final String rating;
 
   Driver({
+    required this.id,
+    required this.name,
     required this.email,
-    this.name,
+    this.phone,
     this.imageUrl,
-    this.vehicleType,
-    this.rating,
-    this.proposedPrice,
-    this.proposedPriceStatus,
-    this.passengerProposedPrice,
+    required this.isAvailable,
+    required this.rating,
   });
 
-  Driver copyWith({
-    String? email,
-    String? name,
-    String? imageUrl,
-    String? vehicleType,
-    String? rating,
-    String? proposedPrice,
-    String? proposedPriceStatus,
-    String? passengerProposedPrice,
-  }) {
+  factory Driver.fromFirestore(String id, Map<String, dynamic> data) {
     return Driver(
-      email: email ?? this.email,
-      name: name ?? this.name,
-      imageUrl: imageUrl ?? this.imageUrl,
-      vehicleType: vehicleType ?? this.vehicleType,
-      rating: rating ?? this.rating,
-      proposedPrice: proposedPrice ?? this.proposedPrice,
-      proposedPriceStatus: proposedPriceStatus ?? this.proposedPriceStatus,
-      passengerProposedPrice: passengerProposedPrice ?? this.passengerProposedPrice,
+      id: id,
+      name: data['name'] ?? '',
+      email: data['email'] ?? '',
+      phone: data['phone'],
+      imageUrl: data['imageUrl'],
+      isAvailable: data['isAvailable'] ?? true,
+      rating: data['rate'] ?? '0',
     );
   }
 
-  factory Driver.fromMap(Map<String, dynamic>? data, String email) {
-    
-    return Driver(
-      email: email,
-      name: data?['name'],
-      imageUrl: data?['imageUrl'],
-      vehicleType: data?['vehicle'],
-      rating: data?['rate']?.toString(), // ✅ Converts number to string
-    );
+  Map<String, dynamic> toMap() {
+    return {
+      'name': name,
+      'email': email,
+      'phone': phone,
+      'imageUrl': imageUrl,
+      'isAvailable': isAvailable,
+      'rate': rating,
+    };
   }
 }

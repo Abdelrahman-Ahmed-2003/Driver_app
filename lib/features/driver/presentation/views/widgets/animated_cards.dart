@@ -1,6 +1,6 @@
+import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
 import 'package:dirver/features/selected_trip/presentation/views/selected_trip.dart';
 import 'package:dirver/features/driver/presentation/views/widgets/trip_card.dart';
-import 'package:dirver/features/passenger/presentation/provider/tripProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -53,7 +53,7 @@ class _AnimatedCardsState extends State<AnimatedCards> {
     MaterialPageRoute(
       builder: (_) => MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (_) => TripProvider()),
+          ChangeNotifierProvider(create: (_) => DriverTripProvider()),
         ],
         child: SelectedTrip(trip: widget.trips[index]),
       ),

@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dirver/features/passenger/presentation/provider/tripProvider.dart';
-import 'package:dirver/features/passenger/presentation/views/widgets/driver_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
+import 'package:dirver/features/passenger/presentation/views/widgets/driver_card.dart';
 
 class SelectDriver extends StatefulWidget {
   const SelectDriver({super.key});
@@ -13,13 +13,13 @@ class SelectDriver extends StatefulWidget {
 }
 
 class _SelectDriverState extends State<SelectDriver> {
-  late final TripProvider _tripProvider;
+  late final PassengerTripProvider _provider;
 
   @override
   void initState() {
     super.initState();
-    _tripProvider = Provider.of<TripProvider>(context, listen: false);
-    _tripProvider.reconnectTripStream();
+    _provider = Provider.of<PassengerTripProvider>(context, listen: false);
+    _provider.reconnectTripStream();
   }
 
   @override
@@ -30,11 +30,10 @@ class _SelectDriverState extends State<SelectDriver> {
         title: const Text("Available Drivers"),
       ),
       body: StreamBuilder<DocumentSnapshot>(
-        stream: _tripProvider.tripStream,
+        stream: _provider.tripStream,
         builder: (context, snapshot) {
           // Show loading only for initial connection
-          if (snapshot.connectionState == ConnectionState.waiting && 
-              snapshot.data == null) {
+          if (snapshot.connectionState == ConnectionState.waiting && snapshot.data == null) {
             return const Center(child: CircularProgressIndicator());
           }
 
@@ -63,16 +62,15 @@ class _SelectDriverState extends State<SelectDriver> {
 
           // Update provider with new driver data
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            _tripProvider.updateDrivers(driverMap);
+            _provider.updateDriverProposalsLocally(driverMap);
           });
 
-          return Consumer<TripProvider>(
-            builder: (context, tripProvider, _) {
+          return Consumer<PassengerTripProvider>(
+            builder: (context, provider, child) {
               return ListView.builder(
-                itemCount: tripProvider.drivers.length,
+                itemCount: provider.driverWithProposalList.length,
                 itemBuilder: (context, index) {
-                  final driver = tripProvider.drivers[index];
-                  return DriverCard(driver: driver);
+                  return DriverCard(driverWithProposal: provider.driverWithProposalList[index]);
                 },
               );
             },

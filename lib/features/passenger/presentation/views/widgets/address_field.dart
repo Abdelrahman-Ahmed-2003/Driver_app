@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/core/utils/utils.dart';
-import 'package:dirver/features/passenger/presentation/provider/tripProvider.dart';
+import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:free_map/free_map.dart';
 import 'package:provider/provider.dart';
@@ -23,7 +23,7 @@ class _AddressFieldState extends State<AddressField> {
 
   @override
   Widget build(BuildContext context) {
-    final tripProvider = Provider.of<TripProvider>(context);
+    final tripProvider = Provider.of<PassengerTripProvider>(context);
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -47,8 +47,7 @@ class _AddressFieldState extends State<AddressField> {
     );
   }
 
-  Widget _buildTripButton(TripProvider provider) {
-    final tripProvider = Provider.of<TripProvider>(context, listen: false);
+  Widget _buildTripButton(PassengerTripProvider tripProvider) {
     return _isSearching
         ? const Padding(
             padding: EdgeInsets.all(8.0),
@@ -59,12 +58,12 @@ class _AddressFieldState extends State<AddressField> {
             ),
           )
         : IconButton(
-            onPressed: _isSearching ? null : tripProvider.tripStream!= null?null:() => _handleSearch(provider),
+            onPressed: _isSearching ? null : tripProvider.tripStream!= null?null:() => _handleSearch(tripProvider),
             icon: const Icon(Icons.search),
           );
   }
 
-  Future<void> _handleSearch(TripProvider tripProvider) async {
+  Future<void> _handleSearch(PassengerTripProvider tripProvider) async {
   final query = tripProvider.toController.text.trim();
   
   if (query.isEmpty) {

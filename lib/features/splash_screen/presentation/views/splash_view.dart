@@ -5,7 +5,6 @@ import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/features/auth/presentation/views/login_view.dart';
 import 'package:dirver/features/driver/presentation/views/driver_home.dart';
 import 'package:dirver/features/driver_or_rider/presentation/views/driver_or_rider_view.dart';
-import 'package:dirver/features/passenger/presentation/provider/tripProvider.dart';
 import 'package:dirver/features/passenger/presentation/views/passenger_home.dart';
 import 'package:dirver/features/splash_screen/presentation/views/widgets/logo_animation.dart';
 import 'package:dirver/features/splash_screen/presentation/views/widgets/text_in_splash.dart';
@@ -13,7 +12,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:provider/provider.dart';
 
 class SplashView extends StatefulWidget {
   const SplashView({super.key});
@@ -71,7 +69,6 @@ class _SplashViewState extends State<SplashView>
 
   if (!mounted) return; // ✅ Ensure context is still valid
   String routeName;
-  String ?docId;
   if (FirebaseAuth.instance.currentUser != null) {
     String? userType = await StoreUserType.getLastSignIn();
 
@@ -79,17 +76,6 @@ class _SplashViewState extends State<SplashView>
     
     if (userType == 'passenger') {
       routeName = PassengerHome.routeName;
-      docId = await StoreUserType.getPassengerDocId();
-      if(docId != null){
-        if(!mounted)return;
-        var provider = Provider.of<TripProvider>(context, listen: false);
-        String? inTrip = await provider.checkUserInTrip(docId, 'passengers');
-        if(inTrip != null){
-          provider.fetchTripFromFirebase(inTrip);
-        }
-      }
-  
-      
     } else if (userType == 'driver') {
       routeName = DriverHome.routeName;
     } else {
@@ -100,7 +86,6 @@ class _SplashViewState extends State<SplashView>
   } else {
     routeName = LoginView.routeName;
   }
-  
   
   Navigator.pushReplacementNamed(context, routeName);
 });

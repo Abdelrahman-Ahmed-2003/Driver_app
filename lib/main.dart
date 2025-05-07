@@ -1,10 +1,6 @@
-import 'package:dirver/features/driver_info/presentation/provider/driver_provider.dart';
-import 'package:dirver/features/passenger/presentation/provider/tripProvider.dart';
 import 'package:dirver/my_app.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,13 +13,7 @@ void main() async{
   }
 
   runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => DriverProvider()),
-        ChangeNotifierProvider(create: (_) => TripProvider()),
-      ],
-      child: MyApp(),
-    ),
+    MyApp(),
   );
 }
 

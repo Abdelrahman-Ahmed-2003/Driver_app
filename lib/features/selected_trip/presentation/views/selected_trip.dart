@@ -1,4 +1,4 @@
-import 'package:dirver/features/passenger/presentation/provider/tripProvider.dart';
+import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
 import 'package:dirver/features/passenger/presentation/views/widgets/show_map.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
@@ -19,7 +19,7 @@ class _SelectedTripState extends State<SelectedTrip> {
   void initState() {
     super.initState();
     
-    final provider = context.read<TripProvider>();
+    final provider = context.read<PassengerTripProvider>();
     provider.toController.text = widget.trip['destination'];
     provider.priceController.text = widget.trip['price'];
     

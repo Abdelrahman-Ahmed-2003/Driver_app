@@ -1,9 +1,11 @@
 import 'package:dirver/core/utils/utils.dart';
+import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
 import 'package:dirver/features/driver/presentation/views/widgets/animated_cards.dart';
 import 'package:dirver/core/sharedWidgets/shimmer_trip_card.dart';
 import 'package:flutter/material.dart';
 import 'package:dirver/core/services/sharedPref/store_user_type.dart';
 import 'package:dirver/features/driver_or_rider/presentation/views/driver_or_rider_view.dart';
+import 'package:provider/provider.dart';
 
 class DriverHome extends StatefulWidget {
   const DriverHome({super.key});
@@ -24,7 +26,8 @@ class _DriverHomeState extends State<DriverHome> {
   }
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ChangeNotifierProvider(create: (_) => DriverTripProvider(),
+    child:Scaffold(
       appBar: AppBar(
         title: const Text("Available Trips"),
         actions: [
@@ -62,6 +65,7 @@ class _DriverHomeState extends State<DriverHome> {
           return AnimatedCards(trips: trips);
         },
       ),
+    )
     );
   }
 }

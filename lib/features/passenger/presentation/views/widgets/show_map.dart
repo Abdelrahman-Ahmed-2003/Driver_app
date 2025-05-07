@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/core/utils/utils.dart';
-import 'package:dirver/features/passenger/presentation/provider/tripProvider.dart';
+import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
@@ -26,12 +26,12 @@ class _ShowMapState extends State<ShowMap> {
   bool _isLoading = true;
   LatLng? _lastUpdatedLocation;
   final Distance _distanceCalculator = Distance();
-  late TripProvider provider;
+  late PassengerTripProvider provider;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    provider = Provider.of<TripProvider>(context, listen: false);
+    provider = Provider.of<PassengerTripProvider>(context, listen: false);
   }
 
   @override
@@ -104,14 +104,14 @@ class _ShowMapState extends State<ShowMap> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TripProvider>(
+    return Consumer<PassengerTripProvider>(
       builder: (context, tripProvider, child) {
         return _buildMap(tripProvider);
       },
     );
   }
 
-  Widget _buildMap(TripProvider provider) {
+  Widget _buildMap(PassengerTripProvider provider) {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }

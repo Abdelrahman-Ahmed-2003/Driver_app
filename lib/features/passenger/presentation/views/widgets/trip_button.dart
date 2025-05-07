@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dirver/core/utils/colors_app.dart';
-import 'package:dirver/features/passenger/presentation/provider/tripProvider.dart';
+import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:dirver/core/utils/utils.dart';
@@ -9,7 +9,7 @@ class TripButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tripProvider = context.watch<TripProvider>(); // WATCH to reflect UI changes
+    final tripProvider = context.watch<PassengerTripProvider>(); // WATCH to reflect UI changes
 
     return tripProvider.isLoading?LinearProgressIndicator():Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -72,7 +72,7 @@ class TripButton extends StatelessWidget {
 
   Future<void> _createTrip(
     BuildContext context,
-    TripProvider tripProvider,
+    PassengerTripProvider tripProvider,
   ) async {
     if (tripProvider.toController.text.isEmpty || 
         tripProvider.priceController.text.isEmpty) {
@@ -81,7 +81,7 @@ class TripButton extends StatelessWidget {
     }
 
     try {
-      await tripProvider.createNewTrip();
+      await tripProvider.createTrip();
     } catch (e) {
       if (!context.mounted) return;
       errorMessage(context, 'Failed to create trip: $e');
