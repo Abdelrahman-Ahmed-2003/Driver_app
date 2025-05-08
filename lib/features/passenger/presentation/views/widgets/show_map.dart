@@ -2,12 +2,15 @@ import 'dart:async';
 import 'package:dirver/core/sharedProvider/trip_provider.dart';
 import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/core/utils/utils.dart';
+import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
+import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart' as location_package;
+import 'package:provider/provider.dart';
 
 class ShowMap extends StatefulWidget {
   final bool isDriver;
@@ -36,6 +39,7 @@ class _ShowMapState extends State<ShowMap> {
   @override
   void initState() {
     super.initState();
+    debugPrint("ShowMap initState called");
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeLocation();
       if (widget.isDriver && widget.destination != null) {
@@ -103,7 +107,16 @@ class _ShowMapState extends State<ShowMap> {
 
   @override
   Widget build(BuildContext context) {
-    return _buildMap(widget.tripProvider); // Directly use the passed provider
+    return widget.isDriver?
+     Consumer<DriverTripProvider>(
+      builder: (context, tripProvider, child) {
+        return _buildMap(tripProvider);
+      },
+    ) :Consumer<PassengerTripProvider>(
+      builder: (context, tripProvider, child) {
+        return _buildMap(tripProvider);
+      },
+    ); // Directly use the passed provider
   }
 
   Widget _buildMap(TripProvider provider) {

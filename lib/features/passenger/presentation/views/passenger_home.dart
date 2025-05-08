@@ -6,7 +6,6 @@ import 'package:dirver/features/passenger/presentation/views/widgets/bottom_shee
 import 'package:dirver/features/passenger/presentation/views/widgets/show_map.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 class PassengerHome extends StatelessWidget {
   const PassengerHome({super.key});
 
@@ -14,50 +13,59 @@ class PassengerHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(create: (_) => PassengerTripProvider(),
-      child:Scaffold(
-        appBar: AppBar(
-          title: const Text('Ride Hailing', 
-              style: TextStyle(
-                color: AppColors.blackColor,
-                fontWeight: FontWeight.bold,
-              )),
-          backgroundColor: AppColors.whiteColor,
-          elevation: 1,
-          centerTitle: true,
-          iconTheme: const IconThemeData(color: AppColors.primaryColor),
-          actions: [
-            IconButton(
-              onPressed: () async {
-                var provider = context.read<PassengerTripProvider>();
-                if (provider.tripStream != null) return;
-                provider.clear();
-                await StoreUserType.saveLastSignIn('null');
-                await StoreUserType.savePassengerDocId('null');
-                if (!context.mounted) return;
-                Navigator.pushReplacementNamed(
-                  context,
-                  DriverOrRiderView.routeName,
-                );
-              },
-              icon: const Icon(Icons.logout, color: AppColors.primaryColor),
-            ),
-          ],
-        ),
-        body: Container(
-          color: AppColors.backgroundColor,
-          child: SafeArea(
-            child: Stack(
-              children: [
-                ShowMap(isDriver: false,
-                tripProvider:  Provider.of<PassengerTripProvider>(context, listen: false),
+    return ChangeNotifierProvider(
+      create: (_) => PassengerTripProvider(),
+      child: Builder(
+        builder: (context) {
+          final tripProvider = Provider.of<PassengerTripProvider>(context, listen: false);
+
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text(
+                'Ride Hailing',
+                style: TextStyle(
+                  color: AppColors.blackColor,
+                  fontWeight: FontWeight.bold,
                 ),
-                BottomSheetWidget(),
+              ),
+              backgroundColor: AppColors.whiteColor,
+              elevation: 1,
+              centerTitle: true,
+              iconTheme: const IconThemeData(color: AppColors.primaryColor),
+              actions: [
+                IconButton(
+                  onPressed: () async {
+                    if (tripProvider.tripStream != null) return;
+                    tripProvider.clear();
+                    await StoreUserType.saveLastSignIn('null');
+                    await StoreUserType.savePassengerDocId('null');
+                    if (!context.mounted) return;
+                    Navigator.pushReplacementNamed(
+                      context,
+                      DriverOrRiderView.routeName,
+                    );
+                  },
+                  icon: const Icon(Icons.logout, color: AppColors.primaryColor),
+                ),
               ],
             ),
-          ),
-        ),
-      )
+            body: Container(
+              color: AppColors.backgroundColor,
+              child: SafeArea(
+                child: Stack(
+                  children: [
+                    ShowMap(
+                      isDriver: false,
+                      tripProvider: tripProvider,
+                    ),
+                    const BottomSheetWidget(),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }

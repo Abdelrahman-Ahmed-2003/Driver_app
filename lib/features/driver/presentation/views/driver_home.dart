@@ -56,8 +56,10 @@ class _DriverHomeState extends State<DriverHome> {
     return StreamBuilder<List<Map<String, dynamic>>>(
       stream: provider.listenForAvailableTrips(),
       builder: (context, snapshot) {
+        debugPrint(" rebuild Snapshot");
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
+          
         }
 
         if (!snapshot.hasData || snapshot.data!.isEmpty) {

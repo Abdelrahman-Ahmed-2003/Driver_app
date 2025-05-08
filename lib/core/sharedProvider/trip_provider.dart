@@ -59,6 +59,7 @@ abstract class TripProvider with ChangeNotifier {
     if (lastDest != location) {
       lastDest = location;
       setDest(location);
+      debugPrint('setCoordinatesPoint: $location');
       await fetchRoute();
     }
   }
