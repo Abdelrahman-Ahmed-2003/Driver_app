@@ -9,10 +9,10 @@ class DriverProvider extends ChangeNotifier {
   String? selfieImageWithLicense;
   String? numberOfLicense;
   String? expirationDate;
-  String? IDImagePath;
+  String? idImagePath;
   String? backIDImagePath;
   String? feshPath;
-  String? ID;
+  String? id;
   String? carLicense;
   String? backCarLicense;
   String? carModel;
@@ -55,7 +55,7 @@ class DriverProvider extends ChangeNotifier {
   }
 
   void setIDImagePath(String value) {
-    IDImagePath = value;
+    idImagePath = value;
     notifyListeners();
   }
 

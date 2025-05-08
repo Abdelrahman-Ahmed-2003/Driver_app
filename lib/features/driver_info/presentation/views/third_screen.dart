@@ -19,7 +19,7 @@ class DriverInfoView3 extends StatelessWidget {
 
     // List of images for PickPicture (Handling null values safely)
     final List<Map<String, String?>> pickPictures = [
-      {'text': 'ID', 'id': '31', 'imagePath': userProvider.IDImagePath},
+      {'text': 'ID', 'id': '31', 'imagePath': userProvider.idImagePath},
       {'text': 'Back ID', 'id': '32', 'imagePath': userProvider.backIDImagePath},
       {'text': 'El-Fesh', 'id': '33', 'imagePath': userProvider.feshPath},
     ];
@@ -60,7 +60,7 @@ class DriverInfoView3 extends StatelessWidget {
 
                 buildTextField(
                   label: 'ID Number',
-                  onSaved: (value) => userProvider.ID = value!,
+                  onSaved: (value) => userProvider.id = value!,
                 ),
 
                 SizedBox(height: MediaQuery.of(context).size.height * 0.3),
@@ -74,7 +74,7 @@ class DriverInfoView3 extends StatelessWidget {
       bottomNavigationBar: buildNextButton(() {
                   if (formKey.currentState!.validate()) {
                     formKey.currentState!.save();
-                    if (userProvider.IDImagePath == null ||
+                    if (userProvider.idImagePath == null ||
                         userProvider.backIDImagePath == null ||
                         userProvider.feshPath == null) {
                       errorMessage(context, 'Please pick all images');

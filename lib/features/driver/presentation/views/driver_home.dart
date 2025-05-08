@@ -1,6 +1,5 @@
 import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
 import 'package:dirver/features/driver/presentation/views/widgets/animated_cards.dart';
-import 'package:dirver/core/sharedWidgets/shimmer_trip_card.dart';
 import 'package:flutter/material.dart';
 import 'package:dirver/core/services/sharedPref/store_user_type.dart';
 import 'package:dirver/features/driver_or_rider/presentation/views/driver_or_rider_view.dart';
@@ -59,7 +58,7 @@ class _DriverHomeState extends State<DriverHome> {
         debugPrint(" rebuild Snapshot");
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
-          
+
         }
 
         if (!snapshot.hasData || snapshot.data!.isEmpty) {

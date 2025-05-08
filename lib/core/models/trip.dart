@@ -3,28 +3,27 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:latlong2/latlong.dart';
 
 class Trip {
-  final String id;
-  final String passengerId;
-  final String driverId;
-  final String destination;
-  final LatLng userLocation;
-  final LatLng destinationCoords;
-  final String price;
-  final String status;
+   String id;
+   String passengerId;
+   String driverId;
+   String destination;
+   LatLng? userLocation;
+   LatLng destinationCoords = LatLng(0, 0);
+   String price;
+   String status;
   Map<String, DriverProposal> drivers;
-  final Timestamp? createdAt;
+   
 
   Trip({
-    required this.id,
-    required this.passengerId,
-    required this.driverId,
-    required this.destination,
-    required this.userLocation,
-    required this.destinationCoords,
-    required this.price,
-    required this.status,
-    required this.drivers,
-    required this.createdAt,
+    this.id = '',
+    this.passengerId = '',
+    this.driverId = '',
+    this.destination = '',
+    this.userLocation = const LatLng(0, 0),
+    this.destinationCoords = const LatLng(0, 0),
+    this.price = '',
+    this.status = 'wating',
+    this.drivers = const {},
   });
 
   factory Trip.fromFirestore(DocumentSnapshot doc) {
@@ -45,7 +44,6 @@ class Trip {
       ),
       price: data['price'] ?? '',
       status: data['status'] ?? '',
-      createdAt: data['createdAt'],
       drivers: (data['driverproposals'] as Map<String, dynamic>? ?? {}).map(
         (email, value) => MapEntry(email, DriverProposal.fromMap(value)),
       ),
@@ -68,7 +66,6 @@ class Trip {
       ),
       price: data['price'] ?? '',
       status: data['status'] ?? '',
-      createdAt: data['createdAt'],
       drivers: (data['driverProposals'] as Map<String, dynamic>? ?? {}).map(
         (email, value) => MapEntry(email, DriverProposal.fromMap(value)),
       ),

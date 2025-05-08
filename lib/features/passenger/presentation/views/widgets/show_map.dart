@@ -65,11 +65,12 @@ class _ShowMapState extends State<ShowMap> {
         );
 
         if (_shouldUpdateLocation(newLocation)) {
-          widget.tripProvider.currentLocation = newLocation;
+          widget.tripProvider.setCurrentUserLocation(newLocation);
           widget.tripProvider.setCurrentPoints(newLocation);
           _lastUpdatedLocation = newLocation;
 
           if (_isLoading) {
+            // _isLoading = false;
             setState(() => _isLoading = false);
           }
         }
@@ -95,26 +96,30 @@ class _ShowMapState extends State<ShowMap> {
   }
 
   Future<void> _centerOnUserLocation() async {
-    if (widget.tripProvider.currentLocation != null) {
-      _mapController.move(widget.tripProvider.currentLocation!, 15);
-    } else {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Current location not available')),
-      );
-    }
+  final location = widget.tripProvider.currentTrip.userLocation;
+  if (location != null) {
+    _mapController.move(location, 15);
+  } else {
+    debugPrint("Current location not available");
+    debugPrint("Location: $location");
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Current location not available')),
+    );
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
     return widget.isDriver?
      Consumer<DriverTripProvider>(
-      builder: (context, tripProvider, child) {
-        return _buildMap(tripProvider);
+      builder: (context, provider, child) {
+        return _buildMap(provider);
       },
     ) :Consumer<PassengerTripProvider>(
-      builder: (context, tripProvider, child) {
-        return _buildMap(tripProvider);
+      builder: (context, provider, child) {
+        return _buildMap(provider);
       },
     ); // Directly use the passed provider
   }
@@ -136,14 +141,15 @@ class _ShowMapState extends State<ShowMap> {
               latLng.longitude,
             );
             Placemark place = placemarks.first;
-            provider.toController.text = place.street ?? 'Unknown location';
+            provider.currentTrip.destination = place.street ?? 'Unknown location';
+            provider.toController.text = provider.currentTrip.destination;
           } catch (e) {
             debugPrint("Error getting place name: $e");
             if (!mounted) return;
             errorMessage(context, e.toString());
           }
         },
-        initialCenter: provider.currentLocation ?? const LatLng(0, 0),
+        initialCenter: provider.currentTrip.userLocation ?? LatLng(0, 0),
         initialZoom: 15,
         minZoom: 0,
         maxZoom: 100,
@@ -163,13 +169,13 @@ class _ShowMapState extends State<ShowMap> {
             markerDirection: MarkerDirection.heading,
           ),
         ),
-        if (provider.dest != const LatLng(0, 0))
+        if (provider.currentTrip.destinationCoords != const LatLng(0, 0))
           MarkerLayer(
             markers: [
               Marker(
                 width: 35,
                 height: 35,
-                point: provider.dest,
+                point: provider.currentTrip.destinationCoords,
                 child: const Icon(
                   Icons.location_pin,
                   color: AppColors.blueColor,

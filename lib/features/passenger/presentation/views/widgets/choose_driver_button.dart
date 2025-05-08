@@ -1,5 +1,6 @@
 import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
+import 'package:dirver/features/passenger/presentation/views/select_driver.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -32,7 +33,13 @@ class ChooseDriverButton extends StatelessWidget {
           child: IconButton(
             onPressed: () {
               if (tripProvider.tripStream == null) return;
-              Navigator.pushNamed(context, '/select-driver');
+              Navigator.pushNamed(
+                context,
+                SelectDriver.routeName,
+                arguments: tripProvider,
+              );
+
+
               
             },
             icon: const Icon(Icons.directions_bus, color: AppColors.whiteColor),

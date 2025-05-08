@@ -85,6 +85,7 @@ class PickPicture extends StatelessWidget {
     final pickedFile = await picker.pickImage(source: source);
 
     if (pickedFile != null) {
+      if(!context.mounted) return;
       var provider = Provider.of<DriverProvider>(context, listen: false);
       if(id =='11') {
         provider.setProfileImagePath(pickedFile.path);

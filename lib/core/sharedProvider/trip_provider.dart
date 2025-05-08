@@ -9,31 +9,35 @@ import '../models/trip.dart';
 
 abstract class TripProvider with ChangeNotifier {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+  // These controllers are UI-related, so they can stay here
   final toController = TextEditingController();
   final priceController = TextEditingController();
 
   bool isLoading = false;
+
+  // Core Firestore trip document state
   Stream<DocumentSnapshot>? tripStream;
   DocumentReference? currentDocumentTrip;
-  Trip? currentTrip;
+  Trip currentTrip =Trip();
 
-  String from = '';
-  LatLng dest = const LatLng(0, 0);
+  // Keep only variables not part of Trip model
   List<LatLng> points = [];
-  LatLng? currentLocation;
   LatLng? lastDest;
-  String status = 'not_created';
 
-  List<DriverWithProposal> driverWithProposalList=[];
+  // UI-related proposals list
+  List<DriverWithProposal> driverWithProposalList = [];
 
-  void setFrom(String value) {
-    from = value;
-    notifyListeners();
+  void setCurrentUserLocation(LatLng location) {
+    
+      currentTrip.userLocation = location;
+      // notifyListeners(); // Notify listeners of the update
+  
   }
 
-  void setDest(LatLng value) {
-    dest = value;
-    notifyListeners();
+  void setDest(LatLng location) {
+    currentTrip.destinationCoords = location;
+    notifyListeners(); // Notify listeners of the update
   }
 
   void setCurrentPoints(LatLng newPoints) async {
@@ -47,12 +51,18 @@ abstract class TripProvider with ChangeNotifier {
   }
 
   void setDestinations(List<LatLng> newPoints) {
-    if (currentLocation != null) {
-      points = [currentLocation!, ...newPoints];
+    if (currentTrip.userLocation != null) {
+      points = [currentTrip.userLocation!, ...newPoints];
     } else {
       points = [...newPoints];
     }
     notifyListeners();
+  }
+
+  Future<void> updatePoints() async {
+    if (currentTrip.destinationCoords != const LatLng(0, 0)) {
+      await fetchRoute();
+    }
   }
 
   Future<void> setCoordinatesPoint(LatLng location) async {
@@ -64,20 +74,16 @@ abstract class TripProvider with ChangeNotifier {
     }
   }
 
-  Future<void> updatePoints() async {
-    if (dest != const LatLng(0, 0)) {
-      await fetchRoute();
-    }
-  }
 
+  /// Update route points based on currentTrip.userLocation and new destination
   Future<void> fetchRoute() async {
-    if (currentLocation == null || dest == const LatLng(0, 0)) return;
+    if (currentTrip.destinationCoords == const LatLng(0, 0)|| currentTrip.userLocation == null) return;
 
     points.clear();
     final url = Uri.parse(
       'https://router.project-osrm.org/route/v1/driving/'
-      '${currentLocation!.longitude},${currentLocation!.latitude};'
-      '${dest.longitude},${dest.latitude}?overview=full&geometries=polyline&steps=true',
+      '${currentTrip.userLocation!.longitude},${currentTrip.userLocation!.latitude};'
+      '${currentTrip.destinationCoords.longitude},${currentTrip.destinationCoords.latitude}?overview=full&geometries=polyline&steps=true',
     );
 
     final response = await http.get(url);
@@ -88,22 +94,11 @@ abstract class TripProvider with ChangeNotifier {
     }
   }
 
+  /// Decode polyline and set new route
   void _decodePolyline(String geometry) {
     final polylinePoints = PolylinePoints();
     final result = polylinePoints.decodePolyline(geometry);
     setDestinations(result.map((e) => LatLng(e.latitude, e.longitude)).toList());
-  }
-
-  void _initializeTripStream() {
-    tripStream = currentDocumentTrip?.snapshots().asyncMap((snapshot) async {
-      if (snapshot.exists) {
-        final data = snapshot.data() as Map<String, dynamic>;
-        currentTrip = Trip.fromMap(data);
-        status = currentTrip?.status ?? 'unknown';
-        notifyListeners();
-      }
-      return snapshot;
-    });
   }
 
   void reconnectTripStream() {
@@ -124,29 +119,12 @@ abstract class TripProvider with ChangeNotifier {
     return doc.data()?['tripId'];
   }
 
-  Future<void> deleteTrip() async {
-    if (currentDocumentTrip != null) {
-      await currentDocumentTrip!.delete();
-      cancelStream();
-    }
-  }
-
-  void cancelStream() {
-    tripStream = null;
-    currentDocumentTrip = null;
-    driverWithProposalList = [];
-    status = 'not_created';
-    notifyListeners();
-  }
+  
 
   void clear() {
-    from = '';
-    dest = const LatLng(0, 0);
-    points = [];
-    currentLocation = null;
-    lastDest = null;
     toController.clear();
     priceController.clear();
-    cancelStream();
+    points = [];
+    lastDest = null;
   }
 }

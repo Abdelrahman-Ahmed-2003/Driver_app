@@ -5,7 +5,9 @@ import 'package:dirver/features/passenger/presentation/provider/passenger_trip_p
 import 'package:dirver/features/passenger/presentation/views/widgets/driver_card.dart';
 
 class SelectDriver extends StatefulWidget {
-  const SelectDriver({super.key});
+  final PassengerTripProvider provider;
+
+  const SelectDriver({super.key, required this.provider});
   static const String routeName = '/select-driver';
 
   @override
@@ -18,7 +20,7 @@ class _SelectDriverState extends State<SelectDriver> {
   @override
   void initState() {
     super.initState();
-    _provider = Provider.of<PassengerTripProvider>(context, listen: false);
+    _provider = widget.provider;
     _provider.reconnectTripStream();
   }
 

@@ -6,11 +6,25 @@ import 'package:dirver/features/passenger/presentation/views/widgets/bottom_shee
 import 'package:dirver/features/passenger/presentation/views/widgets/show_map.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-class PassengerHome extends StatelessWidget {
+class PassengerHome extends StatefulWidget {
   const PassengerHome({super.key});
 
   static const String routeName = '/passengerHome';
 
+  @override
+  State<PassengerHome> createState() => _PassengerHomeState();
+}
+
+class _PassengerHomeState extends State<PassengerHome> {
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await StoreUserType.savePassenger(true);
+      await StoreUserType.saveLastSignIn('passenger');
+    });
+  }
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -18,6 +32,8 @@ class PassengerHome extends StatelessWidget {
       child: Builder(
         builder: (context) {
           final tripProvider = Provider.of<PassengerTripProvider>(context, listen: false);
+          debugPrint("PassengerHome rebuild called");
+          debugPrint('tripProvider.tripStream: ${tripProvider.currentTrip}');
 
           return Scaffold(
             appBar: AppBar(
@@ -49,20 +65,32 @@ class PassengerHome extends StatelessWidget {
                 ),
               ],
             ),
-            body: Container(
-              color: AppColors.backgroundColor,
-              child: SafeArea(
-                child: Stack(
-                  children: [
-                    ShowMap(
-                      isDriver: false,
-                      tripProvider: tripProvider,
-                    ),
-                    const BottomSheetWidget(),
-                  ],
-                ),
-              ),
+            body: FutureBuilder(
+  future: tripProvider.fetchTripData(),
+  builder: (context, snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return Container(
+      color: AppColors.backgroundColor,
+      child: SafeArea(
+        child: Stack(
+          children: [
+            ShowMap(
+              isDriver: false,
+              tripProvider: tripProvider,
             ),
+            const BottomSheetWidget(),
+
+
+          ],
+        ),
+      ),
+    );
+  },
+),
+
           );
         },
       ),

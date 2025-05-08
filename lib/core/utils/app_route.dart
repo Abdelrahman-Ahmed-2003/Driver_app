@@ -1,5 +1,6 @@
 import 'package:dirver/features/auth/presentation/views/login_view.dart';
 import 'package:dirver/features/driver/presentation/views/driver_home.dart';
+import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
 import 'package:dirver/features/passenger/presentation/views/select_driver.dart';
 import 'package:dirver/features/selected_trip/presentation/views/selected_trip.dart';
 import 'package:dirver/features/driver_info/presentation/views/first_screen.dart';
@@ -36,8 +37,9 @@ class AppRoutes {
         return MaterialPageRoute(
             builder: (_) => SelectedTrip(trip: settings.arguments as Map<String, dynamic>));
       case SelectDriver.routeName:
+      final args = settings.arguments as PassengerTripProvider;
         return MaterialPageRoute(
-            builder: (_) => const SelectDriver());
+            builder: (_) => SelectDriver(provider: args,));
       default:
         return MaterialPageRoute(builder: (_) => errorRoute());
     }

@@ -7,21 +7,36 @@ import 'package:dirver/core/sharedProvider/trip_provider.dart';
 import 'package:flutter/material.dart';
 
 class PassengerTripProvider extends TripProvider {
+
+  String? passengerDocId;
+  bool isPassengerDocIdFetched = false;
+
+  PassengerTripProvider() {
+    fetchPassengerDocId();
+  }
+  Future<void> fetchPassengerDocId() async {
+    passengerDocId = await StoreUserType.getPassengerDocId();
+    isPassengerDocIdFetched = true;
+    notifyListeners();
+  }
   Future<void> createTrip() async {
+    
     isLoading = true;
     notifyListeners();
     try {
-      var passengerId = await StoreUserType.getPassengerDocId();
+      if(!isPassengerDocIdFetched) {
+        passengerDocId = await StoreUserType.getPassengerDocId();
+      }
       currentDocumentTrip = await firestore.collection('trips').add({
-        'passengerdocId': passengerId,
+        'passengerdocId': passengerDocId,
         'destination': toController.text,
         'userLocation': {
-          'lat': currentLocation?.latitude,
-          'long': currentLocation?.longitude,
+          'lat': currentTrip.userLocation?.latitude,
+          'long': currentTrip.userLocation?.longitude,
         },
         'destinationCoords': {
-          'lat': dest.latitude,
-          'long': dest.longitude,
+          'lat': currentTrip.destinationCoords.latitude,
+          'long': currentTrip.destinationCoords.longitude,
         },
         'price': priceController.text,
         'status': 'waiting',
@@ -30,7 +45,7 @@ class PassengerTripProvider extends TripProvider {
       });
 
       
-      final passengerRef = firestore.collection('passengers').doc(passengerId);
+      final passengerRef = firestore.collection('passengers').doc(passengerDocId);
       await passengerRef.update({'tripId': currentDocumentTrip?.id});
 
       tripStream = currentDocumentTrip?.snapshots();
@@ -90,4 +105,66 @@ class PassengerTripProvider extends TripProvider {
     if (snapshot == null || !snapshot.exists) return 'not_created';
     return (snapshot.data() as Map<String, dynamic>)['status'] ?? 'unknown';
   }
+
+  Future<void> fetchTripData() async {
+    debugPrint("Fetching trip data...");
+
+  try {
+    passengerDocId ??= await StoreUserType.getPassengerDocId();
+    final passengerSnapshot = await firestore.collection('passengers').doc(passengerDocId).get();
+    debugPrint("Passenger document ID: $passengerDocId");
+    if (passengerSnapshot.exists) {
+      debugPrint("Passenger document exists");
+    } else {
+      debugPrint("Passenger document does not exist");
+      return;
+    }
+
+    final passengerData = passengerSnapshot.data() as Map<String, dynamic>;
+    final String? tripId = passengerData['tripId'];
+    debugPrint("Trip ID: $tripId");
+    if (tripId == null) return;
+    
+    // Save the trip document reference and stream
+    currentDocumentTrip = firestore.collection('trips').doc(tripId);
+    tripStream = currentDocumentTrip?.snapshots();
+
+    final tripSnapshot = await currentDocumentTrip!.get();
+    debugPrint('Trip snapshot: $tripSnapshot');
+    debugPrint('Trip snapshot data: ${tripSnapshot.data()}');
+    if (!tripSnapshot.exists) return;
+
+    // Convert Firestore document to Trip model
+    currentTrip = Trip.fromFirestore(tripSnapshot);
+    debugPrint("Current Trip: $currentTrip");
+    // Optionally: update other TripProvider variables from trip data
+    
+    priceController.text = currentTrip.price;
+    toController.text = currentTrip.destination;
+
+    notifyListeners();
+  } catch (e) {
+    debugPrint('Error fetching trip data: $e');
+  }
+}
+
+Future<void> deleteTrip() async {
+    await firestore.collection('passengers').doc(passengerDocId).update({
+      'tripId': null,
+    });
+    if (currentDocumentTrip != null) {
+      await currentDocumentTrip!.delete();
+      cancelStream();
+    }
+  }
+
+  void cancelStream() {
+    tripStream = null;
+    currentDocumentTrip = null;
+    driverWithProposalList = [];
+    currentTrip = Trip();
+    notifyListeners();
+  }
+
+
 }
