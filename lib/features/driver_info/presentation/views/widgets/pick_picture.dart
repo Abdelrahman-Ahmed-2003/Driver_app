@@ -13,13 +13,13 @@ class PickPicture extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        _showImagePicker(context);
-      },
-      child: Consumer<DriverProvider>( // ✅ Listens for changes
-        builder: (context, driverProvider, child) {
-          return Column(
+    return Consumer<DriverProvider>( // ✅ Listens for changes
+      builder: (context, driverProvider, child) {
+        return GestureDetector(
+          onTap: () {
+            _showImagePicker(context, driverProvider);
+          },
+          child: Column(
             children: [
               Container(
                 height: 100,
@@ -44,13 +44,13 @@ class PickPicture extends StatelessWidget {
               ),
               Text(text),
             ],
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 
-  void _showImagePicker(BuildContext context) {
+  void _showImagePicker(BuildContext context,DriverProvider provider) {
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -63,14 +63,14 @@ class PickPicture extends StatelessWidget {
                 leading: const Icon(Icons.camera),
                 title: const Text("التقاط صورة"),
                 onTap: () {
-                  _pickImage(context, ImageSource.camera);
+                  _pickImage(provider, ImageSource.camera,context);
                 },
               ),
               ListTile(
                 leading: const Icon(Icons.image),
                 title: const Text("اختيار من المعرض"),
                 onTap: () {
-                  _pickImage(context, ImageSource.gallery);
+                  _pickImage(provider, ImageSource.gallery,context);
                 },
               ),
             ],
@@ -80,13 +80,12 @@ class PickPicture extends StatelessWidget {
     );
   }
 
-  Future<void> _pickImage(BuildContext context, ImageSource source) async {
+  Future<void> _pickImage(DriverProvider provider, ImageSource source, BuildContext context) async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: source);
 
     if (pickedFile != null) {
       if(!context.mounted) return;
-      var provider = Provider.of<DriverProvider>(context, listen: false);
       if(id =='11') {
         provider.setProfileImagePath(pickedFile.path);
       }      else if(id == '21') {

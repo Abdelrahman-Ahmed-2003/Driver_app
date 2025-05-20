@@ -4,7 +4,6 @@ import 'package:dirver/core/services/sharedPref/store_user_type.dart';
 import 'package:dirver/core/sharedWidgets/logo_widget.dart';
 import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/core/utils/utils.dart';
-import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
 import 'package:dirver/features/driver/presentation/views/driver_home.dart';
 import 'package:dirver/features/driver_info/presentation/views/first_screen.dart';
 import 'package:dirver/core/utils/search_about_user.dart';
@@ -12,7 +11,6 @@ import 'package:dirver/features/driver_or_rider/presentation/views/widgets/how_a
 import 'package:dirver/features/passenger/presentation/views/passenger_home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class DriverOrRiderBody extends StatelessWidget {
   const DriverOrRiderBody({super.key});
@@ -76,10 +74,7 @@ class DriverOrRiderBody extends StatelessWidget {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => ChangeNotifierProvider(
-            create: (_) => DriverTripProvider(),
-            child: const DriverHome(),
-          ),
+          builder: (_) => const DriverHome(),
         ),
       );
     } else {
@@ -93,10 +88,7 @@ class DriverOrRiderBody extends StatelessWidget {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) => ChangeNotifierProvider(
-              create: (_) => DriverTripProvider(),
-              child: const DriverHome(),
-            ),
+            builder: (_) => const DriverHome(),
           ),
         );
       } else if (isOnline == false) {

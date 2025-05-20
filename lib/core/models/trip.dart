@@ -52,8 +52,8 @@ class Trip {
 
   factory Trip.fromMap(Map<String, dynamic> data) {
     return Trip(
-      id: data['id'] ?? '',
-      passengerId: data['passengerId'] ?? '',
+      id: data['tripId'] ?? '',
+      passengerId: data['passengerdocId'] ?? '',
       driverId: data['driverId'] ?? '',
       destination: data['destination'] ?? '',
       userLocation: LatLng(
@@ -71,24 +71,54 @@ class Trip {
       ),
     );
   }
+
+  Trip copyWith({
+    String? id,
+    String? passengerId,
+    String? driverId,
+    String? destination,
+    LatLng? userLocation,
+    LatLng? destinationCoords,
+    String? price,
+    String? status,
+    Map<String, DriverProposal>? drivers,
+  }) {
+    return Trip(
+      id: id ?? this.id,
+      passengerId: passengerId ?? this.passengerId,
+      driverId: driverId ?? this.driverId,
+      destination: destination ?? this.destination,
+      userLocation: userLocation ?? this.userLocation,
+      destinationCoords: destinationCoords ?? this.destinationCoords,
+      price: price ?? this.price,
+      status: status ?? this.status,
+      drivers: drivers ?? Map.from(this.drivers),
+    );
+  }
+   @override
+  String toString() {
+    return 'Trip(id: $id, passengerId: $passengerId, driverId: $driverId, destination: $destination, price: $price)';
+  }
 }
 
 class DriverProposal {
-  final String passengerProposedPrice;
   final String proposedPrice;
-  final String proposedPriceStatus;
 
   DriverProposal({
-    required this.passengerProposedPrice,
     required this.proposedPrice,
-    required this.proposedPriceStatus,
   });
 
   factory DriverProposal.fromMap(Map<String, dynamic> data) {
     return DriverProposal(
-      passengerProposedPrice: data['passengerProposedPrice'] ?? '',
       proposedPrice: data['proposedPrice'] ?? '',
-      proposedPriceStatus: data['proposedPriceStatus'] ?? '',
+    );
+  }
+
+  DriverProposal copyWith({
+    String? proposedPrice,
+  }) {
+    return DriverProposal(
+      proposedPrice: proposedPrice ?? this.proposedPrice,
     );
   }
 }

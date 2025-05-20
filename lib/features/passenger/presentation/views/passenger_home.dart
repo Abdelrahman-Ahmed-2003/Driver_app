@@ -6,6 +6,7 @@ import 'package:dirver/features/passenger/presentation/views/widgets/bottom_shee
 import 'package:dirver/features/passenger/presentation/views/widgets/show_map.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 class PassengerHome extends StatefulWidget {
   const PassengerHome({super.key});
 
@@ -16,7 +17,6 @@ class PassengerHome extends StatefulWidget {
 }
 
 class _PassengerHomeState extends State<PassengerHome> {
-
   @override
   void initState() {
     super.initState();
@@ -25,13 +25,15 @@ class _PassengerHomeState extends State<PassengerHome> {
       await StoreUserType.saveLastSignIn('passenger');
     });
   }
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => PassengerTripProvider(),
       child: Builder(
         builder: (context) {
-          final tripProvider = Provider.of<PassengerTripProvider>(context, listen: false);
+          final tripProvider =
+              Provider.of<PassengerTripProvider>(context, listen: false);
           debugPrint("PassengerHome rebuild called");
           debugPrint('tripProvider.tripStream: ${tripProvider.currentTrip}');
 
@@ -66,31 +68,28 @@ class _PassengerHomeState extends State<PassengerHome> {
               ],
             ),
             body: FutureBuilder(
-  future: tripProvider.fetchTripData(),
-  builder: (context, snapshot) {
-    if (snapshot.connectionState == ConnectionState.waiting) {
-      return const Center(child: CircularProgressIndicator());
-    }
+              future: tripProvider.fetchTripData(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-    return Container(
-      color: AppColors.backgroundColor,
-      child: SafeArea(
-        child: Stack(
-          children: [
-            ShowMap(
-              isDriver: false,
-              tripProvider: tripProvider,
+                return Container(
+                  color: AppColors.backgroundColor,
+                  child: SafeArea(
+                    child: Stack(
+                      children: [
+                        ShowMap(
+                          isDriver: false,
+                          tripProvider: tripProvider,
+                        ),
+                        BottomSheetWidget(),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
-            const BottomSheetWidget(),
-
-
-          ],
-        ),
-      ),
-    );
-  },
-),
-
           );
         },
       ),

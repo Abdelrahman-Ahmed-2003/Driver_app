@@ -109,20 +109,30 @@ class _ShowMapState extends State<ShowMap> {
   }
 }
 
+  bool isError = false;
+
 
   @override
-  Widget build(BuildContext context) {
-    return widget.isDriver?
-     Consumer<DriverTripProvider>(
-      builder: (context, provider, child) {
-        return _buildMap(provider);
-      },
-    ) :Consumer<PassengerTripProvider>(
-      builder: (context, provider, child) {
-        return _buildMap(provider);
-      },
-    ); // Directly use the passed provider
+Widget build(BuildContext context) {
+  if (isError) {
+    return const Center(child: Text('Bad connection'));
   }
+
+  if (widget.isDriver) {
+    return Consumer<DriverTripProvider>(
+      builder: (context, provider, child) {
+        return _buildMap(provider);
+      },
+    );
+  } else {
+    return Consumer<PassengerTripProvider>(
+      builder: (context, provider, child) {
+        return _buildMap(provider);
+      },
+    );
+  }
+}
+
 
   Widget _buildMap(TripProvider provider) {
     if (_isLoading) {
@@ -142,7 +152,6 @@ class _ShowMapState extends State<ShowMap> {
             );
             Placemark place = placemarks.first;
             provider.currentTrip.destination = place.street ?? 'Unknown location';
-            provider.toController.text = provider.currentTrip.destination;
           } catch (e) {
             debugPrint("Error getting place name: $e");
             if (!mounted) return;
@@ -157,8 +166,25 @@ class _ShowMapState extends State<ShowMap> {
       ),
       children: [
         TileLayer(
-          urlTemplate: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-        ),
+  urlTemplate: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+  errorTileCallback: (tile, error, stackTrace) {
+    if (!isError) {
+      setState(() {
+        isError = true;
+      });
+    }
+  },
+  tileBuilder: (context, tileWidget, image) {
+    if (isError) {
+      setState(() {
+        isError = false;
+      });
+    }
+    return tileWidget;
+  },
+),
+
+        
         CurrentLocationLayer(
           style: LocationMarkerStyle(
             marker: DefaultLocationMarker(

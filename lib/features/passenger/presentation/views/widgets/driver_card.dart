@@ -5,29 +5,20 @@ import 'package:dirver/core/utils/colors_app.dart';
 import 'package:provider/provider.dart';
 
 class DriverCard extends StatefulWidget {
+  final String passengerPrice;
   final DriverWithProposal driverWithProposal;
 
-    const DriverCard({super.key, required this.driverWithProposal});
+  const DriverCard(
+      {super.key,
+      required this.driverWithProposal,
+      required this.passengerPrice});
 
   @override
   State<DriverCard> createState() => _DriverCardState();
 }
 
 class _DriverCardState extends State<DriverCard> {
-  late TextEditingController priceController;
   String buttonText = 'Select Driver';
-
-  @override
-  void initState() {
-    super.initState();
-    priceController = TextEditingController(text: widget.driverWithProposal.proposal.passengerProposedPrice);
-  }
-
-  @override
-  void dispose() {
-    priceController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,11 +44,14 @@ class _DriverCardState extends State<DriverCard> {
                   Row(
                     children: [
                       CircleAvatar(
-                        backgroundImage: widget.driverWithProposal.driver.imageUrl != null
-                            ? NetworkImage(widget.driverWithProposal.driver.imageUrl!)
-                            : null,
+                        backgroundImage:
+                            widget.driverWithProposal.driver.imageUrl != null
+                                ? NetworkImage(
+                                    widget.driverWithProposal.driver.imageUrl!)
+                                : null,
                         child: widget.driverWithProposal.driver.imageUrl == null
-                            ? Text(widget.driverWithProposal.driver.email[0].toUpperCase())
+                            ? Text(widget.driverWithProposal.driver.email[0]
+                                .toUpperCase())
                             : null,
                       ),
                       const SizedBox(width: 12),
@@ -70,10 +64,12 @@ class _DriverCardState extends State<DriverCard> {
                       ),
                     ],
                   ),
-                  (widget.driverWithProposal.driver.rating != 'no rate till now')
+                  (widget.driverWithProposal.driver.rating !=
+                          'no rate till now')
                       ? Row(
                           children: [
-                            const Icon(Icons.star, size: 16, color: Colors.amber),
+                            const Icon(Icons.star,
+                                size: 16, color: Colors.amber),
                             Text(widget.driverWithProposal.driver.rating),
                           ],
                         )
@@ -85,107 +81,34 @@ class _DriverCardState extends State<DriverCard> {
 
               // Display Pricing & Status Info
               Text(
-                "📢 Passenger Proposed: ${widget.driverWithProposal.proposal.passengerProposedPrice} EGP",
+                "📢 Passenger Proposed: ${widget.passengerPrice} EGP",
                 style: const TextStyle(fontSize: 14, color: Colors.blueGrey),
               ),
               Text(
                 "🚕 Driver Offered: ${widget.driverWithProposal.proposal.proposedPrice} EGP",
                 style: const TextStyle(fontSize: 14, color: Colors.black87),
               ),
-              RichText(
-                text: TextSpan(
-                  style: const TextStyle(fontSize: 14, color: Colors.black),
-                  children: [
-                    const TextSpan(text: "📌 Proposal Status: "),
-                    TextSpan(
-                      text: widget.driverWithProposal.proposal.proposedPriceStatus,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: _getStatusColor(widget.driverWithProposal.proposal.proposedPriceStatus),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
               const SizedBox(height: 12),
 
-              // Input field for price
-              TextFormField(
-                controller: priceController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Propose Price',
-                  filled: true,
-                  fillColor: Color(0XFFC1CDCB),
-                  suffixText: 'EGP',
-                  suffixStyle: TextStyle(color: Color.fromARGB(255, 131, 18, 18)),
+              // Button
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.grenColor,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
-                onChanged: (value) {
-                  setState(() {});
+                onPressed: () {
+                  provider.updateSelectedDriver(
+                      widget.driverWithProposal.driver.id);
                 },
-              ),
-
-              const SizedBox(height: 12),
-
-              // Buttons
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  ElevatedButton(
-                    onPressed: (priceController.text.trim() !=
-                                (widget.driverWithProposal.proposal.passengerProposedPrice)
-                                    .trim() &&
-                            priceController.text.trim().isNotEmpty)
-                        ? () {
-                            provider.changePassengerProposalPrice(
-                                widget.driverWithProposal.driver.email,
-                                priceController.text.trim());
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Price updated')),
-                            );
-                          }
-                        : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      disabledBackgroundColor: Colors.grey,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
-                    ),
-                    child: const Text('Update Price'),
-                  ),
-                  const SizedBox(width: 12),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.grenColor,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 12),
-                    ),
-                    onPressed: () {
-                      provider.updateSelectedDriver(widget.driverWithProposal.driver.email);
-                    },
-                    child: const Text('Select Driver'),
-                  ),
-                ],
+                child: const Text('Select Driver'),
               ),
             ],
           ),
         ),
       ),
     );
-  }
-
-  Color _getStatusColor(String? status) {
-    switch (status?.toLowerCase()) {
-      case 'accepted':
-        return Colors.green;
-      case 'rejected':
-        return Colors.red;
-      case 'pending':
-      default:
-        return Colors.orange;
-    }
   }
 }

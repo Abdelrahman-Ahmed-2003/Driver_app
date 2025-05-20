@@ -18,9 +18,21 @@ class DriverInfoView2 extends StatelessWidget {
 
     // List of images for PickPicture (Handling null values safely)
     final List<Map<String, String?>> pickPictures = [
-      {'text': 'Driving License', 'id': '21', 'imagePath': userProvider.frontLicenseDrivingImagePath},
-      {'text': 'Back Driving License', 'id': '22', 'imagePath': userProvider.backLicenseDrivingImagePath},
-      {'text': 'Selfie with License', 'id': '23', 'imagePath': userProvider.selfieImageWithLicense},
+      {
+        'text': 'Driving License',
+        'id': '21',
+        'imagePath': userProvider.frontLicenseDrivingImagePath
+      },
+      {
+        'text': 'Back Driving License',
+        'id': '22',
+        'imagePath': userProvider.backLicenseDrivingImagePath
+      },
+      {
+        'text': 'Selfie with License',
+        'id': '23',
+        'imagePath': userProvider.selfieImageWithLicense
+      },
     ];
 
     return Scaffold(
@@ -40,11 +52,13 @@ class DriverInfoView2 extends StatelessWidget {
                   height: 120, // Adjust height as needed
                   child: ListView.builder(
                     shrinkWrap: true,
-                    scrollDirection: Axis.horizontal, // ✅ Enable horizontal scrolling
+                    scrollDirection:
+                        Axis.horizontal, // ✅ Enable horizontal scrolling
                     itemCount: pickPictures.length,
                     itemBuilder: (context, index) {
                       return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10), // Space between items
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10), // Space between items
                         child: PickPicture(
                           text: pickPictures[index]['text']!,
                           id: pickPictures[index]['id']!,
@@ -57,29 +71,32 @@ class DriverInfoView2 extends StatelessWidget {
 
                 const SizedBox(height: 100),
 
-                buildTextField(label: 'Number of License', onSaved: (value) => userProvider.numberOfLicense = value!),
-                buildTextField(label: 'Expired Date of License', onSaved: (value) => userProvider.expirationDate = value!),
+                buildTextField(
+                    label: 'Number of License',
+                    onSaved: (value) => userProvider.numberOfLicense = value!),
+                buildTextField(
+                    label: 'Expired Date of License',
+                    onSaved: (value) => userProvider.expirationDate = value!),
 
                 SizedBox(height: MediaQuery.of(context).size.height * 0.3),
-
-                
               ],
             ),
           ),
         ),
       ),
       bottomNavigationBar: buildNextButton(() {
-                  if (formKey.currentState!.validate()) {
-                    formKey.currentState!.save();
-                    if (userProvider.frontLicenseDrivingImagePath == null ||
-                        userProvider.backLicenseDrivingImagePath == null ||
-                        userProvider.selfieImageWithLicense == null) {
-                      errorMessage(context, 'Please pick all images');
-                      return;
-                    }
-                    Navigator.pushNamed(context, DriverInfoView3.routeName);
-                  }
-                }),
+        if (formKey.currentState!.validate()) {
+          formKey.currentState!.save();
+          if (userProvider.frontLicenseDrivingImagePath == null ||
+              userProvider.backLicenseDrivingImagePath == null ||
+              userProvider.selfieImageWithLicense == null) {
+            errorMessage(context, 'Please pick all images');
+            return;
+          }
+          Navigator.pushNamed(context, DriverInfoView3.routeName,
+              arguments: userProvider);
+        }
+      }),
     );
   }
 }

@@ -10,16 +10,12 @@ import '../models/trip.dart';
 abstract class TripProvider with ChangeNotifier {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  // These controllers are UI-related, so they can stay here
-  final toController = TextEditingController();
-  final priceController = TextEditingController();
-
   bool isLoading = false;
 
   // Core Firestore trip document state
   Stream<DocumentSnapshot>? tripStream;
   DocumentReference? currentDocumentTrip;
-  Trip currentTrip =Trip();
+  Trip currentTrip = Trip();
 
   // Keep only variables not part of Trip model
   List<LatLng> points = [];
@@ -105,10 +101,10 @@ abstract class TripProvider with ChangeNotifier {
     tripStream = currentDocumentTrip?.snapshots();
   }
 
-  Future<void> updateSelectedDriver(String driverEmail) async {
+  Future<void> updateSelectedDriver(String driverId) async {
     if (currentDocumentTrip == null) return;
     await currentDocumentTrip!.update({
-      'selectedDriver': driverEmail,
+      'driverDocId': driverId,
       'driverDistination': 'toUser',
       'status': 'accepted',
     });
@@ -122,8 +118,6 @@ abstract class TripProvider with ChangeNotifier {
   
 
   void clear() {
-    toController.clear();
-    priceController.clear();
     points = [];
     lastDest = null;
   }

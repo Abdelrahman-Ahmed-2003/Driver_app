@@ -8,7 +8,7 @@ class ChooseDriverButton extends StatelessWidget {
   const ChooseDriverButton({super.key});
 
   @override
- Widget build(BuildContext context) {
+  Widget build(BuildContext context) {
     final tripProvider = context.watch<PassengerTripProvider>();
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0, right: 16.0),
@@ -16,8 +16,8 @@ class ChooseDriverButton extends StatelessWidget {
         alignment: Alignment.bottomRight,
         child: Container(
           decoration: BoxDecoration(
-            color: tripProvider.tripStream == null 
-                ? AppColors.greyColor 
+            color: tripProvider.tripStream == null
+                ? AppColors.greyColor
                 : AppColors.primaryColor,
             borderRadius: BorderRadius.circular(25),
             boxShadow: [
@@ -38,9 +38,6 @@ class ChooseDriverButton extends StatelessWidget {
                 SelectDriver.routeName,
                 arguments: tripProvider,
               );
-
-
-              
             },
             icon: const Icon(Icons.directions_bus, color: AppColors.whiteColor),
           ),

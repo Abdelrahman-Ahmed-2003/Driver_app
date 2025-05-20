@@ -29,8 +29,7 @@ class ClearLocationButton extends StatelessWidget {
       child: IconButton(
         onPressed: () {
           if (tripProvider.tripStream != null) return;
-          tripProvider.toController.clear();
-          tripProvider.priceController.clear();
+          tripProvider.currentTrip.price = '';
           tripProvider.currentTrip.destination = '';
           tripProvider.currentTrip.destinationCoords = LatLng(0, 0);
           tripProvider.setCurrentPoints(LatLng(0, 0));

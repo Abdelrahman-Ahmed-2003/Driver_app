@@ -7,7 +7,6 @@ import 'package:dirver/features/driver_info/presentation/views/widgets/text_fiel
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-
 class DriverInfoView1 extends StatelessWidget {
   DriverInfoView1({super.key});
   static const String routeName = '/driver_info_view1';
@@ -20,7 +19,6 @@ class DriverInfoView1 extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Personal Informations', style: TextStyle()),
         // backgroundColor: Colors.black,
-        
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -31,30 +29,39 @@ class DriverInfoView1 extends StatelessWidget {
             child: Column(
               // crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                PickPicture(text:'Personal Image', id: '11', imagePath:userProvider.profileImagePath),
+                PickPicture(
+                    text: 'Personal Image',
+                    id: '11',
+                    imagePath: userProvider.profileImagePath),
                 const SizedBox(height: 100),
-                buildTextField(label: 'Name',onSaved: (value) => userProvider.setName(value!),),
-                buildTextField(label: 'Birth Date', onSaved: (value) => userProvider.setBirthDate(value!)),
+                buildTextField(
+                  label: 'Name',
+                  onSaved: (value) => userProvider.setName(value!),
+                ),
+                buildTextField(
+                    label: 'Birth Date',
+                    onSaved: (value) => userProvider.setBirthDate(value!)),
                 // const Spacer(),
-                SizedBox(height: MediaQuery.of(context).size.height*0.3),
-        
-                
+                SizedBox(height: MediaQuery.of(context).size.height * 0.3),
               ],
             ),
           ),
         ),
       ),
-      bottomNavigationBar: buildNextButton((){
-                  if (formKey.currentState!.validate()) {
-                    formKey.currentState!.save();
-                    var provider = Provider.of<DriverProvider>(context, listen: false);
-                    if(provider.profileImagePath == null) {
-                      errorMessage(context, 'Please pick a image');
-                      return;
-                    }
-                    Navigator.pushNamed(context, DriverInfoView2.routeName);
-                  }
-                }),
+      bottomNavigationBar: buildNextButton(() {
+        if (formKey.currentState!.validate()) {
+          formKey.currentState!.save();
+          var provider = Provider.of<DriverProvider>(context, listen: false);
+          if (provider.profileImagePath == null) {
+            errorMessage(context, 'Please pick a image');
+            return;
+          }
+          Navigator.of(context).pushNamed(
+            DriverInfoView2.routeName,
+            arguments: userProvider,
+          );
+        }
+      }),
     );
   }
 }

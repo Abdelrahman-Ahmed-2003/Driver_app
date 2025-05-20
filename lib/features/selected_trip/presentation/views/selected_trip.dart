@@ -1,38 +1,30 @@
 import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
+import 'package:dirver/features/driver/presentation/views/widgets/bottom_sheet.dart';
 import 'package:dirver/features/passenger/presentation/views/widgets/show_map.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
-class SelectedTrip extends StatefulWidget {
-  final Map<String, dynamic> trip;
-  const SelectedTrip({super.key, required this.trip});
+class SelectedTrip extends StatelessWidget {
+  const SelectedTrip({super.key});
   static const String routeName = '/selected_trip';
 
   @override
-  State<SelectedTrip> createState() => _SelectedTripState();
-}
-
-class _SelectedTripState extends State<SelectedTrip> {
-
-  @override
-  void initState() {
-    super.initState();
-    
-    final provider = context.read<DriverTripProvider>();
-    provider.toController.text = widget.trip['destination'];
-    provider.priceController.text = widget.trip['price'];
-    
-    
-  }
-  @override
   Widget build(BuildContext context) {
+    final tripProvider = Provider.of<DriverTripProvider>(context, listen: false);
+    print('trip rebuild selected trip');
     return Scaffold(
       appBar: AppBar(
         title: const Text("Trip Details"),
       ),
-      body: ShowMap(isDriver: true,destination: LatLng(widget.trip['userLocation']['lat'], widget.trip['userLocation']['long']),
-       tripProvider:Provider.of<DriverTripProvider>(context, listen: false)
+      body: Stack(
+        children: [
+          ShowMap(isDriver: true,destination: LatLng(tripProvider.currentTrip.userLocation!.latitude, tripProvider.currentTrip.userLocation!.longitude),
+         tripProvider:tripProvider
+        ),
+        BottomSheetDriver()
+        ],
+        
       )
     );
   }

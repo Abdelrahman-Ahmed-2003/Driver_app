@@ -82,7 +82,8 @@ class DriverInfoView3 extends StatelessWidget {
                     }
                     Navigator.pushNamed(
                       context,
-                      DriverInfoView4.routeName
+                      DriverInfoView4.routeName,
+                      arguments: userProvider,
                     );
                   }
                 }),

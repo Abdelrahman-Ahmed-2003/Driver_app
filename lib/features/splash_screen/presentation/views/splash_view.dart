@@ -3,7 +3,6 @@ import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:dirver/core/services/sharedPref/store_user_type.dart';
 import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/features/auth/presentation/views/login_view.dart';
-import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
 import 'package:dirver/features/driver/presentation/views/driver_home.dart';
 import 'package:dirver/features/driver_or_rider/presentation/views/driver_or_rider_view.dart';
 import 'package:dirver/features/passenger/presentation/views/passenger_home.dart';
@@ -13,7 +12,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:provider/provider.dart';
 
 class SplashView extends StatefulWidget {
   const SplashView({super.key});
@@ -92,10 +90,7 @@ class _SplashViewState extends State<SplashView>
     Navigator.pushReplacement(
   context,
   MaterialPageRoute(
-    builder: (_) => ChangeNotifierProvider(
-      create: (_) => DriverTripProvider(),
-      child: const DriverHome(),
-    ),
+    builder: (_) => const DriverHome(),
   ),
 );
 

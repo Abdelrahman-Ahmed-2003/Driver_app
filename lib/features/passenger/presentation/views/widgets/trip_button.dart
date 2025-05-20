@@ -74,8 +74,8 @@ class TripButton extends StatelessWidget {
     BuildContext context,
     PassengerTripProvider tripProvider,
   ) async {
-    if (tripProvider.toController.text.isEmpty || 
-        tripProvider.priceController.text.isEmpty) {
+    if (tripProvider.currentTrip.destination.isEmpty || 
+        tripProvider.currentTrip.price.isEmpty) {
       errorMessage(context, 'Please fill all fields');
       return;
     }

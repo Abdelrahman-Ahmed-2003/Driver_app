@@ -26,7 +26,7 @@ class Driver {
       phone: data['phone'],
       imageUrl: data['imageUrl'],
       isAvailable: data['isAvailable'] ?? true,
-      rating: data['rate'] ?? '0',
+      rating: data['rate'].toString(),
     );
   }
 
