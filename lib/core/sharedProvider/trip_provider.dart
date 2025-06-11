@@ -77,11 +77,12 @@ abstract class TripProvider with ChangeNotifier {
 
     points.clear();
     final url = Uri.parse(
-      'https://router.project-osrm.org/route/v1/driving/'
-      '${currentTrip.userLocation!.longitude},${currentTrip.userLocation!.latitude};'
-      '${currentTrip.destinationCoords.longitude},${currentTrip.destinationCoords.latitude}?overview=full&geometries=polyline&steps=true',
-    );
+  'https://routing.openstreetmap.de/routed-car/route/v1/driving/'
+  '${currentTrip.userLocation!.longitude},${currentTrip.userLocation!.latitude};'
+  '${currentTrip.destinationCoords.longitude},${currentTrip.destinationCoords.latitude}?overview=full&geometries=polyline&steps=true'
+);
 
+    debugPrint('fetchRoute: $url');
     final response = await http.get(url);
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
