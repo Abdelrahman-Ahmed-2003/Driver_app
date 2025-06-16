@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:animated_text_kit/animated_text_kit.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dirver/core/services/sharedPref/store_user_type.dart';
 import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/features/auth/presentation/views/login_view.dart';
@@ -65,41 +66,77 @@ class _SplashViewState extends State<SplashView>
 
     _controller.repeat();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-  await Future.delayed(const Duration(seconds: 4));
+      await Future.delayed(const Duration(seconds: 4));
 
-  if (!mounted) return; // ✅ Ensure context is still valid
-  String routeName;
-  if (FirebaseAuth.instance.currentUser != null) {
-    String? userType = await StoreUserType.getLastSignIn();
+      if (!mounted) return; // ✅ Ensure context is still valid
+      String routeName;
+      if (FirebaseAuth.instance.currentUser != null) {
+        String? userType = await StoreUserType.getLastSignIn();
 
-    if (!mounted) return; // ✅ Again after async
-    
-    if (userType == 'passenger') {
-      routeName = PassengerHome.routeName;
-    } else if (userType == 'driver') {
-      routeName = DriverHome.routeName;
-    } else {
-      // errorMessage(context, 'Sorry, error occurred.');
-      routeName = DriverOrRiderView.routeName;
-    }
-    
-  } else {
-    routeName = LoginView.routeName;
-  }
-  if(routeName == DriverHome.routeName){
-    Navigator.pushReplacement(
-  context,
-  MaterialPageRoute(
-    builder: (_) => const DriverHome(),
-  ),
-);
+        if (!mounted) return; // ✅ Again after async
 
-  }
-  else {
-    Navigator.pushReplacementNamed(context, routeName);
-  }
-});
+        if (userType == 'passenger') {
+          routeName = PassengerHome.routeName;
+        } else if (userType == 'driver') {
+          routeName = DriverHome.routeName;
+        } else {
+          // errorMessage(context, 'Sorry, error occurred.');
+          routeName = DriverOrRiderView.routeName;
+        }
+      } else {
+        routeName = LoginView.routeName;
+      }
+      if (routeName == DriverHome.routeName) {
+        final user = FirebaseAuth.instance.currentUser;
+        if (await StoreUserType.getDriverDocId() == null) {
+          final querySnapshot = await FirebaseFirestore.instance
+              .collection('drivers')
+              .where('email', isEqualTo: user?.email)
+              .get();
 
+          if (querySnapshot.docs.isNotEmpty) {
+            final doc = querySnapshot.docs.first;
+            final driverId = doc.id;
+            await StoreUserType.saveDriverDocId(driverId);
+            debugPrint('Driver found');
+          } else {
+            debugPrint('Driver not found');
+          }
+        }
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const DriverHome(),
+          ),
+        );
+      }else if(routeName == PassengerHome.routeName) {
+        final user = FirebaseAuth.instance.currentUser;
+        if (await StoreUserType.getPassengerDocId() == null) {
+          final querySnapshot = await FirebaseFirestore.instance
+              .collection('passengers')
+              .where('email', isEqualTo: user?.email)
+              .get();
+
+          if (querySnapshot.docs.isNotEmpty) {
+            final doc = querySnapshot.docs.first;
+            final passengerId = doc.id;
+            await StoreUserType.savePassengerDocId(passengerId);
+            debugPrint('Passenger found');
+          } else {
+            debugPrint('Passenger not found');
+          }
+        }
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const PassengerHome(),
+          ),
+        );
+      }
+      else {
+        Navigator.pushReplacementNamed(context, routeName);
+      }
+    });
   }
 
   @override
@@ -119,10 +156,9 @@ class _SplashViewState extends State<SplashView>
 
           double widthVal = times < 3 ? 50 + (times * 50) : screenWidth;
           double heightVal = times < 3 ? 50 + (times * 50) : screenHeight;
-          double bottomVal = times < 3 
-    ? screenHeight * 0.6 - (times * (screenHeight * 0.2)) 
-    : 0;
-
+          double bottomVal = times < 3
+              ? screenHeight * 0.6 - (times * (screenHeight * 0.2))
+              : 0;
 
           return Stack(
             alignment: Alignment.center,
@@ -164,7 +200,8 @@ class _SplashViewState extends State<SplashView>
                           ),
                         ],
                       ),
-                      const TextInSplash(text: 'Choose the suitable trip for you'),
+                      const TextInSplash(
+                          text: 'Choose the suitable trip for you'),
                     ],
                   ),
                 ),
