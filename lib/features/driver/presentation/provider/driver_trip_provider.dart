@@ -115,6 +115,10 @@ class DriverTripProvider extends TripProvider {
     });
 
     currentTrip = Trip.fromFirestore(await currentDocumentTrip!.get());
+    currentDocumentTrip = FirebaseFirestore.instance
+        .collection('trips')
+        .doc(currentTrip.id);
+    // tripStream = currentDocumentTrip!.snapshots();
     debugPrint('Selected tripppppppppppppppppp:');
     _stopTripsStream();  // 🚫 stop listening to “waiting” trips
     debugPrint('end of funcitonnnnnnnnnnn:');
@@ -139,6 +143,8 @@ class DriverTripProvider extends TripProvider {
       'driverProposals.$driverId.proposedPrice': price,
       'driverProposals.$driverId.proposedPriceStatus': 'refused',
     });
+    currentTrip = Trip.fromFirestore(await currentDocumentTrip!.get());
+    driverProposal = currentTrip.drivers[driverId];
   }
 
   /* ───────────── cleanup ───────────── */
@@ -147,5 +153,15 @@ class DriverTripProvider extends TripProvider {
     _stopTripsStream();
     _stopGpsTracker();
     super.dispose();
+  }
+
+  Future<void> deleteDriverProposal() async {
+    await FirebaseFirestore.instance.collection('trips').doc(currentTrip.id).update({
+      'driverProposals.$driverId': FieldValue.delete(),
+    });
+    currentTrip = Trip();
+    currentDocumentTrip = null;
+    tripStream = null;
+    driverProposal = null;
   }
 }

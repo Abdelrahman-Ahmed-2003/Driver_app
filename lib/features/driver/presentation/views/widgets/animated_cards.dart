@@ -54,15 +54,12 @@ class _AnimatedCardsState extends State<AnimatedCards> {
                 height: dynamicHeight,
                 child: GestureDetector(
                   onTap: () {
-                    provider.currentTrip =
-                        provider.availableTrips[index];
-
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (_) => ChangeNotifierProvider.value(
                           value: provider,
-                          child: SelectedTrip(),
+                          child: SelectedTrip(trip: provider.availableTrips[index]),
                         ),
                       ),
                     );

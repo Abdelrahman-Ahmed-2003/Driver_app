@@ -1,12 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dirver/core/models/trip.dart';
 import 'package:dirver/core/services/sharedPref/store_user_type.dart';
+import 'package:dirver/core/utils/utils.dart';
 import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
 import 'package:dirver/features/trip/presentation/views/trip_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class ButtonWidget extends StatefulWidget {
-  const ButtonWidget({super.key, required this.driverController});
+  final Trip trip;
+  const ButtonWidget(
+      {super.key, required this.driverController, required this.trip});
   final TextEditingController driverController;
 
   @override
@@ -37,7 +41,7 @@ class _ButtonWidgetState extends State<ButtonWidget> {
   bool get _inputIsEmpty => widget.driverController.text.trim().isEmpty;
 
   bool get _inputEqualCurrentPrice =>
-      widget.driverController.text.trim() == _provider.currentTrip.price;
+      widget.driverController.text.trim() == widget.trip.price;
 
   /// 3 possible states for the single button
   _ButtonState get _state {
@@ -48,24 +52,26 @@ class _ButtonWidgetState extends State<ButtonWidget> {
 
   Future<void> _acceptTrip() async {
     // ➊ read the provider *inside* the callback
-    final provider = context.read<DriverTripProvider>();
-
     try {
+      if(_provider.currentTrip != Trip() && _provider.currentTrip.id != widget.trip.id){
+        errorMessage(context, 'you can propose only one trip at a time');
+        return;
+      }
+      _provider.currentTrip = widget.trip;
+      _provider.currentDocumentTrip =
+          FirebaseFirestore.instance.collection('trips').doc(widget.trip.id);
+      _provider.tripStream = _provider.currentDocumentTrip!.snapshots();
       // whatever method sets the trip as accepted:
       // await provider.updateSelectedDriver(widget.driverWithProposal);
-      await provider.selectTrip(); // ← use your real method
+      await _provider.selectTrip(); // ← use your real method
       debugPrint(' out Trip accepted');
       if (!mounted) return; // widget might be gone after await
-      provider.currentDocumentTrip = FirebaseFirestore.instance
-          .collection('trips')
-          .doc(provider.currentTrip.id);
-      provider.tripStream = provider.currentDocumentTrip!.snapshots();
       // ➋ push TripView and keep the same provider instance alive
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
           builder: (_) => ChangeNotifierProvider.value(
-            value: provider, // same instance!
+            value: _provider, // same instance!
             child: const TripView(),
           ),
         ),
@@ -82,18 +88,29 @@ class _ButtonWidgetState extends State<ButtonWidget> {
   }
 
   Future<void> _updateProposal() async {
+    debugPrint('in updating proposal funcitonnnnnnnnnnnnnnnnnnnn');
+    if(_provider.currentTrip != Trip() && _provider.currentTrip.id != widget.trip.id){
+        errorMessage(context, 'you can propose only one trip at a time');
+        return;
+      }
+      debugPrint('Updating proposal trip id: ${widget.trip.id}');
+    
     final docId = await StoreUserType.getDriverDocId();
     if (docId == null) return;
-
+    _provider.currentTrip = widget.trip;
+      _provider.currentDocumentTrip =
+          FirebaseFirestore.instance.collection('trips').doc(widget.trip.id);
+      _provider.tripStream = _provider.currentDocumentTrip!.snapshots();
     await _provider.updateDriverProposal(
-      _provider.currentTrip.id,
+      widget.trip.id,
       docId,
       widget.driverController.text.trim(),
     );
-
+    if (!mounted) return; // widget might be gone after await
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Proposal updated')),
     );
+    debugPrint('Updating proposal trip id: ${_provider.currentTrip.id}');
   }
 
   /* ───────────────────────── UI ───────────────────────── */

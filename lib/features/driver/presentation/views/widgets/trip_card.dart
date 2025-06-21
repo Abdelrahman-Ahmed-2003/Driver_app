@@ -2,6 +2,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dirver/core/models/trip.dart';
 import 'package:dirver/core/utils/colors_app.dart';
+import 'package:dirver/core/utils/utils.dart';
 import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
 import 'package:dirver/features/trip/presentation/views/trip_view.dart';
 import 'package:flutter/material.dart';
@@ -14,10 +15,11 @@ class TripCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var provider = context.read<DriverTripProvider>();
     debugPrint('trip card: $trip');
     return Card(
       elevation: 6,
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 150),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(color: AppColors.greyColor, width: 1),
@@ -25,8 +27,22 @@ class TripCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          // mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            provider.currentTrip != Trip() && provider.currentTrip.id == trip.id
+                ? Align(
+                    alignment: Alignment.topRight,
+                    child: IconButton(
+                        onPressed: () async {
+                          bool check = await alertMessage(
+                              'are you sure from deleting you proposal of this is trip?',
+                              context);
+                          if (check) {
+                            await provider.deleteDriverProposal();
+                          }
+                        },
+                        icon: Icon(Icons.delete, color: Colors.red.shade400)))
+                : SizedBox.shrink(),
             Text(
               "Trip to: ${trip.destination}",
               style: const TextStyle(
@@ -35,14 +51,6 @@ class TripCard extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            // const SizedBox(height: 12),
-            // Text(
-            //   "Passenger: ${trip['passengerName']}",
-            //   style: TextStyle(
-            //     fontSize: 16,
-            //     color: AppColors.darkGrey,
-            //   ),
-            // ),
             const SizedBox(height: 20),
             Chip(
               backgroundColor: Colors.amber.shade100,
@@ -67,6 +75,13 @@ class TripCard extends StatelessWidget {
                   try {
                     var provider =
                         Provider.of<DriverTripProvider>(context, listen: false);
+                    if (provider.currentTrip != Trip() &&
+                        provider.currentTrip.id != trip.id) {
+                      errorMessage(
+                          context, 'you can propose only one trip at a time');
+                      return;
+                    }
+
                     provider.currentTrip = trip;
                     provider.currentDocumentTrip = FirebaseFirestore.instance
                         .collection('trips')
@@ -91,7 +106,7 @@ class TripCard extends StatelessWidget {
                     // } // widget might be gone after await
 
                     // ➋ push TripView and keep the same provider instance alive
-                    
+
                     debugPrint('its okeyyyyyyyyyyyyyyyyyy');
                   } catch (e) {
                     debugPrint('Error selecting driver: $e');

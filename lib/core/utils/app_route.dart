@@ -63,8 +63,8 @@ class AppRoutes {
           ),
         );
         
-      case SelectedTrip.routeName:
-        return MaterialPageRoute(builder: (_) => SelectedTrip());
+      // case SelectedTrip.routeName:
+      //   return MaterialPageRoute(builder: (_) => SelectedTrip(trip: null,));
       case SelectDriver.routeName:
         final provider = settings.arguments as PassengerTripProvider;
         return MaterialPageRoute(

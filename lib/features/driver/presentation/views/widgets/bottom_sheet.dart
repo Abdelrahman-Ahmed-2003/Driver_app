@@ -1,3 +1,4 @@
+import 'package:dirver/core/models/trip.dart';
 import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
 import 'package:dirver/features/driver/presentation/views/widgets/button_widget.dart';
@@ -7,7 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class BottomSheetDriver extends StatefulWidget {
-  const BottomSheetDriver({super.key});
+  final Trip trip;
+  const BottomSheetDriver({super.key, required this.trip});
 
   @override
   State<BottomSheetDriver> createState() => _BottomSheetDriverState();
@@ -25,6 +27,10 @@ class _BottomSheetDriverState extends State<BottomSheetDriver> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<DriverTripProvider>(context, listen: false);
+    if(provider.currentTrip!= Trip() && provider.currentTrip.id == widget.trip.id){
+      _driverController.text = provider.driverProposal!.proposedPrice.toString();
+
+    }
     return Align(
       alignment: Alignment.bottomCenter,
       child: Container(
@@ -50,11 +56,11 @@ class _BottomSheetDriverState extends State<BottomSheetDriver> {
                       fontWeight: FontWeight.bold,
                     )),
             const SizedBox(height: 16),
-            DestWidget(destination: provider.currentTrip.destination),
+            DestWidget(destination: widget.trip.destination),
             const SizedBox(height: 20),
-            PriceWidget(driverController: _driverController),
+            PriceWidget(driverController: _driverController,trip: widget.trip),
             const SizedBox(height: 20),
-            ButtonWidget(driverController: _driverController),
+            ButtonWidget(driverController: _driverController,trip: widget.trip),
           ],
         ),
       ),

@@ -28,6 +28,18 @@ class Trip {
     this.drivers = const {},
   });
 
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Trip &&
+        other.id == id &&
+        other.status == status &&
+        other.price == price;
+  }
+
+  @override
+  int get hashCode => Object.hash(id, status, price);
+
   factory Trip.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
 
