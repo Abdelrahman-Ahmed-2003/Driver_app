@@ -36,7 +36,20 @@ class _PassengerHomeState extends State<PassengerHome> {
               Provider.of<PassengerTripProvider>(context, listen: false);
           debugPrint("PassengerHome rebuild called");
           debugPrint('tripProvider.tripStream: ${tripProvider.currentTrip}');
-
+          // if(tripProvider.tripStream != null && tripProvider.currentTrip.status == 'started') {
+          //   WidgetsBinding.instance.addPostFrameCallback((_) {
+          //     Navigator.pushAndRemoveUntil(
+          //             context,
+          //             MaterialPageRoute(
+          //               builder: (_) => ChangeNotifierProvider(
+          //                 create: (_) => DriverTripProvider(), // same instance!
+          //                 child: const TripView(),
+          //               ),
+          //             ),
+          //             (Route<dynamic> route) => false,
+          //           );
+          //   });
+          // }
           return Scaffold(
             appBar: AppBar(
               title: const Text(

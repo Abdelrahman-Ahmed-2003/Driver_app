@@ -14,6 +14,8 @@ class PassengerTripProvider extends TripProvider {
   PassengerTripProvider() {
     fetchPassengerDocId();
   }
+
+  
   Future<void> fetchPassengerDocId() async {
     passengerDocId = await StoreUserType.getPassengerDocId();
     isPassengerDocIdFetched = true;
@@ -52,6 +54,22 @@ class PassengerTripProvider extends TripProvider {
       isLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> updateSelectedDriver(DriverWithProposal driver) async {
+    if (currentDocumentTrip == null) return;
+    await currentDocumentTrip!.update({
+      'driverDocId': driver.driver.id,
+      'driverDistination': 'toUser',
+      'status': 'started',
+      'price':driver.proposal.proposedPrice,
+      'driverProposals': FieldValue.delete(),
+      'driverLocation': {
+        'latitude': currentTrip.userLocation!.latitude,
+        'longitude': currentTrip.userLocation!.longitude,
+      },
+    });
+    currentTrip = Trip.fromFirestore(await currentDocumentTrip!.get());
   }
 
   Future<void> updateDriverProposalsLocally(

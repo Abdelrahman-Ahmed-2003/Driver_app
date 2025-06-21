@@ -1,5 +1,5 @@
 import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
-import 'package:dirver/features/selected_trip/presentation/views/selected_trip.dart';
+import 'package:dirver/features/driver/presentation/views/selected_trip.dart';
 import 'package:dirver/features/driver/presentation/views/widgets/trip_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

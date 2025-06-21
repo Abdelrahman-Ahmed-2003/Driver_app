@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dirver/core/utils/colors_app.dart';
+import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
 import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
+import 'package:dirver/features/trip/presentation/views/trip_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:dirver/core/utils/utils.dart';
@@ -22,7 +24,7 @@ class TripButton extends StatelessWidget {
               stream: snapshot,
               builder: (context, tripSnapshot) {
                 final status = tripProvider.getCurrentStatus(tripSnapshot.data);
-
+                
                 if (status == 'waiting') {
                   return ElevatedButton(
                     onPressed: () async {
@@ -44,7 +46,22 @@ class TripButton extends StatelessWidget {
                     ),
                   );
                 }
-
+                if(status == 'started') {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ChangeNotifierProvider(
+                          create:(_)=>DriverTripProvider(), // same instance!
+                          child: const TripView(),
+                        ),
+                      ),
+                      (Route<dynamic> route) => false,
+                    );
+                  });
+                  return const SizedBox.shrink(); // No button if trip is started
+                }
+                
                 return ElevatedButton(
                   onPressed: () => _createTrip(context,tripProvider),
                   style: ElevatedButton.styleFrom(

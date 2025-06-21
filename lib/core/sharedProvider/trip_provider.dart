@@ -102,14 +102,7 @@ abstract class TripProvider with ChangeNotifier {
     tripStream = currentDocumentTrip?.snapshots();
   }
 
-  Future<void> updateSelectedDriver(String driverId) async {
-    if (currentDocumentTrip == null) return;
-    await currentDocumentTrip!.update({
-      'driverDocId': driverId,
-      'driverDistination': 'toUser',
-      'status': 'accepted',
-    });
-  }
+  
 
   Future<String?> checkUserInTrip(String id, String iam) async {
     final doc = await firestore.collection(iam).doc(id).get();

@@ -59,6 +59,7 @@ dependencies:
   bloc: ^9.0.0
   firebase_messaging: ^15.2.5
   connectivity_plus: ^6.1.4
+  quickalert: ^1.1.0
 
 dev_dependencies:
   flutter_test:

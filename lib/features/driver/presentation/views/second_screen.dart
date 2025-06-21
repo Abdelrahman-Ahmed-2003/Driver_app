@@ -1,9 +1,9 @@
 import 'package:dirver/core/utils/utils.dart';
-import 'package:dirver/features/driver_info/presentation/provider/driver_provider.dart';
-import 'package:dirver/features/driver_info/presentation/views/third_screen.dart';
-import 'package:dirver/features/driver_info/presentation/views/widgets/next_button.dart';
-import 'package:dirver/features/driver_info/presentation/views/widgets/pick_picture.dart';
-import 'package:dirver/features/driver_info/presentation/views/widgets/text_field_widger.dart';
+import 'package:dirver/features/driver/presentation/provider/driver_provider.dart';
+import 'package:dirver/features/driver/presentation/views/third_screen.dart';
+import 'package:dirver/features/driver/presentation/views/widgets/next_button_info.dart';
+import 'package:dirver/features/driver/presentation/views/widgets/pick_picture.dart';
+import 'package:dirver/features/driver/presentation/views/widgets/text_field_widger.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

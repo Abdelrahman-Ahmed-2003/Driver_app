@@ -1,16 +1,17 @@
 import 'package:dirver/features/auth/presentation/views/login_view.dart';
 import 'package:dirver/features/driver/presentation/views/driver_home.dart';
-import 'package:dirver/features/driver_info/presentation/provider/driver_provider.dart';
+import 'package:dirver/features/driver/presentation/provider/driver_provider.dart';
 import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
 import 'package:dirver/features/passenger/presentation/views/select_driver.dart';
-import 'package:dirver/features/selected_trip/presentation/views/selected_trip.dart';
-import 'package:dirver/features/driver_info/presentation/views/first_screen.dart';
-import 'package:dirver/features/driver_info/presentation/views/fourth_screen.dart';
-import 'package:dirver/features/driver_info/presentation/views/second_screen.dart';
-import 'package:dirver/features/driver_info/presentation/views/third_screen.dart';
+import 'package:dirver/features/driver/presentation/views/selected_trip.dart';
+import 'package:dirver/features/driver/presentation/views/first_screen.dart';
+import 'package:dirver/features/driver/presentation/views/fourth_screen.dart';
+import 'package:dirver/features/driver/presentation/views/second_screen.dart';
+import 'package:dirver/features/driver/presentation/views/third_screen.dart';
 import 'package:dirver/features/driver_or_rider/presentation/views/driver_or_rider_view.dart';
 import 'package:dirver/features/passenger/presentation/views/passenger_home.dart';
 import 'package:dirver/features/splash_screen/presentation/views/splash_view.dart';
+import 'package:dirver/features/trip/presentation/views/trip_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -72,6 +73,8 @@ class AppRoutes {
             child: const SelectDriver(),
           ),
         );
+      case TripView.routeName:
+        return MaterialPageRoute(builder: (_) => const TripView());
       default:
         return MaterialPageRoute(builder: (_) => errorRoute());
     }

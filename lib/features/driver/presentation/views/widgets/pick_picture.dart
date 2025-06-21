@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:dirver/core/utils/colors_app.dart';
-import 'package:dirver/features/driver_info/presentation/provider/driver_provider.dart';
+import 'package:dirver/features/driver/presentation/provider/driver_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';

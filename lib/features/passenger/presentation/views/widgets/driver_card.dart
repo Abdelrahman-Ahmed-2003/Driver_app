@@ -1,5 +1,6 @@
 import 'package:dirver/core/models/driver_with_proposal.dart';
 import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
+import 'package:dirver/features/trip/presentation/views/trip_view.dart';
 import 'package:flutter/material.dart';
 import 'package:dirver/core/utils/colors_app.dart';
 import 'package:provider/provider.dart';
@@ -22,6 +23,9 @@ class _DriverCardState extends State<DriverCard> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('DriverCard: ${widget.driverWithProposal.driver.name}');
+    debugPrint(
+        'DriverCard: ${widget.driverWithProposal.proposal.proposedPrice}');
     final provider = Provider.of<PassengerTripProvider>(context, listen: false);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -36,6 +40,7 @@ class _DriverCardState extends State<DriverCard> {
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               // Driver Info Row
               Row(
@@ -91,19 +96,37 @@ class _DriverCardState extends State<DriverCard> {
               const SizedBox(height: 12),
 
               // Button
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.grenColor,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.grenColor,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 12),
+                  ),
+                  onPressed: () async {
+                    try {
+                      await provider
+                          .updateSelectedDriver(widget.driverWithProposal);
+                      Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => TripView(),
+                          ));
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error selecting driver: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
+                  },
+                  child: const Text('Select Driver'),
                 ),
-                onPressed: () {
-                  provider.updateSelectedDriver(
-                      widget.driverWithProposal.driver.id);
-                },
-                child: const Text('Select Driver'),
               ),
             ],
           ),
