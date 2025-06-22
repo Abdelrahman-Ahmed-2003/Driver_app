@@ -8,15 +8,30 @@ import 'package:dirver/features/trip/presentation/views/trip_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class TripCard extends StatelessWidget {
+class TripCard extends StatefulWidget {
   final Trip trip;
 
   const TripCard({super.key, required this.trip});
 
   @override
+  State<TripCard> createState() => _TripCardState();
+}
+
+class _TripCardState extends State<TripCard> {
+  bool fetched = false;
+  void initState() {
+    super.initState();
+    debugPrint('TripCard initState');
+    WidgetsBinding.instance.addPostFrameCallback((_){
+      var provider = context.read<DriverTripProvider>();
+      if(fetched) return;
+      fetched = provider.fetchOnlineProposedTrip(widget.trip);
+    });
+  }
+  @override
   Widget build(BuildContext context) {
-    var provider = context.read<DriverTripProvider>();
-    debugPrint('trip card: $trip');
+    var provider = context.watch<DriverTripProvider>();
+    debugPrint('trip card: ${widget.trip}');
     return Card(
       elevation: 6,
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 150),
@@ -29,7 +44,7 @@ class TripCard extends StatelessWidget {
         child: Column(
           // mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            provider.currentTrip != Trip() && provider.currentTrip.id == trip.id
+            provider.currentTrip != Trip() && provider.currentTrip.id == widget.trip.id
                 ? Align(
                     alignment: Alignment.topRight,
                     child: IconButton(
@@ -44,7 +59,7 @@ class TripCard extends StatelessWidget {
                         icon: Icon(Icons.delete, color: Colors.red.shade400)))
                 : SizedBox.shrink(),
             Text(
-              "Trip to: ${trip.destination}",
+              "Trip to: ${widget.trip.destination}",
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -55,11 +70,12 @@ class TripCard extends StatelessWidget {
             Chip(
               backgroundColor: Colors.amber.shade100,
               label: Text(
-                "${trip.price} EGP",
+                "${widget.trip.price} EGP",
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
             const SizedBox(height: 20),
+            provider.driverProposal == null?
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -76,16 +92,16 @@ class TripCard extends StatelessWidget {
                     var provider =
                         Provider.of<DriverTripProvider>(context, listen: false);
                     if (provider.currentTrip != Trip() &&
-                        provider.currentTrip.id != trip.id) {
+                        provider.currentTrip.id != widget.trip.id) {
                       errorMessage(
                           context, 'you can propose only one trip at a time');
                       return;
                     }
 
-                    provider.currentTrip = trip;
+                    provider.currentTrip = widget.trip;
                     provider.currentDocumentTrip = FirebaseFirestore.instance
                         .collection('trips')
-                        .doc(trip.id);
+                        .doc(widget.trip.id);
                     provider.tripStream =
                         provider.currentDocumentTrip!.snapshots();
                     Navigator.pushAndRemoveUntil(
@@ -128,7 +144,7 @@ class TripCard extends StatelessWidget {
                 },
                 child: Text('Accept Trip', style: TextStyle(fontSize: 16)),
               ),
-            ),
+            ):SizedBox.shrink(),
           ],
         ),
       ),

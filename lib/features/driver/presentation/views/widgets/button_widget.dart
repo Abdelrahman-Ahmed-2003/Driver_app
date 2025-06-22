@@ -8,137 +8,134 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class ButtonWidget extends StatefulWidget {
-  final Trip trip;
-  const ButtonWidget(
-      {super.key, required this.driverController, required this.trip});
+  const ButtonWidget({
+    super.key,
+    required this.driverController,
+    required this.trip,
+  });
+
   final TextEditingController driverController;
+  final Trip trip;
 
   @override
   State<ButtonWidget> createState() => _ButtonWidgetState();
 }
 
 class _ButtonWidgetState extends State<ButtonWidget> {
-  late DriverTripProvider _provider;
-
   @override
   void initState() {
     super.initState();
-    // cache provider once – cheaper than reading it every keystroke
-    _provider = context.read<DriverTripProvider>();
-    widget.driverController.addListener(_refresh);
+    widget.driverController.addListener(() => setState(() {}));
   }
 
   @override
   void dispose() {
-    widget.driverController.removeListener(_refresh);
+    widget.driverController.removeListener(() {});
     super.dispose();
   }
 
-  /* ───────────────────────── LOGIC ───────────────────────── */
+  /* ─────────────── حساب حالة الزر ─────────────── */
 
-  void _refresh() => setState(() {});
+  _ButtonState _computeState(DriverTripProvider p) {
+    final proposal = widget.trip.drivers[p.driverId];
+    final input = widget.driverController.text.trim();
 
-  bool get _inputIsEmpty => widget.driverController.text.trim().isEmpty;
+    if (proposal == null) {
+      if (input.isEmpty) return _ButtonState.accept;
+      if (input == widget.trip.price) return _ButtonState.updateDisabled;
+      return _ButtonState.updateEnabled;
+    }
 
-  bool get _inputEqualCurrentPrice =>
-      widget.driverController.text.trim() == widget.trip.price;
-
-  /// 3 possible states for the single button
-  _ButtonState get _state {
-    if (_inputIsEmpty) return _ButtonState.accept;
-    if (_inputEqualCurrentPrice) return _ButtonState.updateDisabled;
-    return _ButtonState.updateEnabled;
+    return input == proposal.proposedPrice
+        ? _ButtonState.updateDisabled
+        : _ButtonState.updateEnabled;
   }
+
+  /* ─────────────── Accept Trip ─────────────── */
 
   Future<void> _acceptTrip() async {
-    // ➊ read the provider *inside* the callback
-    try {
-      if(_provider.currentTrip != Trip() && _provider.currentTrip.id != widget.trip.id){
-        errorMessage(context, 'you can propose only one trip at a time');
-        return;
-      }
-      _provider.currentTrip = widget.trip;
-      _provider.currentDocumentTrip =
-          FirebaseFirestore.instance.collection('trips').doc(widget.trip.id);
-      _provider.tripStream = _provider.currentDocumentTrip!.snapshots();
-      // whatever method sets the trip as accepted:
-      // await provider.updateSelectedDriver(widget.driverWithProposal);
-      await _provider.selectTrip(); // ← use your real method
-      debugPrint(' out Trip accepted');
-      if (!mounted) return; // widget might be gone after await
-      // ➋ push TripView and keep the same provider instance alive
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ChangeNotifierProvider.value(
-            value: _provider, // same instance!
-            child: const TripView(),
-          ),
-        ),
-        (Route<dynamic> route) => false,
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error selecting driver: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+    final provider = context.read<DriverTripProvider>();
+
+    if (provider.currentTrip != Trip() &&
+        provider.currentTrip.id != widget.trip.id) {
+      errorMessage(context, 'You can propose only one trip at a time');
+      return;
     }
+
+    provider
+      ..currentTrip = widget.trip
+      ..currentDocumentTrip =
+          FirebaseFirestore.instance.collection('trips').doc(widget.trip.id)
+      ..tripStream = provider.currentDocumentTrip!.snapshots();
+
+    await provider.selectTrip();
+
+    if (!mounted) return;
+
+    Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (_) => ChangeNotifierProvider.value(
+          value: provider,
+          child: const TripView(),
+        ),
+      ),
+      (_) => false,
+    );
   }
 
+  /* ─────────────── Update Proposal ─────────────── */
+
   Future<void> _updateProposal() async {
-    debugPrint('in updating proposal funcitonnnnnnnnnnnnnnnnnnnn');
-    if(_provider.currentTrip != Trip() && _provider.currentTrip.id != widget.trip.id){
-        errorMessage(context, 'you can propose only one trip at a time');
-        return;
-      }
-      debugPrint('Updating proposal trip id: ${widget.trip.id}');
-    
+    final provider = context.read<DriverTripProvider>();
+
+    if (provider.currentTrip != Trip() &&
+        provider.currentTrip.id != widget.trip.id) {
+      errorMessage(context, 'You can propose only one trip at a time');
+      return;
+    }
+
     final docId = await StoreUserType.getDriverDocId();
     if (docId == null) return;
-    _provider.currentTrip = widget.trip;
-      _provider.currentDocumentTrip =
-          FirebaseFirestore.instance.collection('trips').doc(widget.trip.id);
-      _provider.tripStream = _provider.currentDocumentTrip!.snapshots();
-    await _provider.updateDriverProposal(
+
+    await provider.updateDriverProposal(
       widget.trip.id,
       docId,
       widget.driverController.text.trim(),
     );
-    if (!mounted) return; // widget might be gone after await
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Proposal updated')),
-    );
-    debugPrint('Updating proposal trip id: ${_provider.currentTrip.id}');
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Proposal updated')),
+      );
+    }
   }
 
-  /* ───────────────────────── UI ───────────────────────── */
+  /* ─────────────── UI ─────────────── */
 
   @override
   Widget build(BuildContext context) {
-    final buttonState = _state;
+    final provider = context.watch<DriverTripProvider>();
+    final state = _computeState(provider);
 
-    // everything that changes is decided here ↓
-    final (label, color, icon, onPressed) = switch (buttonState) {
+    final (label, color, icon, onPressed) = switch (state) {
       _ButtonState.accept => (
-          'Accept Trip',
-          Colors.green,
-          Icons.check,
-          _acceptTrip,
-        ),
+        'Accept Trip',
+        Colors.green,
+        Icons.check,
+        _acceptTrip,
+      ),
       _ButtonState.updateEnabled => (
-          'Update Price',
-          Colors.orange,
-          Icons.sync_alt,
-          _updateProposal,
-        ),
+        'Update Price',
+        Colors.orange,
+        Icons.sync_alt,
+        _updateProposal,
+      ),
       _ButtonState.updateDisabled => (
-          'Update Price',
-          Colors.grey.shade400,
-          Icons.sync_alt,
-          null, // disabled
-        ),
+        'Update Price',
+        Colors.grey.shade400,
+        Icons.sync_alt,
+        null,
+      ),
     };
 
     return SizedBox(
@@ -146,18 +143,18 @@ class _ButtonWidgetState extends State<ButtonWidget> {
       child: ElevatedButton.icon(
         icon: Icon(icon),
         label: Text(label),
-        onPressed: onPressed, // null → disabled
+        onPressed: onPressed,      // null ⇒ disabled
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
           padding: const EdgeInsets.symmetric(vertical: 14),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       ),
     );
   }
 }
 
-/* ─────────────────────────────────────────────────────────── */
-
+/* ───────────── enum ───────────── */
 enum _ButtonState { accept, updateEnabled, updateDisabled }

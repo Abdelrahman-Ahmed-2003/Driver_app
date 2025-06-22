@@ -126,7 +126,7 @@ class Trip {
 }
 
 class DriverProposal {
-  final String proposedPrice;
+  String proposedPrice;
 
   DriverProposal({
     required this.proposedPrice,

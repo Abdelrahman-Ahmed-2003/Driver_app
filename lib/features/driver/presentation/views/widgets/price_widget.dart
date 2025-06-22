@@ -42,7 +42,7 @@ class PriceWidget extends StatelessWidget {
               
                 controller: driverController,
                 keyboardType: TextInputType.number,
-                readOnly: provider.currentTrip != Trip(),
+                readOnly: provider.currentTrip.id != trip.id && provider.driverProposal != null,
                 decoration: InputDecoration(
                   suffix: Text('EGP'),
                   hintText: "EGP",

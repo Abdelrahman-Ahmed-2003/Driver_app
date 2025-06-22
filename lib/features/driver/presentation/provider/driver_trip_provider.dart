@@ -29,6 +29,19 @@ class DriverTripProvider extends TripProvider {
     notifyListeners();
   }
 
+  bool fetchOnlineProposedTrip(Trip trip){
+    for (var driver in trip.drivers.entries) {
+      if (driver.key == driverId) {
+        driverProposal = driver.value;
+        currentTrip = trip;
+        notifyListeners();
+        return true;
+      }
+    }
+    notifyListeners();
+    return false;
+  }
+
   /* ──────────── available-trips stream ──────────── */
   Stream<List<Map<String, dynamic>>> listenForAvailableTrips() {
     // If already listening, just return the existing broadcast stream
@@ -139,12 +152,13 @@ class DriverTripProvider extends TripProvider {
 
   Future<void> updateDriverProposal(
       String tripId, String driverId, String price) async {
-    await FirebaseFirestore.instance.collection('trips').doc(tripId).update({
+    await firestore.collection('trips').doc(tripId).update({
       'driverProposals.$driverId.proposedPrice': price,
       'driverProposals.$driverId.proposedPriceStatus': 'refused',
     });
-    currentTrip = Trip.fromFirestore(await currentDocumentTrip!.get());
+    currentTrip.drivers[driverId]?.proposedPrice = price;
     driverProposal = currentTrip.drivers[driverId];
+    notifyListeners();
   }
 
   /* ───────────── cleanup ───────────── */
@@ -163,5 +177,6 @@ class DriverTripProvider extends TripProvider {
     currentDocumentTrip = null;
     tripStream = null;
     driverProposal = null;
+    notifyListeners();
   }
 }
