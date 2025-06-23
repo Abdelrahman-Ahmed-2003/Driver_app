@@ -69,6 +69,10 @@ class PassengerTripProvider extends TripProvider {
         'longitude': currentTrip.userLocation!.longitude,
       },
     });
+    await firestore
+        .collection('drivers')
+        .doc(driver.driver.id)
+        .update({'tripId': currentDocumentTrip!.id});
     currentTrip = Trip.fromFirestore(await currentDocumentTrip!.get());
   }
 

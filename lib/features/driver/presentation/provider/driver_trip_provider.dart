@@ -127,6 +127,10 @@ class DriverTripProvider extends TripProvider {
       },
     });
 
+    await firestore.collection('drivers').doc(driverId).update({
+      'tripId': currentDocumentTrip!.id,
+    });
+
     currentTrip = Trip.fromFirestore(await currentDocumentTrip!.get());
     currentDocumentTrip = FirebaseFirestore.instance
         .collection('trips')
