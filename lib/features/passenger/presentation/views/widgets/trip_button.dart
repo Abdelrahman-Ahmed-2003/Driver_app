@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
 import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
-import 'package:dirver/features/trip/presentation/views/trip_view.dart';
+import 'package:dirver/features/trip/presentation/views/passenger_trip_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:dirver/core/utils/utils.dart';
@@ -53,7 +53,7 @@ class TripButton extends StatelessWidget {
                       MaterialPageRoute(
                         builder: (_) => ChangeNotifierProvider(
                           create:(_)=>DriverTripProvider(), // same instance!
-                          child: const TripView(),
+                          child: const PassengerTripView(),
                         ),
                       ),
                       (Route<dynamic> route) => false,

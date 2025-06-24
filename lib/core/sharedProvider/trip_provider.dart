@@ -31,6 +31,20 @@ abstract class TripProvider with ChangeNotifier {
   
   }
 
+
+  Future<void> pushDriverLocation(LatLng location) async {
+    if (currentTrip.driverLocation == null || currentTrip.driverLocation != location) {
+      currentTrip.driverLocation = location;
+      notifyListeners(); // Notify listeners of the update
+      debugPrint('pushDriverLocation: $location');
+      if (currentDocumentTrip != null) {
+        await firestore.collection('trips').doc(currentDocumentTrip!.id).update({
+          'driverLocation': {'lat': location.latitude, 'long': location.longitude},
+        });
+      }
+    }
+  }
+
   void setDest(LatLng location) {
     currentTrip.destinationCoords = location;
     notifyListeners(); // Notify listeners of the update

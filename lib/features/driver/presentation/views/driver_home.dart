@@ -1,3 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dirver/core/models/trip.dart';
+import 'package:dirver/features/trip/presentation/views/driver_trip_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -20,13 +23,11 @@ class _DriverHomeState extends State<DriverHome> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // final provider = Provider.of<DriverTripProvider>(context, listen: false);
-      // provider.reconnectTripStream();
-
       await StoreUserType.saveDriver(true);
       await StoreUserType.saveLastSignIn('driver');
     });
   }
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -51,28 +52,66 @@ class _DriverHomeState extends State<DriverHome> {
         ),
         body: Consumer<DriverTripProvider>(
           builder: (_, provider, __) {
-            if (!provider.isDriverDocIdFetched) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
             return StreamBuilder<List<Map<String, dynamic>>>(
-              stream: provider.listenForAvailableTrips(), // provider handled inside builder
+              stream: provider.listenForAvailableTrips(),
               builder: (_, snap) {
+                _checkDriverTripAndRedirect(context, provider);
                 if (snap.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
+
                 if (!snap.hasData || snap.data!.isEmpty) {
                   return const Center(child: Text('No available trips'));
                 }
 
-                // availableTrips list already updated inside provider
                 return const AnimatedCards();
-                
               },
             );
           },
         ),
       ),
     );
+  }
+
+  // ✅ Extracted trip check logic
+  Future<void> _checkDriverTripAndRedirect(
+      BuildContext context, DriverTripProvider provider) async {
+    try {
+      debugPrint('in Driver has');
+      if (!provider.isDriverDocIdFetched) {
+        await provider.fetchDriverDocId();
+      }
+      
+      final docSnapshot = await provider.firestore
+          .collection('drivers')
+          .doc(provider.driverId)
+          .get();
+
+      final data = docSnapshot.data();
+      if (data != null && (data['tripId'] != null)) {
+        debugPrint('Driver has an active trip: ${data['tripId']}');
+        if (!context.mounted) return;
+        if(provider.currentTrip == Trip()){
+          provider.currentDocumentTrip = (await provider.firestore
+              .collection('trips')
+              .doc(data['tripId'])
+              .get()) as DocumentReference<Object?>?;
+          provider.currentTrip = Trip.fromFirestore(
+              await provider.currentDocumentTrip!.get());
+        }
+        provider.tripStream = provider.currentDocumentTrip!.snapshots();
+        Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (_) => ChangeNotifierProvider.value(
+              value: provider,
+              child: const DriverTripView(),
+            ),
+          ),
+          (_) => false,
+        );
+      }
+    } catch (e) {
+      debugPrint('Error checking trip: $e');
+    }
   }
 }

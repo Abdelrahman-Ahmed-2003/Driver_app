@@ -19,11 +19,11 @@ class DriverTripProvider extends TripProvider {
   StreamSubscription<LocationData>? _gpsSub;
 
   DriverTripProvider() {
-    _fetchDriverDocId();
+    fetchDriverDocId();
   }
 
   /* ───────────── init driver id ───────────── */
-  Future<void> _fetchDriverDocId() async {
+  Future<void> fetchDriverDocId() async {
     driverId = await StoreUserType.getDriverDocId();
     isDriverDocIdFetched = true;
     notifyListeners();
@@ -44,27 +44,41 @@ class DriverTripProvider extends TripProvider {
 
   /* ──────────── available-trips stream ──────────── */
   Stream<List<Map<String, dynamic>>> listenForAvailableTrips() {
-    // If already listening, just return the existing broadcast stream
-    if (_tripsCtr != null) return _tripsCtr!.stream;
+  // إن كان البث موجودًا بالفعل فأعد نفس الـ stream
+  if (_tripsCtr != null) return _tripsCtr!.stream;
 
-    _tripsCtr = StreamController<List<Map<String, dynamic>>>.broadcast();
+  _tripsCtr = StreamController<List<Map<String, dynamic>>>.broadcast();
 
-    _tripsSub = FirebaseFirestore.instance
-        .collection('trips')
-        .where('status', isEqualTo: 'waiting')
-        .snapshots()
-        .listen((snap) {
+  _tripsSub = FirebaseFirestore.instance
+    .collection('trips')
+    .snapshots()
+    .listen((snap) {
       final trips = snap.docs
-          .where((d) => d['passengerdocId'] != driverId)
+          .where((d) {
+            // استبعد رحلاتك
+            if (d['passengerdocId'] == driverId) return false;
+
+            final data = d.data();
+
+            // ✅ تحقق هل driverLocation غير موجود أو null
+            if (!data.containsKey('driverLocation') || data['driverLocation'] == null) {
+              return true;
+            }
+
+            return false; // يعنى أن الموقع موجود بالفعل
+          })
           .map((d) => {'tripId': d.id, ...d.data()})
           .toList();
 
-      updateAvailableTrips(trips);   // keep List<Trip> updated
-      _tripsCtr?.add(trips);        // push to StreamBuilder
+      updateAvailableTrips(trips);
+      _tripsCtr?.add(trips);
     });
 
-    return _tripsCtr!.stream;
-  }
+
+
+  return _tripsCtr!.stream;
+}
+
 
   void _stopTripsStream() {
     _tripsSub?.cancel();
@@ -148,20 +162,18 @@ class DriverTripProvider extends TripProvider {
     notifyListeners();
   }
 
-  Future<void> updateTripStatus(String status) async =>
-      currentDocumentTrip?.update({'status': status});
-
-  Future<void> updateTripPrice(String id, String price) async =>
-      FirebaseFirestore.instance.collection('trips').doc(id).update({'price': price});
-
   Future<void> updateDriverProposal(
       String tripId, String driverId, String price) async {
     await firestore.collection('trips').doc(tripId).update({
       'driverProposals.$driverId.proposedPrice': price,
-      'driverProposals.$driverId.proposedPriceStatus': 'refused',
     });
-    currentTrip.drivers[driverId]?.proposedPrice = price;
+    DriverProposal proposal = DriverProposal(
+            proposedPrice: price,
+    );
+    currentTrip.drivers[driverId] = proposal;
     driverProposal = currentTrip.drivers[driverId];
+    debugPrint('Updated driver proposal: $driverId with price: $price');
+    debugPrint('Current trip drivers: ${currentTrip.drivers[driverId]?.proposedPrice ?? 'nullllllll'}');
     notifyListeners();
   }
 

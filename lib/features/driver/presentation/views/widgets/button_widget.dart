@@ -3,7 +3,7 @@ import 'package:dirver/core/models/trip.dart';
 import 'package:dirver/core/services/sharedPref/store_user_type.dart';
 import 'package:dirver/core/utils/utils.dart';
 import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
-import 'package:dirver/features/trip/presentation/views/trip_view.dart';
+import 'package:dirver/features/trip/presentation/views/driver_trip_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -76,7 +76,7 @@ class _ButtonWidgetState extends State<ButtonWidget> {
       MaterialPageRoute(
         builder: (_) => ChangeNotifierProvider.value(
           value: provider,
-          child: const TripView(),
+          child: const DriverTripView(),
         ),
       ),
       (_) => false,
@@ -93,6 +93,11 @@ class _ButtonWidgetState extends State<ButtonWidget> {
       errorMessage(context, 'You can propose only one trip at a time');
       return;
     }
+    provider
+      ..currentTrip = widget.trip
+      ..currentDocumentTrip =
+          FirebaseFirestore.instance.collection('trips').doc(widget.trip.id)
+      ..tripStream = provider.currentDocumentTrip!.snapshots();
 
     final docId = await StoreUserType.getDriverDocId();
     if (docId == null) return;

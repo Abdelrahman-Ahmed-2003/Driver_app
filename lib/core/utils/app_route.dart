@@ -11,7 +11,8 @@ import 'package:dirver/features/driver/presentation/views/third_screen.dart';
 import 'package:dirver/features/driver_or_rider/presentation/views/driver_or_rider_view.dart';
 import 'package:dirver/features/passenger/presentation/views/passenger_home.dart';
 import 'package:dirver/features/splash_screen/presentation/views/splash_view.dart';
-import 'package:dirver/features/trip/presentation/views/trip_view.dart';
+import 'package:dirver/features/trip/presentation/views/driver_trip_view.dart';
+import 'package:dirver/features/trip/presentation/views/passenger_trip_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -73,8 +74,10 @@ class AppRoutes {
             child: const SelectDriver(),
           ),
         );
-      case TripView.routeName:
-        return MaterialPageRoute(builder: (_) => const TripView());
+      case DriverTripView.routeName:
+        return MaterialPageRoute(builder: (_) => const DriverTripView());
+      case PassengerTripView.routeName:
+        return MaterialPageRoute(builder:(_)=> const PassengerTripView());
       default:
         return MaterialPageRoute(builder: (_) => errorRoute());
     }

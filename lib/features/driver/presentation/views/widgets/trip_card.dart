@@ -4,7 +4,7 @@ import 'package:dirver/core/models/trip.dart';
 import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/core/utils/utils.dart';
 import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
-import 'package:dirver/features/trip/presentation/views/trip_view.dart';
+import 'package:dirver/features/trip/presentation/views/driver_trip_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -21,9 +21,11 @@ class _TripCardState extends State<TripCard> {
   bool fetched = false;
   void initState() {
     super.initState();
+    var provider = context.read<DriverTripProvider>();
+    
     debugPrint('TripCard initState');
     WidgetsBinding.instance.addPostFrameCallback((_){
-      var provider = context.read<DriverTripProvider>();
+      
       if(fetched) return;
       fetched = provider.fetchOnlineProposedTrip(widget.trip);
     });
@@ -31,6 +33,17 @@ class _TripCardState extends State<TripCard> {
   @override
   Widget build(BuildContext context) {
     var provider = context.watch<DriverTripProvider>();
+    // if(widget.trip.status != 'waiting'){
+    //   Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+    //   MaterialPageRoute(
+    //     builder: (_) => ChangeNotifierProvider.value(
+    //       value: provider,
+    //       child: const DriverTripView(),
+    //     ),
+    //   ),
+    //   (_) => false,
+    // );
+    // }
     debugPrint('trip card: ${widget.trip}');
     return Card(
       elevation: 6,
@@ -109,7 +122,7 @@ class _TripCardState extends State<TripCard> {
                       MaterialPageRoute(
                         builder: (_) => ChangeNotifierProvider.value(
                           value: provider, // same instance!
-                          child: const TripView(),
+                          child: const DriverTripView(),
                         ),
                       ),
                       (Route<dynamic> route) => false,
