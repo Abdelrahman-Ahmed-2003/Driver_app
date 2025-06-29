@@ -31,6 +31,53 @@ abstract class TripProvider with ChangeNotifier {
   
   }
 
+  Future<void> fetchOnlineTrip(String tripId) async {
+    isLoading = true;
+    notifyListeners(); // Notify listeners of the loading state
+    try {
+      currentDocumentTrip = firestore.collection('trips').doc(tripId);
+      tripStream = currentDocumentTrip?.snapshots();
+      final snapshot = await currentDocumentTrip!.get();
+      if (snapshot.exists) {
+        currentTrip = Trip.fromFirestore(snapshot);
+        debugPrint('fetchOnlineTrip: $currentTrip');
+      } else {
+        debugPrint('No trip found with ID: $tripId');
+      }
+    } catch (e) {
+      debugPrint('Error fetching trip: $e');
+    } finally {
+      isLoading = false;
+      notifyListeners(); // Notify listeners of the loading state change
+    }
+  }
+
+  Future<void>updateDestination(String dest)async{
+    debugPrint('updateDestination: ${currentTrip.id}');
+      await FirebaseFirestore.instance.collection('trips').doc(currentTrip.id).update({
+        'driverDistination':dest,
+      });
+      currentTrip.driverDistination = 'toDestination';
+      
+      notifyListeners();
+  }
+
+  Future<void>endTrip() async {
+    await firestore.collection('drivers').doc(currentTrip.driverId).update({
+      'tripId': FieldValue.delete(),
+    });
+    debugPrint('endTrip: ${currentTrip.passengerId}');
+    await firestore.collection('passengers').doc(currentTrip.passengerId).update({
+      'tripId': FieldValue.delete(),
+    });
+    
+      await firestore.collection('trips').doc(currentTrip.id).delete();
+      currentTrip = Trip(); // Reset currentTrip after ending
+      currentDocumentTrip = null; // Clear the current document reference
+      tripStream = null; // Stop listening to the trip stream
+    
+  }
+
 
   Future<void> pushDriverLocation(LatLng location) async {
     if (currentTrip.driverLocation == null || currentTrip.driverLocation != location) {

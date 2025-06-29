@@ -4,15 +4,19 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dirver/core/services/sharedPref/store_user_type.dart';
 import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/features/auth/presentation/views/login_view.dart';
+import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
 import 'package:dirver/features/driver/presentation/views/driver_home.dart';
 import 'package:dirver/features/driver_or_rider/presentation/views/driver_or_rider_view.dart';
 import 'package:dirver/features/passenger/presentation/views/passenger_home.dart';
 import 'package:dirver/features/splash_screen/presentation/views/widgets/logo_animation.dart';
 import 'package:dirver/features/splash_screen/presentation/views/widgets/text_in_splash.dart';
+import 'package:dirver/features/trip/presentation/views/driver_trip_view.dart';
+import 'package:dirver/features/trip/presentation/views/passenger_trip_view.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:provider/provider.dart';
 
 class SplashView extends StatefulWidget {
   const SplashView({super.key});
@@ -70,15 +74,38 @@ class _SplashViewState extends State<SplashView>
 
       if (!mounted) return; // ✅ Ensure context is still valid
       String routeName;
+      String? tripId;
       if (FirebaseAuth.instance.currentUser != null) {
         String? userType = await StoreUserType.getLastSignIn();
 
         if (!mounted) return; // ✅ Again after async
 
         if (userType == 'passenger') {
-          routeName = PassengerHome.routeName;
+          var passengerDoc = await FirebaseFirestore.instance
+              .collection('passengers')
+              .doc(await StoreUserType.getPassengerDocId())
+              .get();
+          if(passengerDoc.get('driverDocId') != null && passengerDoc.get('driverDocId') != '') {
+            // if the passenger has a trip, redirect to the trip view
+            routeName = PassengerTripView.routeName;
+            tripId = passengerDoc.get('tripId');
+          } else {
+            // if the passenger doesn't have a trip, redirect to the home
+            routeName = PassengerHome.routeName;
+          }
         } else if (userType == 'driver') {
-          routeName = DriverHome.routeName;
+          var driverDoc = await FirebaseFirestore.instance
+              .collection('drivers')
+              .doc(await StoreUserType.getDriverDocId())
+              .get();
+          if (driverDoc.get('tripId') != null && driverDoc.get('tripId') != '') {
+            // if the driver has a trip, redirect to the trip view
+            tripId = driverDoc.get('tripId');
+            routeName = DriverTripView.routeName;
+          } else {
+            // if the driver doesn't have a trip, redirect to the home
+            routeName = DriverHome.routeName;
+            }
         } else {
           // errorMessage(context, 'Sorry, error occurred.');
           routeName = DriverOrRiderView.routeName;
@@ -132,6 +159,23 @@ class _SplashViewState extends State<SplashView>
             builder: (_) => const PassengerHome(),
           ),
         );
+      }
+      else if(routeName == PassengerTripView.routeName) {
+        Navigator.pushReplacement(context, MaterialPageRoute(
+        builder: (_) => ChangeNotifierProvider(
+          create: (_)=>DriverTripProvider(),
+          child: const PassengerTripView(),
+        ),
+      ),);
+      }
+      else if(routeName == DriverTripView.routeName) {
+        debugPrint('tripId: $tripId');
+        Navigator.pushReplacement(context, MaterialPageRoute(
+        builder: (_) => ChangeNotifierProvider(
+          create: (_)=>DriverTripProvider(),
+          child: DriverTripView(tripId: tripId),
+        ),
+      ),);
       }
       else {
         Navigator.pushReplacementNamed(context, routeName);

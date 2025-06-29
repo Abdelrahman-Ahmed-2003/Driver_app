@@ -7,6 +7,7 @@ class Trip {
    String passengerId;
    String driverId;
    String destination;
+   String driverDistination = 'toUser';
    LatLng? userLocation;
    LatLng? driverLocation;
    LatLng destinationCoords = LatLng(0, 0);
@@ -18,6 +19,7 @@ class Trip {
   Trip({
     this.id = '',
     this.passengerId = '',
+    this.driverDistination = 'toUser',
     this.driverId = '',
     this.destination = '',
     this.userLocation = const LatLng(0, 0),
@@ -45,9 +47,10 @@ class Trip {
 
     return Trip(
       id: doc.id,
-      passengerId: data['passengerDocId'] ?? '',
+      passengerId: data['passengerdocId'] ?? '',
       driverId: data['driverDocId'] ?? '',
       destination: data['destination'] ?? '',
+      driverDistination: data['driverDistination'] ?? 'toUser',
       userLocation: LatLng(
         data['userLocation']?['lat'] ?? 0.0,
         data['userLocation']?['long'] ?? 0.0,
@@ -74,6 +77,7 @@ class Trip {
       passengerId: data['passengerdocId'] ?? '',
       driverId: data['driverId'] ?? '',
       destination: data['destination'] ?? '',
+      driverDistination: data['driverDistination'] ?? 'toUser',
       userLocation: LatLng(
         data['userLocation']?['lat'] ?? 0.0,
         data['userLocation']?['long'] ?? 0.0,
@@ -99,10 +103,12 @@ class Trip {
     String? passengerId,
     String? driverId,
     String? destination,
+    String? driverDistination,
     LatLng? userLocation,
     LatLng? driverLocation,
     LatLng? destinationCoords,
     String? price,
+
     String? status,
     Map<String, DriverProposal>? drivers,
   }) {
@@ -111,6 +117,7 @@ class Trip {
       passengerId: passengerId ?? this.passengerId,
       driverId: driverId ?? this.driverId,
       destination: destination ?? this.destination,
+      driverDistination: driverDistination ?? this.driverDistination,
       userLocation: userLocation ?? this.userLocation,
       driverLocation: userLocation ?? this.driverLocation,
       destinationCoords: destinationCoords ?? this.destinationCoords,

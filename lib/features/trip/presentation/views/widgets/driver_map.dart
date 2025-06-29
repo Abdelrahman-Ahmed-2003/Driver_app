@@ -9,8 +9,8 @@ import 'package:dirver/features/driver/presentation/provider/driver_trip_provide
 import 'package:dirver/core/utils/colors_app.dart';
 
 class DriverMap extends StatefulWidget {
-  final LatLng? destination;
-  const DriverMap({super.key, this.destination});
+  final LatLng destination;
+  const DriverMap({super.key,required this.destination});
 
   @override
   State<DriverMap> createState() => _DriverMapState();
@@ -113,11 +113,11 @@ class _DriverMapState extends State<DriverMap> {
             markerDirection: MarkerDirection.heading,
           ),
         ),
-        if (provider.currentTrip.destinationCoords != const LatLng(0, 0))
+        if ( widget.destination!= const LatLng(0, 0))
           MarkerLayer(
             markers: [
               Marker(
-                point: provider.currentTrip.destinationCoords,
+                point: widget.destination,
                 width: 35,
                 height: 35,
                 child: const Icon(Icons.location_pin,

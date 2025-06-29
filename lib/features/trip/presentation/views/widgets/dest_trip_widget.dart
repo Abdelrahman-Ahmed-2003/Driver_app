@@ -1,3 +1,4 @@
+import 'package:dirver/core/models/trip.dart';
 import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +17,7 @@ class _DestTripWidgetState extends State<DestTripWidget> {
   String? address ;
 
   Future<String> _coordsToAddress(double lat, double lng) async {
+    debugPrint('Converting coordinates to address: $lat, $lng');
   // Returns a list of Placemark; we take the first
   final placemarks = await placemarkFromCoordinates(lat, lng);
 
@@ -36,7 +38,15 @@ class _DestTripWidgetState extends State<DestTripWidget> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async{
     var provider = Provider.of<DriverTripProvider>(context, listen: false);
-    address = await _coordsToAddress(provider.currentTrip.userLocation!.latitude, provider.currentTrip.userLocation!.longitude);
+        debugPrint('provider existsسسسسس? ${Provider.of<DriverTripProvider>(context, listen: false).currentTrip != Trip()}');
+
+    if(provider.currentTrip.driverDistination == 'toUser'){
+          address = await _coordsToAddress(provider.currentTrip.userLocation!.latitude, provider.currentTrip.userLocation!.longitude);
+
+    }
+    else {
+      address = provider.currentTrip.destination;
+    }
     });
   }
 
