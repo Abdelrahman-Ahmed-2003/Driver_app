@@ -81,31 +81,36 @@ class _SplashViewState extends State<SplashView>
         if (!mounted) return; // ✅ Again after async
 
         if (userType == 'passenger') {
-          var passengerDoc = await FirebaseFirestore.instance
-              .collection('passengers')
-              .doc(await StoreUserType.getPassengerDocId())
-              .get();
-          if(passengerDoc.get('driverDocId') != null && passengerDoc.get('driverDocId') != '') {
-            // if the passenger has a trip, redirect to the trip view
-            routeName = PassengerTripView.routeName;
-            tripId = passengerDoc.get('tripId');
-          } else {
-            // if the passenger doesn't have a trip, redirect to the home
-            routeName = PassengerHome.routeName;
-          }
-        } else if (userType == 'driver') {
+  var passengerDoc = await FirebaseFirestore.instance
+      .collection('passengers')
+      .doc(await StoreUserType.getPassengerDocId())
+      .get();
+
+  var data = passengerDoc.data();
+  if (data != null && data.containsKey('tripId') && data['tripId'] != null && data['tripId'] != '') {
+    // if the passenger has a trip, redirect to the trip view
+    tripId = data['tripId'];
+    routeName = PassengerTripView.routeName;
+  } else {
+    // if the passenger doesn't have a trip, redirect to the home
+    routeName = PassengerHome.routeName;
+  }
+}
+else if (userType == 'driver') {
           var driverDoc = await FirebaseFirestore.instance
               .collection('drivers')
               .doc(await StoreUserType.getDriverDocId())
               .get();
-          if (driverDoc.get('tripId') != null && driverDoc.get('tripId') != '') {
-            // if the driver has a trip, redirect to the trip view
-            tripId = driverDoc.get('tripId');
+          var data = driverDoc.data();
+          if (data != null &&
+              data.containsKey('tripId') &&
+              data['tripId'] != null &&
+              data['tripId'] != '') {
+            tripId = data['tripId'];
             routeName = DriverTripView.routeName;
           } else {
-            // if the driver doesn't have a trip, redirect to the home
             routeName = DriverHome.routeName;
-            }
+          }
         } else {
           // errorMessage(context, 'Sorry, error occurred.');
           routeName = DriverOrRiderView.routeName;
@@ -136,7 +141,7 @@ class _SplashViewState extends State<SplashView>
             builder: (_) => const DriverHome(),
           ),
         );
-      }else if(routeName == PassengerHome.routeName) {
+      } else if (routeName == PassengerHome.routeName) {
         final user = FirebaseAuth.instance.currentUser;
         if (await StoreUserType.getPassengerDocId() == null) {
           final querySnapshot = await FirebaseFirestore.instance
@@ -159,25 +164,28 @@ class _SplashViewState extends State<SplashView>
             builder: (_) => const PassengerHome(),
           ),
         );
-      }
-      else if(routeName == PassengerTripView.routeName) {
-        Navigator.pushReplacement(context, MaterialPageRoute(
-        builder: (_) => ChangeNotifierProvider(
-          create: (_)=>DriverTripProvider(),
-          child: const PassengerTripView(),
-        ),
-      ),);
-      }
-      else if(routeName == DriverTripView.routeName) {
+      } else if (routeName == PassengerTripView.routeName) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ChangeNotifierProvider(
+              create: (_) => DriverTripProvider(),
+              child: const PassengerTripView(),
+            ),
+          ),
+        );
+      } else if (routeName == DriverTripView.routeName) {
         debugPrint('tripId: $tripId');
-        Navigator.pushReplacement(context, MaterialPageRoute(
-        builder: (_) => ChangeNotifierProvider(
-          create: (_)=>DriverTripProvider(),
-          child: DriverTripView(tripId: tripId),
-        ),
-      ),);
-      }
-      else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ChangeNotifierProvider(
+              create: (_) => DriverTripProvider(),
+              child: DriverTripView(tripId: tripId),
+            ),
+          ),
+        );
+      } else {
         Navigator.pushReplacementNamed(context, routeName);
       }
     });
