@@ -22,6 +22,10 @@ abstract class AppColors {
   static const Color dividerColor = Color(0xFFE0E0E0);   // For dividers (between greyColor and darkGrey)
   static const Color textHintColor = Color(0xFF9E9E9E);  // For hint/placeholder text
   static const Color mapOverlay = Color(0xAAFFFFFF);     // For map overlays (semi-transparent white)
+  static const Color cardLight = Color(0xFFF8F6FF); // very light purple for light mode
+  static const Color cardDark = Color(0xFF232136);  // deep dark for dark mode
+  static const Color cardBorderLight = primaryColor; // primary for light border
+  static const Color cardBorderDark = whiteColor;    // white for dark border
 
   // Aliases for better semantic usage (pointing to your original colors)
   static const Color successColor = grenColor;          // For success states

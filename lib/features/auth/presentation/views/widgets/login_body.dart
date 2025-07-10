@@ -16,35 +16,58 @@ class LoginBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
 
-    return Padding(
-      padding: const EdgeInsets.all(15),
-      child: Column(
-        children: [
-          const LogoWidget(),
-          SizedBox(height: MediaQuery.of(context).size.height * 0.01),
-          Image.asset(AssetImages.handShake, height: 300),
-          TextInSplash(text: 'Ease your Transportation with us'),
-          const Spacer(),
-
-          if (authProvider.isLoading)
-            const LinearProgressIndicator(),
-
-          const SizedBox(height: 10),
-
-          WayToLogin(
-            text: "Google",
-            colorButton: AppColors.primaryColor,
-            colorText: AppColors.blackColor,
-            onPressed: () async {
-              final user = await authProvider.signInWithGoogle();
-              if (user != null && context.mounted) {
-                Navigator.pushReplacementNamed(context, DriverOrRiderView.routeName);
-              } else if (authProvider.errorMessage != null && context.mounted) {
-                errorMessage(context, authProvider.errorMessage!);
-              }
-            },
+    return Center(
+      child: SingleChildScrollView(
+        child: Card(
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+            side: BorderSide(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.cardBorderDark.withOpacity(0.10)
+                  : AppColors.cardBorderLight.withOpacity(0.08),
+              width: 1.2,
+            ),
           ),
-        ],
+          color: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.cardDark.withOpacity(0.92)
+              : AppColors.cardLight,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const LogoWidget(),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.01),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(18),
+                  child: Image.asset(AssetImages.handShake, height: 180),
+                ),
+                const SizedBox(height: 18),
+                TextInSplash(
+                  text: 'Ease your Transportation with us',
+                ),
+                const SizedBox(height: 24),
+                authProvider.isLoading == true?
+                  const LinearProgressIndicator():
+                
+                WayToLogin(
+                  text: "Google",
+                  colorButton: AppColors.primaryColor,
+                  colorText: AppColors.whiteColor,
+                  onPressed: () async {
+                    final user = await authProvider.signInWithGoogle();
+                    if (user != null && context.mounted) {
+                      Navigator.pushReplacementNamed(context, DriverOrRiderView.routeName);
+                    } else if (authProvider.errorMessage != null && context.mounted) {
+                      errorMessage(context, authProvider.errorMessage!);
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

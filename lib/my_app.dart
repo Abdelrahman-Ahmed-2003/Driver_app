@@ -11,10 +11,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Driver APP',
-      theme: lightTheme,
+      theme: lightTheme.copyWith(
+        textTheme: Theme.of(context).textTheme.apply(fontFamily: 'Roboto'),
+      ),
+      darkTheme: darkTheme.copyWith(
+        textTheme: Theme.of(context).textTheme.apply(fontFamily: 'Roboto'),
+      ),
+      themeMode: ThemeMode.system,
       home: SplashView(),
       onGenerateRoute: AppRoutes.onGenerateRoute,
-      
     );
   }
 }

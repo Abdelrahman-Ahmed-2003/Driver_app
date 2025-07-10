@@ -8,6 +8,7 @@ class UsernameField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return customText(
+      context: context,
       type: TextInputType.name,
       label: 'Enter name',
       hint: 'name',

@@ -6,12 +6,20 @@ class LogoWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         AssetImages.logo,
-        Text('Dirver',style: TextStyle(fontSize: 25),),
-        ],
+        const SizedBox(width: 8),
+        Text(
+          'Dirver',
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: colorScheme.primary,
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+      ],
     );
   }
 }

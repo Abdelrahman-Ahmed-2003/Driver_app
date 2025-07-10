@@ -42,7 +42,15 @@ class PickPicture extends StatelessWidget {
                   child: imagePath== null?Icon(Icons.add):null
                 ),
               ),
-              Text(text),
+              Text(
+                text,
+                style: TextStyle(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.whiteColor
+                      : AppColors.primaryColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
         );

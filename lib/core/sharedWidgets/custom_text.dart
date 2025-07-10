@@ -2,6 +2,7 @@ import 'package:dirver/core/utils/colors_app.dart';
 import 'package:flutter/material.dart';
 
 Widget customText({
+  required BuildContext context,
   TextEditingController? controller,
   required TextInputType type,
   Function(String)? onChanged,
@@ -16,9 +17,7 @@ Widget customText({
   bool? enable,
 }) =>
     TextFormField(
-      style: TextStyle(
-        fontSize: 14,
-      ),
+      style: const TextStyle(fontSize: 16),
       onTap: onTap,
       enabled: enable,
       controller: controller,
@@ -27,26 +26,24 @@ Widget customText({
       validator: validator,
       obscureText: obscureText,
       decoration: InputDecoration(
-        labelStyle: TextStyle(fontSize: 14),
         labelText: label,
         hintText: hint,
-        prefixIcon: Icon(
-          prefix,
-          size: 15,
-        ),
-        suffixIcon: IconButton(
-          icon: Icon(suffix,size: 15,),
-          onPressed: suffixPressed,
-        ),
+        prefixIcon: prefix != null ? Icon(prefix, size: 20) : null,
+        suffixIcon: suffix != null
+            ? IconButton(icon: Icon(suffix, size: 20), onPressed: suffixPressed)
+            : null,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(16),
         ),
-        focusedBorder: const OutlineInputBorder(
-          //borderRadius: BorderRadius.circular(30),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(
-            color: AppColors.primaryColor,
+            color: Theme.of(context).colorScheme.primary,
             width: 2,
           ),
         ),
+        filled: true,
+        fillColor: Theme.of(context).colorScheme.surface,
+        labelStyle: TextStyle(color: Theme.of(context).colorScheme.primary),
       ),
     );

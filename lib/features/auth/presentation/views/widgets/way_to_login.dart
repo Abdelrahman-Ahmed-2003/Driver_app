@@ -11,18 +11,24 @@ class WayToLogin extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      child: ElevatedButton(
+      child: FilledButton(
         onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
+        style: FilledButton.styleFrom(
           backgroundColor: colorButton,
-          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 48),
+          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
           ),
+          elevation: 2,
         ),
         child: Text(
           text,
-          style: TextStyle(color: colorText, fontSize: 20),
+          style: TextStyle(
+            color: colorText,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.5,
+          ),
         ),
       ),
     );

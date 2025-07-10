@@ -26,22 +26,25 @@ class TripButton extends StatelessWidget {
                 final status = tripProvider.getCurrentStatus(tripSnapshot.data);
                 
                 if (status == 'waiting') {
-                  return ElevatedButton(
+                  return FilledButton(
                     onPressed: () async {
                       await tripProvider.deleteTrip();
                     },
-                    style: ElevatedButton.styleFrom(
+                    style: FilledButton.styleFrom(
                       backgroundColor: AppColors.redColor,
-                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      padding: const EdgeInsets.symmetric(vertical: 18),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(11),
+                        borderRadius: BorderRadius.circular(14),
                       ),
+                      elevation: 2,
                     ),
                     child: const Text(
                       "Cancel Trip",
                       style: TextStyle(
                         color: AppColors.whiteColor,
-                        fontSize: 20,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
                       ),
                     ),
                   );
@@ -62,20 +65,23 @@ class TripButton extends StatelessWidget {
                   return const SizedBox.shrink(); // No button if trip is started
                 }
                 
-                return ElevatedButton(
+                return FilledButton(
                   onPressed: () => _createTrip(context,tripProvider),
-                  style: ElevatedButton.styleFrom(
+                  style: FilledButton.styleFrom(
                     backgroundColor: AppColors.primaryColor,
-                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    padding: const EdgeInsets.symmetric(vertical: 18),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(11),
+                      borderRadius: BorderRadius.circular(14),
                     ),
+                    elevation: 2,
                   ),
                   child: const Text(
                     "Create Trip",
                     style: TextStyle(
                       color: AppColors.whiteColor,
-                      fontSize: 20,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
                     ),
                   ),
                 );
