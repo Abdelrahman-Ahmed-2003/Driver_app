@@ -21,7 +21,7 @@ class _ListViewWidgetState extends State<ListViewWidget> {
     return Container(
       height: 48,
       decoration: BoxDecoration(
-        color: AppColors.opalGrey.withValues(alpha: 0.2),
+        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.2),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -39,13 +39,13 @@ class _ListViewWidgetState extends State<ListViewWidget> {
                 curve: Curves.easeInOut,
                 decoration: BoxDecoration(
                   color: selectedIndex == index
-                      ? AppColors.whiteColor
+                      ? Theme.of(context).colorScheme.background
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(8),
                   boxShadow: selectedIndex == index
                       ? [
                           BoxShadow(
-                            color: AppColors.blackColor.withValues(alpha: 0.1),
+                            color: Theme.of(context).colorScheme.shadow.withOpacity(0.1),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
@@ -58,8 +58,8 @@ class _ListViewWidgetState extends State<ListViewWidget> {
                     items[index],
                     style: TextStyle(
                       color: selectedIndex == index
-                          ? AppColors.primaryColor
-                          : AppColors.darkGrey,
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.onSurfaceVariant,
                       fontWeight: selectedIndex == index
                           ? FontWeight.w600
                           : FontWeight.normal,

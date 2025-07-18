@@ -89,7 +89,7 @@ class _ButtonWidgetState extends State<ButtonWidget> {
     final provider = context.read<DriverTripProvider>();
 
     if (provider.currentTrip != Trip() &&
-        provider.currentTrip.id != widget.trip.id) {
+        provider.currentTrip!.id != widget.trip.id) {
       errorMessage(context, 'You can propose only one trip at a time');
       return;
     }

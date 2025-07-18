@@ -10,6 +10,7 @@ import 'package:latlong2/latlong.dart';
 class PassengerTripProvider extends TripProvider {
   String? passengerDocId;
   bool isPassengerDocIdFetched = false;
+  bool loadingTrip = false;
 
   PassengerTripProvider() {
     fetchPassengerDocId();
@@ -20,6 +21,17 @@ class PassengerTripProvider extends TripProvider {
     passengerDocId = await StoreUserType.getPassengerDocId();
     isPassengerDocIdFetched = true;
     notifyListeners();
+  }
+
+
+  void clearAllData(){
+    currentTrip.price = '';
+          currentTrip.destination = '';
+          currentTrip.destinationCoords = LatLng(0, 0);
+          points.clear();
+          lastDest = null;
+          setCurrentPoints(LatLng(0, 0),LatLng(0,0));
+          
   }
 
   Future<void> createTrip() async {
@@ -112,7 +124,7 @@ class PassengerTripProvider extends TripProvider {
 
   void updateTripDestination(String newDest) {
     currentTrip = currentTrip.copyWith(destination: newDest);
-    notifyListeners();
+    // notifyListeners();
   }
 
   Future<void> changePassengerPrice(String newData) async {
@@ -173,13 +185,20 @@ class PassengerTripProvider extends TripProvider {
         debugPrint("Passenger document exists");
       } else {
         debugPrint("Passenger document does not exist");
+        loadingTrip = false;
+      notifyListeners();
         return;
       }
 
       final passengerData = passengerSnapshot.data() as Map<String, dynamic>;
       final String? tripId = passengerData['tripId'];
       debugPrint("Trip ID: $tripId");
-      if (tripId == null) return;
+      if (tripId == null) {
+        debugPrint("No trip ID found for passenger");
+        loadingTrip = false;
+        notifyListeners();
+        return;
+      }
 
       // Save the trip document reference and stream
       currentDocumentTrip = firestore.collection('trips').doc(tripId);
@@ -192,7 +211,7 @@ class PassengerTripProvider extends TripProvider {
       // Convert Firestore document to Trip model
       currentTrip = Trip.fromFirestore(tripSnapshot);
       debugPrint("Current Trip: $currentTrip");
-
+      loadingTrip = false;
       notifyListeners();
     } catch (e) {
       debugPrint('Error fetching trip data: $e');
@@ -214,5 +233,12 @@ class PassengerTripProvider extends TripProvider {
     currentDocumentTrip = null;
     driverWithProposalList = [];
     notifyListeners();
+  }
+
+  @override
+  void clear() {
+    super.clear();
+    passengerDocId = null;
+    isPassengerDocIdFetched = false;// Stop listening to the trip stream
   }
 }

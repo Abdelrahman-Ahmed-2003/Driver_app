@@ -16,17 +16,17 @@ class DriverTripProvider extends TripProvider {
   // Firestore + GPS
   StreamSubscription<QuerySnapshot>? _tripsSub;
   StreamController<List<Map<String, dynamic>>>? _tripsCtr;
-  StreamSubscription<LocationData>? _gpsSub;
 
-  DriverTripProvider() {
-    fetchDriverDocId();
-  }
+  // DriverTripProvider() {
+  //   fetchDriverDocId();
+  // }
 
   /* ───────────── init driver id ───────────── */
   Future<void> fetchDriverDocId() async {
     driverId = await StoreUserType.getDriverDocId();
+    debugPrint('driverIdselecteTrip: ${driverId}');
     isDriverDocIdFetched = true;
-    notifyListeners();
+    // notifyListeners();
   }
 
   bool fetchOnlineProposedTrip(Trip trip){
@@ -44,6 +44,7 @@ class DriverTripProvider extends TripProvider {
 
   /* ──────────── available-trips stream ──────────── */
   Stream<List<Map<String, dynamic>>> listenForAvailableTrips() {
+    debugPrint('tripCtrrrrrrrrrrrrrrrr: $_tripsCtr');
   // إن كان البث موجودًا بالفعل فأعد نفس الـ stream
   if (_tripsCtr != null) return _tripsCtr!.stream;
 
@@ -85,6 +86,7 @@ class DriverTripProvider extends TripProvider {
     _tripsSub = null;
     _tripsCtr?.close();
     _tripsCtr = null;
+    debugPrint('tripCTr is nullllllll $_tripsCtr');
   }
 
   /* ───────────── current location once ───────────── */
@@ -102,30 +104,13 @@ class DriverTripProvider extends TripProvider {
     return location.getLocation();
   }
 
-  /* ────────────── live GPS tracking ────────────── */
-  void _startGpsTracker() {
-    final location = Location();
-
-    _gpsSub?.cancel();
-    _gpsSub = location.onLocationChanged.listen((d) {
-      if (d.latitude == null || d.longitude == null) return;
-      if (currentDocumentTrip == null) return;
-
-      currentDocumentTrip!.update({
-        'driverLocation': {'latitude': d.latitude, 'longitude': d.longitude}
-      });
-    });
-  }
-
-  void _stopGpsTracker() {
-    _gpsSub?.cancel();
-    _gpsSub = null;
-  }
-
   /* ─────────── driver selects a trip ─────────── */
   Future<void> selectTrip() async {
     if (currentDocumentTrip == null) return;
-    if (!isDriverDocIdFetched) driverId = await StoreUserType.getDriverDocId();
+    debugPrint('selectTrip');
+    debugPrint('selectTrip: ${isDriverDocIdFetched}');
+    driverId = await StoreUserType.getDriverDocId();
+    debugPrint('selectTrip: ${driverId}');
     var locationData = await _getCurrentLocation();
     if (locationData == null) {
       throw Exception('Location not available');
@@ -181,7 +166,6 @@ class DriverTripProvider extends TripProvider {
   @override
   void dispose() {
     _stopTripsStream();
-    _stopGpsTracker();
     super.dispose();
   }
 
@@ -194,5 +178,24 @@ class DriverTripProvider extends TripProvider {
     tripStream = null;
     driverProposal = null;
     notifyListeners();
+  }
+
+  @override
+  String toString() {
+    return 'DriverTripProvider(driverId: '
+        ' [32m$driverId [0m, isDriverDocIdFetched: $isDriverDocIdFetched, '
+        'availableTrips: $availableTrips, driverProposal: $driverProposal, '
+        'currentTrip: $currentTrip, points: $points, lastDest: $lastDest)';
+  }
+
+  @override
+  void clear() {
+    
+    driverId = null;
+    isDriverDocIdFetched = false;
+    availableTrips = [];
+    driverProposal = null;
+    _stopTripsStream();
+    super.clear();
   }
 }

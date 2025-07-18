@@ -25,9 +25,9 @@ class _DriverTripViewState extends State<DriverTripView> {
     var provider = Provider.of<DriverTripProvider>(context, listen: false);
               if(widget.tripId != null) {
                 provider.isLoading = true;
-                debugPrint('DriverTripView tripId is null, fetching online trip');
-              } else {
                 debugPrint('DriverTripView tripId: ${widget.tripId}');
+              } else {
+                debugPrint('DriverTripView tripId is null, fetching online trip');
               }
     WidgetsBinding.instance.addPostFrameCallback((_) async {
               
@@ -45,7 +45,7 @@ class _DriverTripViewState extends State<DriverTripView> {
     LatLng destination = provider.currentTrip.driverDistination == 'toUser'
         ? provider.currentTrip.userLocation!
         : provider.currentTrip.destinationCoords;
-    debugPrint('DriverTripView build, isLoading: ${provider.isLoading}');
+    debugPrint('DriverTripView build, isLoading: ${destination}');
     return SafeArea(
         child: Scaffold(
             
@@ -53,10 +53,10 @@ class _DriverTripViewState extends State<DriverTripView> {
     ? const Center(child: CircularProgressIndicator())
     : Stack(
         children: [
-          DriverMap(destination: destination),
+          ChangeNotifierProvider.value(value: provider, child: DriverMap(destination: destination)),
           Align(
             alignment: Alignment.bottomCenter,
-            child: BottomSheetToUser(),
+            child: BottomSheetToUser(provider: provider,),
           ),
         ],
       )

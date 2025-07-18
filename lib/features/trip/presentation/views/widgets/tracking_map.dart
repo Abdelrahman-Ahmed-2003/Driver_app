@@ -1,6 +1,8 @@
+import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:provider/provider.dart';
 
 class TrackingMap extends StatefulWidget {
   /// Current moving position (e.g. driver)
@@ -26,18 +28,37 @@ class TrackingMap extends StatefulWidget {
 class _TrackingMapState extends State<TrackingMap> {
   final MapController _mapController = MapController();
 
-  @override
-  void didUpdateWidget(covariant TrackingMap oldWidget) {
-    super.didUpdateWidget(oldWidget);
+  // @override
+  // void didUpdateWidget(covariant TrackingMap oldWidget) {
+  //   super.didUpdateWidget(oldWidget);
 
-    // If current position moved, keep the map centred on it.
-    if (widget.current != oldWidget.current) {
-      _mapController.move(widget.current, _mapController.camera.zoom);
-    }
+  //   // If current position moved, keep the map centred on it.
+  //   if (widget.current != oldWidget.current) {
+  //     _mapController.move(widget.current, _mapController.camera.zoom);
+  //   }
+  // }
+
+  @override
+  void initState(){
+    super.initState();
+    debugPrint('in initstate of tracking map');
+    debugPrint('${widget.destination}');
+    debugPrint('${widget.current}');
+
+    WidgetsBinding.instance.addPostFrameCallback((_)async{
+      var tripProvider = context.read<PassengerTripProvider>();
+      tripProvider.setCurrentUserLocation(widget.current);
+      tripProvider.setCurrentPoints(widget.current,widget.destination);
+      debugPrint('end of initstate of tracking map');
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    
+    debugPrint('trackingggggggggggggg maaaaaaaaaaappppppppppppp');
+    // return Container();
+    var provider = context.watch<PassengerTripProvider>();
     return FlutterMap(
       mapController: _mapController,
       options: MapOptions(
@@ -49,7 +70,8 @@ class _TrackingMapState extends State<TrackingMap> {
       children: [
         // ─── OSM tiles ────────────────────────────────────────────────
         TileLayer(
-          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          urlTemplate: 'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+          subdomains: ['a', 'b', 'c'],
           userAgentPackageName: 'com.example.your_app',
         ),
 
@@ -82,15 +104,16 @@ class _TrackingMapState extends State<TrackingMap> {
         ),
 
         // ─── Polyline current ➜ destination ─────────────────────────
+        provider.points.isNotEmpty ?
         PolylineLayer(
           polylines: [
             Polyline(
-              points: [widget.current, widget.destination],
+              points: provider.points,
               strokeWidth: 5,
               color: Colors.red,
             ),
           ],
-        ),
+        ):SizedBox.shrink(),
       ],
     );
   }

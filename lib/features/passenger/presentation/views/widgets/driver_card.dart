@@ -34,8 +34,9 @@ class _DriverCardState extends State<DriverCard> {
         margin: const EdgeInsets.only(bottom: 16),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: AppColors.greyColor, width: 1),
+          side: BorderSide(color: Theme.of(context).colorScheme.outline, width: 1),
         ),
+        color: Theme.of(context).colorScheme.surface,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -87,11 +88,11 @@ class _DriverCardState extends State<DriverCard> {
               // Display Pricing & Status Info
               Text(
                 "📢 Passenger Proposed: ${widget.passengerPrice} EGP",
-                style: const TextStyle(fontSize: 14, color: Colors.blueGrey),
+                style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.secondary),
               ),
               Text(
                 "🚕 Driver Offered: ${widget.driverWithProposal.proposal.proposedPrice} EGP",
-                style: const TextStyle(fontSize: 14, color: Colors.black87),
+                style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface),
               ),
               const SizedBox(height: 12),
 
@@ -100,7 +101,7 @@ class _DriverCardState extends State<DriverCard> {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.grenColor,
+                    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8)),
                     padding: const EdgeInsets.symmetric(
@@ -121,13 +122,13 @@ class _DriverCardState extends State<DriverCard> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text('Error selecting driver: $e'),
-                          backgroundColor: Colors.red,
+                          backgroundColor: Theme.of(context).colorScheme.error,
                         ),
                       );
                       return;
                     }
                   },
-                  child: const Text('Select Driver'),
+                  child: Text('Select Driver', style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer)),
                 ),
               ),
             ],

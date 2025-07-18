@@ -57,8 +57,10 @@ class DriverOrRiderBody extends StatelessWidget {
                       colorButton: AppColors.primaryColor,
                       colorText: AppColors.whiteColor,
                       onPressed: () async {
+                        String message = 'Welcome back passenger';
                         await StoreUserType.saveLastSignIn('passenger');
                         bool? pass = await StoreUserType.getPassenger();
+                        
                         if (pass != true) {
                           await StoreUserType.savePassenger(true);
                           CollectionReference passenger = FirebaseFirestore.instance.collection('passengers');
@@ -72,10 +74,14 @@ class DriverOrRiderBody extends StatelessWidget {
 
                           String newPassengerId = newPassengerRef.id; // ✅ This is the new document ID
                           await StoreUserType.savePassengerDocId(newPassengerId);
-                          debugPrint("New passenger document ID: $newPassengerId");
+                          message = 'We Welcome you to our app as new passenger';
+                        }
+                        else{
+                            message = 'Welcome back passenger';
                         }
                         if(!context.mounted) return;
                         Navigator.pushReplacementNamed(context, PassengerHome.routeName);
+                        alertMessage(message, context);
                       },
                     ),
                     const SizedBox(height: 18),
@@ -86,35 +92,22 @@ class DriverOrRiderBody extends StatelessWidget {
                       onPressed: () async {
                         bool? isDriver = await StoreUserType.getDriver();
                         if (isDriver == true) {
+                          await StoreUserType.saveLastSignIn('driver');
                           if (!context.mounted) return;
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
                               builder: (_) => const DriverHome(),
                             ),
+
                           );
+                          alertMessage('Welcome back driver', context);
                         } else {
-                          bool? isOnline = await searchAboutUserOnline(
-                            type: 'drivers',
-                            email: FirebaseAuth.instance.currentUser!.email!,
-                          );
-                          if (isOnline == true) {
+                          
                             if (!context.mounted) return;
-                            errorMessage(context, 'Welcome back driver');
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const DriverHome(),
-                              ),
-                            );
-                          } else if (isOnline == false) {
-                            if (!context.mounted) return;
-                            errorMessage(context, 'We Welcome you to our app as new driver');
                             Navigator.pushNamed(context, DriverInfoView1.routeName);
-                          } else {
-                            if (!context.mounted) return;
-                            errorMessage(context, 'Error occurred while searching for user');
-                          }
+                            alertMessage('Welcome as new driver', context);
+                          
                         }
                       },
                     ),

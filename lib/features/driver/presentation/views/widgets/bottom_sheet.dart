@@ -27,7 +27,7 @@ class _BottomSheetDriverState extends State<BottomSheetDriver> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<DriverTripProvider>(context, listen: false);
-    if(provider.currentTrip!= Trip() && provider.currentTrip.id == widget.trip.id){
+    if(provider.currentTrip!= Trip() && provider.currentTrip!.id == widget.trip.id){
       _driverController.text = provider.driverProposal!.proposedPrice.toString();
 
     }

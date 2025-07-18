@@ -1,4 +1,3 @@
-import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
 import 'package:dirver/features/passenger/presentation/views/select_driver.dart';
 import 'package:flutter/material.dart';
@@ -19,8 +18,8 @@ class ChooseDriverButton extends StatelessWidget {
           width: 56,
           child: FloatingActionButton(
             backgroundColor: tripProvider.tripStream == null
-                ? AppColors.greyColor
-                : AppColors.primaryColor,
+                ? Theme.of(context).colorScheme.outline
+                : Theme.of(context).colorScheme.primary,
             elevation: 6,
             shape: const CircleBorder(),
             onPressed: () {
@@ -31,7 +30,7 @@ class ChooseDriverButton extends StatelessWidget {
                 arguments: tripProvider,
               );
             },
-            child: const Icon(Icons.directions_bus, color: AppColors.whiteColor, size: 30),
+            child: Icon(Icons.directions_bus, color: Theme.of(context).colorScheme.onPrimary, size: 30),
           ),
         ),
       ),

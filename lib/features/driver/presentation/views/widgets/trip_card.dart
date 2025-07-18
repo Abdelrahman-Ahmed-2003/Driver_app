@@ -47,7 +47,7 @@ class _TripCardState extends State<TripCard> {
     debugPrint('trip card: ${widget.trip}');
     return Card(
       elevation: 6,
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 150),
+      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(color: AppColors.greyColor, width: 1),
@@ -73,9 +73,10 @@ class _TripCardState extends State<TripCard> {
                 : SizedBox.shrink(),
             Text(
               "Trip to: ${widget.trip.destination}",
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
               textAlign: TextAlign.center,
             ),
@@ -84,7 +85,10 @@ class _TripCardState extends State<TripCard> {
               backgroundColor: Colors.amber.shade100,
               label: Text(
                 "${widget.trip.price} EGP",
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
             ),
             const SizedBox(height: 20),
@@ -128,7 +132,6 @@ class _TripCardState extends State<TripCard> {
                       (Route<dynamic> route) => false,
                     );
                     await provider.selectTrip();
-                    debugPrint('before navigator');
                     // if (!context.mounted) {
                     //   debugPrint('context is not mounted, returning');
                     //   return;
@@ -155,7 +158,7 @@ class _TripCardState extends State<TripCard> {
                   //  });}
                   //  acceptTrip(widget.trip['tripId']);
                 },
-                child: Text('Accept Trip', style: TextStyle(fontSize: 16)),
+                child: Text('Accept Trip', style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onPrimary)),
               ),
             ):SizedBox.shrink(),
           ],

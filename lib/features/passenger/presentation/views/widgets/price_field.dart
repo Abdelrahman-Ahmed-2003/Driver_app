@@ -1,4 +1,3 @@
-import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -66,9 +65,9 @@ class _PriceFieldState extends State<PriceField> {
               decoration: InputDecoration(
                 filled: true,
                 hintText: 'Price of trip',
-                fillColor: AppColors.greyColor,
+                fillColor: Theme.of(context).colorScheme.surfaceVariant,
                 suffixText: 'EGP',
-                suffixStyle: const TextStyle(color: AppColors.darkRed),
+                suffixStyle: TextStyle(color: Theme.of(context).colorScheme.secondary),
               ),
             ),
           ),
@@ -88,7 +87,7 @@ class _PriceFieldState extends State<PriceField> {
                 : null,
             icon: Icon(
               Icons.check,
-              color: (isPrice) ? AppColors.primaryColor : AppColors.greyColor,
+              color: (isPrice) ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.outline,
             ),
           ),
         ],

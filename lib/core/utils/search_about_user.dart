@@ -1,7 +1,7 @@
 
   import 'package:cloud_firestore/cloud_firestore.dart';
 
-Future<bool?> searchAboutUserOnline({
+Future<String?> searchAboutUserOnline({
     required String type, // "drivers" or "passengers"
     required String email,
   }) async {
@@ -14,9 +14,9 @@ Future<bool?> searchAboutUserOnline({
           .get();
 
       if (result.docs.isNotEmpty) {
-        return true;
+        return result.docs.first.id;
       } else {
-        return false;
+        return null;
       }
     } catch (e) {
       return null;

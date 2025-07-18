@@ -1,5 +1,4 @@
 import 'package:dirver/core/services/sharedPref/store_user_type.dart';
-import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/features/driver_or_rider/presentation/views/driver_or_rider_view.dart';
 import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
 import 'package:dirver/features/passenger/presentation/views/widgets/bottom_sheet_app.dart';
@@ -23,72 +22,50 @@ class _PassengerHomeState extends State<PassengerHome> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await StoreUserType.savePassenger(true);
       await StoreUserType.saveLastSignIn('passenger');
+      var tripProvider = context.read<PassengerTripProvider>();
+      tripProvider.loadingTrip = true;
+      await tripProvider.fetchTripData();
+      
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => PassengerTripProvider(),
-      child: Builder(
-        builder: (context) {
-          final tripProvider =
-              Provider.of<PassengerTripProvider>(context, listen: false);
-          debugPrint("PassengerHome rebuild called");
-          debugPrint('tripProvider.tripStream: ${tripProvider.currentTrip}');
-          // if(tripProvider.tripStream != null && tripProvider.currentTrip.status == 'started') {
-          //   WidgetsBinding.instance.addPostFrameCallback((_) {
-          //     Navigator.pushAndRemoveUntil(
-          //             context,
-          //             MaterialPageRoute(
-          //               builder: (_) => ChangeNotifierProvider(
-          //                 create: (_) => DriverTripProvider(), // same instance!
-          //                 child: const TripView(),
-          //               ),
-          //             ),
-          //             (Route<dynamic> route) => false,
-          //           );
-          //   });
-          // }
-          return Scaffold(
+    var tripProvider = context.watch<PassengerTripProvider>();
+    return Scaffold(
+      // resizeToAvoidBottomInset: true,
             appBar: AppBar(
-              title: const Text(
+              title: Text(
                 'Ride Hailing',
                 style: TextStyle(
-                  color: AppColors.blackColor,
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              backgroundColor: AppColors.whiteColor,
+              backgroundColor: Theme.of(context).colorScheme.surface,
               elevation: 1,
               centerTitle: true,
-              iconTheme: const IconThemeData(color: AppColors.primaryColor),
+              iconTheme: IconThemeData(color: Theme.of(context).colorScheme.primary),
               actions: [
                 IconButton(
                   onPressed: () async {
                     if (tripProvider.tripStream != null) return;
                     tripProvider.clear();
                     await StoreUserType.saveLastSignIn('null');
-                    await StoreUserType.savePassengerDocId('null');
                     if (!context.mounted) return;
                     Navigator.pushReplacementNamed(
                       context,
                       DriverOrRiderView.routeName,
                     );
                   },
-                  icon: const Icon(Icons.logout, color: AppColors.primaryColor),
+                  icon: Icon(Icons.logout, color: Theme.of(context).colorScheme.primary),
                 ),
               ],
             ),
-            body: FutureBuilder(
-              future: tripProvider.fetchTripData(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+            body: tripProvider.loadingTrip == true ? Center(child:CircularProgressIndicator()):
 
-                return Container(
-                  color: AppColors.backgroundColor,
+                Container(
+                  color: Theme.of(context).colorScheme.background,
                   child: SafeArea(
                     child: Stack(
                       children: [
@@ -100,12 +77,7 @@ class _PassengerHomeState extends State<PassengerHome> {
                       ],
                     ),
                   ),
-                );
-              },
-            ),
+                )
           );
-        },
-      ),
-    );
   }
 }

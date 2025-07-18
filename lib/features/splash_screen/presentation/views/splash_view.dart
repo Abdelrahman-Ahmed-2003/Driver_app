@@ -3,8 +3,8 @@ import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dirver/core/services/sharedPref/store_user_type.dart';
 import 'package:dirver/core/utils/colors_app.dart';
+import 'package:dirver/core/utils/search_about_user.dart';
 import 'package:dirver/features/auth/presentation/views/login_view.dart';
-import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
 import 'package:dirver/features/driver/presentation/views/driver_home.dart';
 import 'package:dirver/features/driver_or_rider/presentation/views/driver_or_rider_view.dart';
 import 'package:dirver/features/passenger/presentation/views/passenger_home.dart';
@@ -16,7 +16,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:provider/provider.dart';
 
 class SplashView extends StatefulWidget {
   const SplashView({super.key});
@@ -73,30 +72,79 @@ class _SplashViewState extends State<SplashView>
       await Future.delayed(const Duration(seconds: 4));
 
       if (!mounted) return; // ✅ Ensure context is still valid
+      
+
       String routeName;
       String? tripId;
+      debugPrint('splashView: ${FirebaseAuth.instance.currentUser}');
       if (FirebaseAuth.instance.currentUser != null) {
+        debugPrint('splashView: user is logged in');
+        var isPassenger = await StoreUserType.getPassenger();
+      if(isPassenger == false){
+        debugPrint('splashView: user is not a passenger');
+        final passengerId = await searchAboutUserOnline(
+          type: 'passengers',
+          email: FirebaseAuth.instance.currentUser!.email!,
+        );
+        if(passengerId != null) {
+          debugPrint('splashView: user is a passenger');
+          await StoreUserType.savePassenger(true);
+          await StoreUserType.savePassengerDocId(passengerId);
+        }
+      }
+      var isDriver = await StoreUserType.getDriver();
+      if(isDriver == false){
+        debugPrint('splashView: user is not a driver');
+        final driverId = await searchAboutUserOnline(
+          type: 'drivers',
+          email: FirebaseAuth.instance.currentUser!.email!,
+        );
+        if(driverId != null) {
+          debugPrint('splashView: user is a driver');
+          await StoreUserType.saveDriver(true);
+          await StoreUserType.saveDriverDocId(driverId);
+        }
+      }
         String? userType = await StoreUserType.getLastSignIn();
 
         if (!mounted) return; // ✅ Again after async
 
         if (userType == 'passenger') {
-  var passengerDoc = await FirebaseFirestore.instance
-      .collection('passengers')
-      .doc(await StoreUserType.getPassengerDocId())
-      .get();
+          debugPrint('splashView: user is a passenger');
+          var passengerDoc = await FirebaseFirestore.instance
+              .collection('passengers')
+              .doc(await StoreUserType.getPassengerDocId())
+              .get();
 
-  var data = passengerDoc.data();
-  if (data != null && data.containsKey('tripId') && data['tripId'] != null && data['tripId'] != '') {
-    // if the passenger has a trip, redirect to the trip view
-    tripId = data['tripId'];
-    routeName = PassengerTripView.routeName;
-  } else {
-    // if the passenger doesn't have a trip, redirect to the home
-    routeName = PassengerHome.routeName;
-  }
-}
-else if (userType == 'driver') {
+          var data = passengerDoc.data();
+          if (data != null &&
+              data.containsKey('tripId') &&
+              data['tripId'] != null &&
+              data['tripId'] != '') {
+            // if the passenger has a trip, redirect to the trip view
+            tripId = data['tripId'];
+            var tripDoc = await FirebaseFirestore.instance
+                .collection('trips')
+                .doc(tripId)
+                .get();
+            var tripData = tripDoc.data();
+            debugPrint('splashView: tripData: $tripData');
+            if(tripData != null && tripData.containsKey('driverDocId') && tripDoc['driverDocId'] != null) {
+              debugPrint('splashView: trip has a driver');
+              // if the trip has a driver, redirect to the passenger trip view
+              routeName = PassengerTripView.routeName;
+            } else {
+              debugPrint('splashView: trip has no driver');
+              // if the trip doesn't have a driver, redirect to the passenger home
+              routeName = PassengerHome.routeName;
+            }
+          } else {
+            debugPrint('splashView: passenger has no trip');
+            // if the passenger doesn't have a trip, redirect to the home
+            routeName = PassengerHome.routeName;
+          }
+        } else if (userType == 'driver') {
+          debugPrint('splashView: user is a driver');
           var driverDoc = await FirebaseFirestore.instance
               .collection('drivers')
               .doc(await StoreUserType.getDriverDocId())
@@ -106,83 +154,40 @@ else if (userType == 'driver') {
               data.containsKey('tripId') &&
               data['tripId'] != null &&
               data['tripId'] != '') {
+                debugPrint('splashView: driver has a trip');
             tripId = data['tripId'];
             routeName = DriverTripView.routeName;
           } else {
+            debugPrint('splashView: driver has no trip');
             routeName = DriverHome.routeName;
           }
         } else {
+          debugPrint('splashView: user type is null or unknown');
           // errorMessage(context, 'Sorry, error occurred.');
           routeName = DriverOrRiderView.routeName;
         }
       } else {
+        debugPrint('splashView: user is not logged in');
         routeName = LoginView.routeName;
       }
-      if (routeName == DriverHome.routeName) {
-        final user = FirebaseAuth.instance.currentUser;
-        if (await StoreUserType.getDriverDocId() == null) {
-          final querySnapshot = await FirebaseFirestore.instance
-              .collection('drivers')
-              .where('email', isEqualTo: user?.email)
-              .get();
-
-          if (querySnapshot.docs.isNotEmpty) {
-            final doc = querySnapshot.docs.first;
-            final driverId = doc.id;
-            await StoreUserType.saveDriverDocId(driverId);
-            debugPrint('Driver found');
-          } else {
-            debugPrint('Driver not found');
-          }
-        }
+      debugPrint('splashView: routeName: $routeName');
+      if (routeName == PassengerTripView.routeName) {
+        debugPrint('tripIdddddd: $tripId');
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) => const DriverHome(),
-          ),
-        );
-      } else if (routeName == PassengerHome.routeName) {
-        final user = FirebaseAuth.instance.currentUser;
-        if (await StoreUserType.getPassengerDocId() == null) {
-          final querySnapshot = await FirebaseFirestore.instance
-              .collection('passengers')
-              .where('email', isEqualTo: user?.email)
-              .get();
-
-          if (querySnapshot.docs.isNotEmpty) {
-            final doc = querySnapshot.docs.first;
-            final passengerId = doc.id;
-            await StoreUserType.savePassengerDocId(passengerId);
-            debugPrint('Passenger found');
-          } else {
-            debugPrint('Passenger not found');
-          }
-        }
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => const PassengerHome(),
-          ),
-        );
-      } else if (routeName == PassengerTripView.routeName) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ChangeNotifierProvider(
-              create: (_) => DriverTripProvider(),
-              child: const PassengerTripView(),
-            ),
+            builder: (_) => PassengerTripView(tripId:tripId),
+            
           ),
         );
       } else if (routeName == DriverTripView.routeName) {
+
         debugPrint('tripId: $tripId');
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) => ChangeNotifierProvider(
-              create: (_) => DriverTripProvider(),
-              child: DriverTripView(tripId: tripId),
-            ),
+            builder: (_) => DriverTripView(tripId: tripId),
+            
           ),
         );
       } else {
@@ -199,8 +204,10 @@ else if (userType == 'driver') {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
+      backgroundColor: colorScheme.background,
       body: LayoutBuilder(
         builder: (context, constraints) {
           double screenWidth = constraints.maxWidth;
@@ -222,6 +229,7 @@ else if (userType == 'driver') {
                 times: times,
                 showShadow: showShadow,
                 widthVal: widthVal,
+                // Pass theme color to LogoAnimation if needed
               ),
               if (showComic)
                 Positioned(
@@ -231,18 +239,21 @@ else if (userType == 'driver') {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.directions_car_filled,
                             size: 60,
-                            color: AppColors.primaryColor,
+                            color: AppColors.orangeColor, // Use accent color for balance
                           ),
                           const SizedBox(width: 10),
                           DefaultTextStyle(
-                            style: const TextStyle(
-                              color: AppColors.blackColor,
-                              fontSize: 30.0,
-                              fontFamily: 'Bobbers',
-                            ),
+                            style: textTheme.headlineSmall?.copyWith(
+                                  color: Colors.black, // Force all splash text to black
+                                  fontFamily: 'Bobbers',
+                                ) ?? const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 30.0,
+                                  fontFamily: 'Bobbers',
+                                ),
                             child: AnimatedTextKit(
                               totalRepeatCount: 1,
                               animatedTexts: [
@@ -252,8 +263,10 @@ else if (userType == 'driver') {
                           ),
                         ],
                       ),
-                      const TextInSplash(
-                          text: 'Choose the suitable trip for you'),
+                      TextInSplash(
+                        text: 'Choose the suitable trip for you',
+                        // Optionally pass color: Colors.black
+                      ),
                     ],
                   ),
                 ),

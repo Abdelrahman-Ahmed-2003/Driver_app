@@ -1,13 +1,13 @@
-import 'package:dirver/core/models/trip.dart';
+import 'package:dirver/core/sharedProvider/trip_provider.dart';
 import 'package:dirver/core/utils/colors_app.dart';
-import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
+import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:provider/provider.dart';
 
 class DestTripWidget extends StatefulWidget {
-
-  const DestTripWidget({super.key,});
+  final TripProvider provider;
+  const DestTripWidget({super.key,required this.provider,});
 
   @override
   State<DestTripWidget> createState() => _DestTripWidgetState();
@@ -37,15 +37,17 @@ class _DestTripWidgetState extends State<DestTripWidget> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async{
-    var provider = Provider.of<DriverTripProvider>(context, listen: false);
-        debugPrint('provider existsسسسسس? ${Provider.of<DriverTripProvider>(context, listen: false).currentTrip != Trip()}');
 
-    if(provider.currentTrip.driverDistination == 'toUser'){
-          address = await _coordsToAddress(provider.currentTrip.userLocation!.latitude, provider.currentTrip.userLocation!.longitude);
+    if(widget.provider.currentTrip.driverDistination == 'toUser'){
+          address = await _coordsToAddress(widget.provider.currentTrip.userLocation!.latitude, widget.provider.currentTrip.userLocation!.longitude);
+          debugPrint('addresssssssssssssssssssss + $address');
+          // setState(() {
+            
+          // });
 
     }
     else {
-      address = provider.currentTrip.destination;
+      address = widget.provider.currentTrip.destination;
     }
     });
   }

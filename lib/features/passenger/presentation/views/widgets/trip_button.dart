@@ -1,6 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dirver/core/utils/colors_app.dart';
-import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
 import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
 import 'package:dirver/features/trip/presentation/views/passenger_trip_view.dart';
 import 'package:flutter/material.dart';
@@ -31,17 +29,17 @@ class TripButton extends StatelessWidget {
                       await tripProvider.deleteTrip();
                     },
                     style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.redColor,
+                      backgroundColor: Theme.of(context).colorScheme.error,
                       padding: const EdgeInsets.symmetric(vertical: 18),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
                       elevation: 2,
                     ),
-                    child: const Text(
+                    child: Text(
                       "Cancel Trip",
                       style: TextStyle(
-                        color: AppColors.whiteColor,
+                        color: Theme.of(context).colorScheme.onError,
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.5,
@@ -54,10 +52,9 @@ class TripButton extends StatelessWidget {
                     Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => ChangeNotifierProvider(
-                          create:(_)=>DriverTripProvider(), // same instance!
-                          child: const PassengerTripView(),
-                        ),
+                        
+                        builder: (_) => ChangeNotifierProvider.value(value: tripProvider,child: const PassengerTripView(),)
+                        
                       ),
                       (Route<dynamic> route) => false,
                     );
@@ -68,17 +65,17 @@ class TripButton extends StatelessWidget {
                 return FilledButton(
                   onPressed: () => _createTrip(context,tripProvider),
                   style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primaryColor,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     padding: const EdgeInsets.symmetric(vertical: 18),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
                     elevation: 2,
                   ),
-                  child: const Text(
+                  child: Text(
                     "Create Trip",
                     style: TextStyle(
-                      color: AppColors.whiteColor,
+                      color: Theme.of(context).colorScheme.onPrimary,
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.5,

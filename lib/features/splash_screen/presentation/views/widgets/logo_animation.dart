@@ -1,4 +1,3 @@
-import 'package:dirver/core/utils/colors_app.dart';
 import 'package:flutter/material.dart';
 
 class LogoAnimation extends StatelessWidget {
@@ -12,6 +11,7 @@ class LogoAnimation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return AnimatedPositioned(
                   bottom: bottomVal,
                   duration: Duration(milliseconds: 600),
@@ -28,7 +28,7 @@ class LogoAnimation extends StatelessWidget {
                             height: heightVal,
                             decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: AppColors.whiteColor),
+                                color: colorScheme.primary),
                           ),
                         ),
                       ),
@@ -37,7 +37,7 @@ class LogoAnimation extends StatelessWidget {
                           width: 50,
                           height: 10,
                           decoration: BoxDecoration(
-                              color: AppColors.blackColor,
+                              color: colorScheme.shadow,
                               borderRadius: BorderRadius.circular(100)),
                         )
                     ],

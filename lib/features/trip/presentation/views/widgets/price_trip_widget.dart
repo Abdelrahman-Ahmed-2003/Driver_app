@@ -1,13 +1,12 @@
+import 'package:dirver/core/sharedProvider/trip_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
 
 class PriceTripWidget extends StatelessWidget {
-  const PriceTripWidget({super.key,});
+  final TripProvider provider;
+  const PriceTripWidget({super.key,required this.provider});
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.read<DriverTripProvider>();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

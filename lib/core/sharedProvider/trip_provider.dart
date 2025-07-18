@@ -25,10 +25,8 @@ abstract class TripProvider with ChangeNotifier {
   List<DriverWithProposal> driverWithProposalList = [];
 
   void setCurrentUserLocation(LatLng location) {
-    
-      currentTrip.userLocation = location;
-      // notifyListeners(); // Notify listeners of the update
-  
+    currentTrip.userLocation = location;
+    // notifyListeners(); // Notify listeners of the update
   }
 
   Future<void> fetchOnlineTrip(String tripId) async {
@@ -52,58 +50,67 @@ abstract class TripProvider with ChangeNotifier {
     }
   }
 
-  Future<void>updateDestination(String dest)async{
+  Future<void> updateDestination(String dest) async {
     debugPrint('updateDestination: ${currentTrip.id}');
-      await FirebaseFirestore.instance.collection('trips').doc(currentTrip.id).update({
-        'driverDistination':dest,
-      });
-      currentTrip.driverDistination = 'toDestination';
-      
-      notifyListeners();
+    await FirebaseFirestore.instance
+        .collection('trips')
+        .doc(currentTrip.id)
+        .update({
+      'driverDistination': dest,
+    });
+    currentTrip.driverDistination = 'toDestination';
+
+    notifyListeners();
   }
 
-  Future<void>endTrip() async {
+  Future<void> endTrip() async {
     await firestore.collection('drivers').doc(currentTrip.driverId).update({
       'tripId': FieldValue.delete(),
     });
     debugPrint('endTrip: ${currentTrip.passengerId}');
-    await firestore.collection('passengers').doc(currentTrip.passengerId).update({
+    await firestore
+        .collection('passengers')
+        .doc(currentTrip.passengerId)
+        .update({
       'tripId': FieldValue.delete(),
     });
-    
-      await firestore.collection('trips').doc(currentTrip.id).delete();
-      currentTrip = Trip(); // Reset currentTrip after ending
-      currentDocumentTrip = null; // Clear the current document reference
-      tripStream = null; // Stop listening to the trip stream
-    
+
+    await firestore.collection('trips').doc(currentTrip.id).delete();
+    currentTrip = Trip(); // Reset currentTrip after ending
+    currentDocumentTrip = null; // Clear the current document reference
+    tripStream = null; // Stop listening to the trip stream
   }
 
-
   Future<void> pushDriverLocation(LatLng location) async {
-    if (currentTrip.driverLocation == null || currentTrip.driverLocation != location) {
+    if (currentTrip.driverLocation == null ||
+        currentTrip.driverLocation != location) {
+      debugPrint('in condation of rebuild in push funciton');
       currentTrip.driverLocation = location;
+      debugPrint('pushDriverLocation before notifyListeners');
       notifyListeners(); // Notify listeners of the update
       debugPrint('pushDriverLocation: $location');
       if (currentDocumentTrip != null) {
-        await firestore.collection('trips').doc(currentDocumentTrip!.id).update({
-          'driverLocation': {'lat': location.latitude, 'long': location.longitude},
+        await firestore
+            .collection('trips')
+            .doc(currentDocumentTrip!.id)
+            .update({
+          'driverLocation': {
+            'lat': location.latitude,
+            'long': location.longitude
+          },
         });
       }
     }
+    debugPrint('pushDriverLocation after notifyListeners');
   }
 
-  void setDest(LatLng location) {
-    currentTrip.destinationCoords = location;
-    notifyListeners(); // Notify listeners of the update
-  }
-
-  void setCurrentPoints(LatLng newPoints) async {
+  void setCurrentPoints(LatLng newPoints, LatLng dest) async {
     if (points.isEmpty) {
       points.add(newPoints);
     } else {
       points[0] = newPoints;
     }
-    await updatePoints();
+    await updatePoints(dest);
     notifyListeners();
   }
 
@@ -113,35 +120,36 @@ abstract class TripProvider with ChangeNotifier {
     } else {
       points = [...newPoints];
     }
+    debugPrint('points fetchedddddddddddddddddd');
     notifyListeners();
   }
 
-  Future<void> updatePoints() async {
+  Future<void> updatePoints(LatLng dest) async {
     if (currentTrip.destinationCoords != const LatLng(0, 0)) {
-      await fetchRoute();
+      await fetchRoute(dest);
     }
   }
 
-  Future<void> setCoordinatesPoint(LatLng location) async {
+  Future<void> setCoordinatesPoint(LatLng location, LatLng dest) async {
     if (lastDest != location) {
       lastDest = location;
-      setDest(location);
+      currentTrip.destinationCoords = location;
+
       debugPrint('setCoordinatesPoint: $location');
-      await fetchRoute();
+      await fetchRoute(dest);
     }
   }
 
-
   /// Update route points based on currentTrip.userLocation and new destination
-  Future<void> fetchRoute() async {
-    if (currentTrip.destinationCoords == const LatLng(0, 0)|| currentTrip.userLocation == null) return;
+  Future<void> fetchRoute(LatLng dest) async {
+    debugPrint('destination: $dest');
+    if (dest == const LatLng(0, 0) || currentTrip.userLocation == null) return;
 
     points.clear();
     final url = Uri.parse(
-  'https://routing.openstreetmap.de/routed-car/route/v1/driving/'
-  '${currentTrip.userLocation!.longitude},${currentTrip.userLocation!.latitude};'
-  '${currentTrip.destinationCoords.longitude},${currentTrip.destinationCoords.latitude}?overview=full&geometries=polyline&steps=true'
-);
+        'https://routing.openstreetmap.de/routed-car/route/v1/driving/'
+        '${currentTrip.userLocation!.longitude},${currentTrip.userLocation!.latitude};'
+        '${dest.longitude},${dest.latitude}?overview=full&geometries=polyline&steps=true');
 
     debugPrint('fetchRoute: $url');
     final response = await http.get(url);
@@ -156,24 +164,26 @@ abstract class TripProvider with ChangeNotifier {
   void _decodePolyline(String geometry) {
     final polylinePoints = PolylinePoints();
     final result = polylinePoints.decodePolyline(geometry);
-    setDestinations(result.map((e) => LatLng(e.latitude, e.longitude)).toList());
+    setDestinations(
+        result.map((e) => LatLng(e.latitude, e.longitude)).toList());
   }
 
   void reconnectTripStream() {
     tripStream = currentDocumentTrip?.snapshots();
   }
 
-  
-
   Future<String?> checkUserInTrip(String id, String iam) async {
     final doc = await firestore.collection(iam).doc(id).get();
     return doc.data()?['tripId'];
   }
 
-  
-
   void clear() {
     points = [];
     lastDest = null;
+    currentTrip = Trip();
+    currentDocumentTrip = null;
+    tripStream = null;
+    driverWithProposalList = [];
+    isLoading = false;
   }
 }

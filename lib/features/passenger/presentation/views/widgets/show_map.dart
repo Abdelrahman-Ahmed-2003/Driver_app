@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:dirver/core/sharedProvider/trip_provider.dart';
-import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/core/utils/utils.dart';
 import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
 import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
@@ -43,7 +42,7 @@ class _ShowMapState extends State<ShowMap> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeLocation();
       if (widget.isDriver && widget.destination != null) {
-        widget.tripProvider.setCoordinatesPoint(widget.destination!);
+        widget.tripProvider.setCoordinatesPoint(widget.destination!,widget.destination!);
       }
     });
   }
@@ -66,7 +65,7 @@ class _ShowMapState extends State<ShowMap> {
 
         if (_shouldUpdateLocation(newLocation)) {
           widget.tripProvider.setCurrentUserLocation(newLocation);
-          widget.tripProvider.setCurrentPoints(newLocation);
+          widget.tripProvider.setCurrentPoints(newLocation,widget.tripProvider.currentTrip.destinationCoords);
           _lastUpdatedLocation = newLocation;
 
           if (_isLoading) {
@@ -144,7 +143,7 @@ Widget build(BuildContext context) {
       options: MapOptions(
         onTap: (tapPosition, latLng) async {
           if (widget.isDriver || provider.tripStream != null) return;
-          provider.setCoordinatesPoint(latLng);
+          
           try {
             List<Placemark> placemarks = await placemarkFromCoordinates(
               latLng.latitude,
@@ -152,6 +151,7 @@ Widget build(BuildContext context) {
             );
             Placemark place = placemarks.first;
             provider.currentTrip.destination = place.street ?? 'Unknown location';
+            await provider.setCoordinatesPoint(latLng,latLng);
           } catch (e) {
             debugPrint("Error getting place name: $e");
             if (!mounted) return;
@@ -166,7 +166,8 @@ Widget build(BuildContext context) {
       ),
       children: [
         TileLayer(
-  urlTemplate: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+  urlTemplate: "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
+  subdomains: ['a', 'b', 'c'],
   errorTileCallback: (tile, error, stackTrace) {
     if (!isError) {
       setState(() {
@@ -188,8 +189,8 @@ Widget build(BuildContext context) {
         CurrentLocationLayer(
           style: LocationMarkerStyle(
             marker: DefaultLocationMarker(
-              color: AppColors.whiteColor,
-              child: const Icon(Icons.location_pin),
+              color: Theme.of(context).colorScheme.onPrimary,
+              child: Icon(Icons.location_pin, color: Theme.of(context).colorScheme.primary),
             ),
             markerSize: const Size(35, 35),
             markerDirection: MarkerDirection.heading,
@@ -202,9 +203,9 @@ Widget build(BuildContext context) {
                 width: 35,
                 height: 35,
                 point: provider.currentTrip.destinationCoords,
-                child: const Icon(
+                child: Icon(
                   Icons.location_pin,
-                  color: AppColors.blueColor,
+                  color: Theme.of(context).colorScheme.secondary,
                   size: 35,
                 ),
               ),
@@ -216,7 +217,7 @@ Widget build(BuildContext context) {
               Polyline(
                 points: provider.points,
                 strokeWidth: 5,
-                color: AppColors.redColor,
+                color: Theme.of(context).colorScheme.error,
               ),
             ],
           ),

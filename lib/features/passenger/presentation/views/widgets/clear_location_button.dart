@@ -1,4 +1,3 @@
-import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
@@ -13,12 +12,12 @@ class ClearLocationButton extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: tripProvider.tripStream != null 
-            ? AppColors.greyColor 
-            : AppColors.primaryColor,
+            ? Theme.of(context).colorScheme.outline 
+            : Theme.of(context).colorScheme.primary,
         borderRadius: BorderRadius.circular(25),
         boxShadow: [
           BoxShadow(
-            color: AppColors.blackColor.withValues(alpha: 0.1),
+            color: Theme.of(context).colorScheme.shadow.withOpacity(0.1),
             blurRadius: 6,
             offset: const Offset(0, 3),
           ),
@@ -29,14 +28,9 @@ class ClearLocationButton extends StatelessWidget {
       child: IconButton(
         onPressed: () {
           if (tripProvider.tripStream != null) return;
-          tripProvider.currentTrip.price = '';
-          tripProvider.currentTrip.destination = '';
-          tripProvider.currentTrip.destinationCoords = LatLng(0, 0);
-          tripProvider.setCurrentPoints(LatLng(0, 0));
-          tripProvider.points.clear();
-          tripProvider.lastDest = null;
+            tripProvider.clearAllData();
         },
-        icon: const Icon(Icons.clear, color: AppColors.whiteColor),
+        icon: Icon(Icons.clear, color: Theme.of(context).colorScheme.onPrimary),
       ),
     );
   }

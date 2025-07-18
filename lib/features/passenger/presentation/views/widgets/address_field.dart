@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:free_map/free_map.dart';
-
 import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/core/utils/utils.dart';
 import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
@@ -65,12 +64,6 @@ class _AddressFieldState extends State<AddressField> {
                   !_isSearching &&
                   tripProvider.tripStream == null &&
                   tripProvider.currentTrip.destination != value.text.trim();
-              print('rebuild ################################');
-              print('rebuild ${value.text} 1111111111111111');
-              print(
-                  'rebuild ${tripProvider.currentTrip.destination} 212222222222222');
-              print('rebuild ${widget.controller.text} 33333333333333');
-              print('rebuild ################################');
 
               return Row(
                 children: [
@@ -81,7 +74,7 @@ class _AddressFieldState extends State<AddressField> {
                       keyboardType: TextInputType.text,
                       decoration: InputDecoration(
                         filled: true,
-                        fillColor: AppColors.greyColor,
+                        fillColor: Theme.of(context).colorScheme.surfaceVariant,
                         hintText: widget.hintText,
                       ),
                     ),
@@ -120,14 +113,13 @@ class _AddressFieldState extends State<AddressField> {
 
   Future<void> _searchLocation(PassengerTripProvider tripProvider) async {
     final query = widget.controller.text.trim();
-    if (query.isEmpty) {
-      _showMessage('Please enter a location');
-      return;
-    }
-
-    setState(() => _isSearching = true);
 
     try {
+      if (query.isEmpty) {
+        throw Exception('please entre location');
+      }
+
+      setState(() => _isSearching = true);
       final url = Uri.parse(
           'https://nominatim.openstreetmap.org/search?q=$query&format=json&limit=1');
       final response = await http.get(url);
@@ -142,29 +134,24 @@ class _AddressFieldState extends State<AddressField> {
           final lon = double.tryParse(data[0]['lon'].toString());
 
           if (lat != null && lon != null) {
-            tripProvider.setCoordinatesPoint(LatLng(lat, lon));
             tripProvider.updateTripDestination(query);
+            tripProvider.setCoordinatesPoint(
+                LatLng(lat, lon), LatLng(lat, lon));
+            
           } else {
-            _showMessage('Could not parse coordinates.');
+            throw Exception('please try again');
           }
         } else {
-          _showMessage('Location not found, try another one.');
+          throw Exception('Location not found');
         }
       } else {
-        errorMessage(
-            context, 'Search failed with status: ${response.statusCode}');
+        throw Exception('Search failed with status: ${response.statusCode}');
       }
     } catch (e) {
-      errorMessage(context, 'Something went wrong. Please try again.');
+      errorMessage(context, e.toString());
+      tripProvider.clearAllData();
     } finally {
       if (mounted) setState(() => _isSearching = false);
-    }
-  }
-
-  void _showMessage(String message) {
-    if (mounted) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(message)));
     }
   }
 }

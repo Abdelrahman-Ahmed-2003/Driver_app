@@ -1,4 +1,4 @@
-import 'package:dirver/core/utils/colors_app.dart';
+import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
 import 'package:dirver/features/passenger/presentation/views/widgets/address_field.dart';
 import 'package:dirver/features/passenger/presentation/views/widgets/choose_driver_button.dart';
 import 'package:dirver/features/passenger/presentation/views/widgets/clear_location_button.dart';
@@ -6,16 +6,31 @@ import 'package:dirver/features/passenger/presentation/views/widgets/list_view_w
 import 'package:dirver/features/passenger/presentation/views/widgets/price_field.dart';
 import 'package:dirver/features/passenger/presentation/views/widgets/trip_button.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-class BottomSheetWidget extends StatelessWidget {
+class BottomSheetWidget extends StatefulWidget {
   BottomSheetWidget({super.key});
-  final priceController = TextEditingController();
-  final addressController = TextEditingController();
 
   @override
-  Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.bottomCenter,
+  State<BottomSheetWidget> createState() => _BottomSheetWidgetState();
+}
+
+class _BottomSheetWidgetState extends State<BottomSheetWidget> {
+  late final TextEditingController priceController;
+  late final TextEditingController addressController;
+  @override
+  void initState() {
+    super.initState();
+    final userProvider = Provider.of<PassengerTripProvider>(context, listen: false);
+    priceController = TextEditingController(text: userProvider.currentTrip.price);
+    addressController = TextEditingController(text: userProvider.currentTrip.destination);
+  }
+  @override
+Widget build(BuildContext context) {
+  return Align(
+    alignment: Alignment.bottomCenter,
+    child: SingleChildScrollView(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -38,7 +53,7 @@ class BottomSheetWidget extends StatelessWidget {
                 topRight: Radius.circular(24),
               ),
             ),
-            color: AppColors.whiteColor,
+            color: Theme.of(context).colorScheme.surface,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
               child: Column(
@@ -49,15 +64,20 @@ class BottomSheetWidget extends StatelessWidget {
                   AddressField(hintText: 'Destination', controller: addressController),
                   const SizedBox(height: 16),
                   PriceField(controller: priceController),
-                  const Divider(height: 32, thickness: 1, color: AppColors.dividerColor),
+                  Divider(
+                    height: 32,
+                    thickness: 1,
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
                   const TripButton(),
-                  SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
                 ],
               ),
             ),
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
+
 }

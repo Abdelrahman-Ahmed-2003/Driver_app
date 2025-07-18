@@ -25,49 +25,49 @@ class _DriverMapState extends State<DriverMap> {
   bool _isError = false;
 
   LatLng? _lastPoint;
-  DateTime _lastSend = DateTime(2000);   // لضبط كل 3 ثوان
   final Distance _dist = const Distance();
-
-  late final DriverTripProvider _provider; // ← نحفظ النسخة الحيّة
 
   @override
   void initState() {
     super.initState();
-
-    _provider = context.read<DriverTripProvider>(); // مرة واحدة فقط
-
-    WidgetsBinding.instance.addPostFrameCallback((_) => _startTracking());
+    debugPrint('init state destination:');
+    debugPrint('destination: ${widget.destination}');
+    WidgetsBinding.instance.addPostFrameCallback((_) async => await _startTracking());
   }
 
   @override
   void dispose() {
     _locSub?.cancel();   // أوقف الاستماع أولًا
+    debugPrint('dispose');
     super.dispose();
   }
 
   /* ─────────── إذن وتشغيل GPS ─────────── */
   Future<void> _startTracking() async {
+    debugPrint('start of tracking');
     if (!await _checkPermissions()) return;
+    
 
     _locSub = _location.onLocationChanged.listen((d) async {
+      if (!mounted) return; // Prevents using provider after dispose
       if (d.latitude == null || d.longitude == null) return;
 
       final point = LatLng(d.latitude!, d.longitude!);
 
-      // تحديث واجهة الخريطة
-      _provider.setCurrentUserLocation(point);
-      _provider.setCurrentPoints(point);
-
-      // إرسال لـ Firestore كل 3 ثوانٍ
-      if (DateTime.now().difference(_lastSend).inSeconds >= 3) {
-        _lastSend = DateTime.now();
-        await _provider.pushDriverLocation(point);  // ← دالة في المزود
-      }
-
-      if (_isLoading) setState(() => _isLoading = false);
-      if (_lastPoint == null || _dist(_lastPoint!, point) > 5) {
+      // Check distance before any provider updates
+      if (_lastPoint == null || _dist(_lastPoint!, point) > 5) { // 5 meters threshold
+        // Always get provider from context
+        final provider = Provider.of<DriverTripProvider>(context, listen: false);
+        debugPrint('in tracking before set current user location');
+        provider.setCurrentUserLocation(point);
+        debugPrint('in tracking after set current user location');
+        provider.setCurrentPoints(point,widget.destination);
+        debugPrint('in tracking after set current points');
+        await provider.pushDriverLocation(point);
         _lastPoint = point;
+        if (_isLoading) setState(() => _isLoading = false); // Only call once
       }
+      
     });
   }
 
@@ -96,7 +96,8 @@ class _DriverMapState extends State<DriverMap> {
       ),
       children: [
         TileLayer(
-          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          urlTemplate: 'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+          subdomains: ['a', 'b', 'c'],
           errorTileCallback: (_, __, ___) => setState(() => _isError = true),
           tileBuilder: (_, w, __) {
             if (_isError) setState(() => _isError = false);
@@ -106,8 +107,8 @@ class _DriverMapState extends State<DriverMap> {
         CurrentLocationLayer(
           style: LocationMarkerStyle(
             marker: DefaultLocationMarker(
-              child: const Icon(Icons.location_pin),
               color: AppColors.whiteColor,
+              child: const Icon(Icons.location_pin),
             ),
             markerSize: const Size(35, 35),
             markerDirection: MarkerDirection.heading,
