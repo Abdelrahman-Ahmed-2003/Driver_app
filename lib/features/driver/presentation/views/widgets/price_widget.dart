@@ -11,6 +11,7 @@ class PriceWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint("PriceWidget Rebuild");
     var provider = context.read<DriverTripProvider>();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

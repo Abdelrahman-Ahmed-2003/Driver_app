@@ -1,6 +1,6 @@
 import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
 import 'package:dirver/features/trip/presentation/views/widgets/bottom_sheet_to_user.dart';
-import 'package:dirver/features/trip/presentation/views/widgets/driver_map.dart';
+import 'package:dirver/features/trip/presentation/views/widgets/driver_trip_map.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
@@ -53,7 +53,7 @@ class _DriverTripViewState extends State<DriverTripView> {
     ? const Center(child: CircularProgressIndicator())
     : Stack(
         children: [
-          ChangeNotifierProvider.value(value: provider, child: DriverMap(destination: destination)),
+          ChangeNotifierProvider.value(value: provider, child: DriverTripMap(destination: destination)),
           Align(
             alignment: Alignment.bottomCenter,
             child: BottomSheetToUser(provider: provider,),

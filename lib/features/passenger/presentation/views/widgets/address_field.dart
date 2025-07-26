@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:dirver/features/driver/presentation/provider/map_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -22,76 +23,72 @@ class AddressField extends StatefulWidget {
 }
 
 class _AddressFieldState extends State<AddressField> {
-  bool _isSearching = false;
-  String _lastSyncedValue = '';
-
   @override
   void initState() {
     super.initState();
-
+    debugPrint('AddressField initState called');
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final tripProvider = context.read<PassengerTripProvider>();
-      final dest = tripProvider.currentTrip.destination;
-      widget.controller.text = dest;
-      _lastSyncedValue = dest;
+      final mapProvider = context.read<MapProvider>();
+      widget.controller.text = mapProvider.stringDestination;
+
+      widget.controller.addListener(() {
+        final text = widget.controller.text.trim();
+        final destination = mapProvider.stringDestination.trim();
+
+        if (text != destination && !mapProvider.canSearch) {
+          mapProvider.canSearch = true;
+        }
+      });
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Selector<PassengerTripProvider, String>(
-      selector: (_, provider) => provider.currentTrip.destination,
+    debugPrint('AddressField build called');
+    var tripProvider = context.read<PassengerTripProvider>();
+    var mapProvider = context.read<MapProvider>();
+    if(tripProvider.tripStream != null && (mapProvider.stringDestination != tripProvider.currentTrip.destination))
+    {
+      widget.controller.text = tripProvider.currentTrip.destination;
+    }
+
+    return Selector<MapProvider, String>(
+      selector: (_, provider) => provider.stringDestination,
       builder: (context, destination, child) {
         final currentText = widget.controller.text.trim();
 
-        // Sync only if destination changed AND it came from provider
-        if (destination != _lastSyncedValue && destination != currentText) {
+        if (currentText != destination && !mapProvider.canSearch) {
           widget.controller.text = destination;
-          widget.controller.selection = TextSelection.fromPosition(
-            TextPosition(offset: destination.length),
-          );
-          _lastSyncedValue = destination;
         }
 
         return Padding(
           padding: const EdgeInsets.all(8.0),
-          child: ValueListenableBuilder<TextEditingValue>(
-            valueListenable: widget.controller,
-            builder: (context, value, _) {
-              final tripProvider = context.read<PassengerTripProvider>();
-              final isFieldFilled = value.text.trim().isNotEmpty;
-              final canSearch = isFieldFilled &&
-                  !_isSearching &&
-                  tripProvider.tripStream == null &&
-                  tripProvider.currentTrip.destination != value.text.trim();
-
-              return Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      readOnly: tripProvider.tripStream != null,
-                      controller: widget.controller,
-                      keyboardType: TextInputType.text,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Theme.of(context).colorScheme.surfaceVariant,
-                        hintText: widget.hintText,
-                      ),
-                    ),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  readOnly: tripProvider.tripStream != null,
+                  controller: widget.controller,
+                  keyboardType: TextInputType.text,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Theme.of(context).colorScheme.surfaceVariant,
+                    hintText: widget.hintText,
                   ),
-                  _buildSearchButton(canSearch, tripProvider),
-                ],
-              );
-            },
+                ),
+              ),
+              Consumer<MapProvider>(
+                builder: (context, mapProvider, _) => _buildSearchButton(mapProvider),
+              ),
+            ],
           ),
         );
       },
     );
   }
 
-  Widget _buildSearchButton(
-      bool canSearch, PassengerTripProvider tripProvider) {
-    if (_isSearching) {
+  Widget _buildSearchButton(MapProvider mapProvider) {
+    if (mapProvider.isSearching) {
       return const Padding(
         padding: EdgeInsets.all(8.0),
         child: SizedBox(
@@ -103,23 +100,23 @@ class _AddressFieldState extends State<AddressField> {
     }
 
     return IconButton(
-      onPressed: canSearch ? () => _searchLocation(tripProvider) : null,
+      onPressed: mapProvider.canSearch ? () => _searchLocation(mapProvider) : null,
       icon: Icon(
         Icons.search,
-        color: canSearch ? AppColors.primaryColor : AppColors.greyColor,
+        color: mapProvider.canSearch ? AppColors.primaryColor : AppColors.greyColor,
       ),
     );
   }
 
-  Future<void> _searchLocation(PassengerTripProvider tripProvider) async {
+  Future<void> _searchLocation(MapProvider mapProvider) async {
     final query = widget.controller.text.trim();
 
     try {
       if (query.isEmpty) {
-        throw Exception('please entre location');
+        throw Exception('Please enter a location');
       }
 
-      setState(() => _isSearching = true);
+      mapProvider.isSearching = true;
       final url = Uri.parse(
           'https://nominatim.openstreetmap.org/search?q=$query&format=json&limit=1');
       final response = await http.get(url);
@@ -134,12 +131,12 @@ class _AddressFieldState extends State<AddressField> {
           final lon = double.tryParse(data[0]['lon'].toString());
 
           if (lat != null && lon != null) {
-            tripProvider.updateTripDestination(query);
-            tripProvider.setCoordinatesPoint(
-                LatLng(lat, lon), LatLng(lat, lon));
-            
+            mapProvider.stringDestination = query;
+            mapProvider.canSearch = false;
+            mapProvider.destination = LatLng(lat, lon);
+            mapProvider.setCurrentPoints(from: mapProvider.passengerLocation);
           } else {
-            throw Exception('please try again');
+            throw Exception('Invalid coordinates received. Please try again.');
           }
         } else {
           throw Exception('Location not found');
@@ -149,9 +146,11 @@ class _AddressFieldState extends State<AddressField> {
       }
     } catch (e) {
       errorMessage(context, e.toString());
-      tripProvider.clearAllData();
+      mapProvider.clearSearch();
     } finally {
-      if (mounted) setState(() => _isSearching = false);
+      if (mounted) {
+        mapProvider.isSearching = false;
+      }
     }
   }
 }

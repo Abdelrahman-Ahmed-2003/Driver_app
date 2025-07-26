@@ -18,61 +18,73 @@ class DriverHome extends StatefulWidget {
 }
 
 class _DriverHomeState extends State<DriverHome> {
+  bool _isLoading = true;
+
   @override
   void initState() {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final provider = context.read<DriverTripProvider>();
+
       await StoreUserType.saveDriver(true);
       await StoreUserType.saveLastSignIn('driver');
+
+      if (!provider.isDriverDocIdFetched) {
+        await provider.fetchDriverDocId();
+      }
+
+      await provider.fetchInitialTrips(); // ✅ Fetch all trips once
+      await _checkDriverTripAndRedirect(context, provider);
+
+      setState(() {
+        _isLoading = false;
+      });
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    var provider = context.watch<DriverTripProvider>();
-    debugPrint('rebuilddddddddddddddddddddddddddddddddddd');
+    var provider = context.read<DriverTripProvider>();
+    debugPrint('DriverHome Rebuild');
 
     return Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: const Text('Available Trips'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.logout_outlined),
-              onPressed: () async {
-                await StoreUserType.saveLastSignIn('null');
+      appBar: AppBar(
+        centerTitle: true,
+        title: const Text('Available Trips'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout_outlined),
+            onPressed: () async {
+              await StoreUserType.saveLastSignIn('null');
+              provider.clear();
 
-                if (!context.mounted) return;
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (_) => DriverOrRiderView()),
-                  (route) => false,
-                );
-                provider.clear();
+              if (!context.mounted) return;
+
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const DriverOrRiderView()),
+                (route) => false,
+              );
+            },
+          ),
+        ],
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Builder(
+              builder: (context) {
+
+                if (provider.availableTrips.isEmpty) {
+                  return const Center(child: NoTripWidget());
+                }
+
+                return const AnimatedCards(); // ListView with per-trip StreamBuilder
               },
             ),
-          ],
-        ),
-        body: StreamBuilder<List<Map<String, dynamic>>>(
-          stream: provider.listenForAvailableTrips(),
-          builder: (_, snap) {
-            _checkDriverTripAndRedirect(context, provider);
-            if (snap.connectionState == ConnectionState.waiting) {
-              debugPrint('Waiting for available trips...');
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            if (!snap.hasData || snap.data!.isEmpty) {
-              return Center(child: NoTripWidget());
-            }
-
-            return const AnimatedCards();
-          },
-        ));
+    );
   }
 
-  // ✅ Extracted trip check logic
   Future<void> _checkDriverTripAndRedirect(
     BuildContext context,
     DriverTripProvider provider,
@@ -80,12 +92,6 @@ class _DriverHomeState extends State<DriverHome> {
     try {
       debugPrint('Checking driver trip...');
 
-      // Fetch driver document ID if not already fetched
-      if (!provider.isDriverDocIdFetched) {
-        await provider.fetchDriverDocId();
-      }
-
-      // Get driver's document snapshot
       final docSnapshot = await provider.firestore
           .collection('drivers')
           .doc(provider.driverId)
@@ -93,29 +99,21 @@ class _DriverHomeState extends State<DriverHome> {
 
       final data = docSnapshot.data();
 
-      // Check if driver has an active trip
       if (data != null && data['tripId'] != null) {
         debugPrint('Driver has an active trip: ${data['tripId']}');
 
         if (!context.mounted) return;
 
-        // Check if currentTrip is null or not set
         if (provider.currentTrip == Trip()) {
-          // Get the trip document reference
           provider.currentDocumentTrip =
               provider.firestore.collection('trips').doc(data['tripId']);
 
-          // Fetch the trip snapshot
           final tripSnapshot = await provider.currentDocumentTrip!.get();
-
-          // Parse trip data
           provider.currentTrip = Trip.fromFirestore(tripSnapshot);
         }
 
-        // Start listening to trip updates
         provider.tripStream = provider.currentDocumentTrip!.snapshots();
 
-        // Navigate to DriverTripView
         Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
           MaterialPageRoute(
             builder: (_) => const DriverTripView(),

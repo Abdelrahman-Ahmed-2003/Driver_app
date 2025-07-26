@@ -1,4 +1,5 @@
 import 'package:dirver/core/services/sharedPref/store_user_type.dart';
+import 'package:dirver/features/driver/presentation/provider/map_provider.dart';
 import 'package:dirver/features/driver_or_rider/presentation/views/driver_or_rider_view.dart';
 import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
 import 'package:dirver/features/passenger/presentation/views/widgets/bottom_sheet_app.dart';
@@ -25,7 +26,6 @@ class _PassengerHomeState extends State<PassengerHome> {
       var tripProvider = context.read<PassengerTripProvider>();
       tripProvider.loadingTrip = true;
       await tripProvider.fetchTripData();
-      
     });
   }
 
@@ -67,14 +67,16 @@ class _PassengerHomeState extends State<PassengerHome> {
                 Container(
                   color: Theme.of(context).colorScheme.background,
                   child: SafeArea(
-                    child: Stack(
-                      children: [
-                        ShowMap(
-                          isDriver: false,
-                          tripProvider: tripProvider,
-                        ),
-                        BottomSheetWidget(),
-                      ],
+                    child: ChangeNotifierProvider(
+                      create: (_) => MapProvider(),
+                      child: Stack(
+                        children: [
+                          ShowMap(
+                            destination:tripProvider.currentTrip.destinationCoords,
+                          ),
+                          BottomSheetWidget(),
+                        ],
+                      ),
                     ),
                   ),
                 )

@@ -5,7 +5,6 @@ import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/core/utils/utils.dart';
 import 'package:dirver/features/driver/presentation/views/driver_home.dart';
 import 'package:dirver/features/driver/presentation/views/first_screen.dart';
-import 'package:dirver/core/utils/search_about_user.dart';
 import 'package:dirver/features/driver_or_rider/presentation/views/widgets/how_are_you.dart';
 import 'package:dirver/features/passenger/presentation/views/passenger_home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -57,7 +56,6 @@ class DriverOrRiderBody extends StatelessWidget {
                       colorButton: AppColors.primaryColor,
                       colorText: AppColors.whiteColor,
                       onPressed: () async {
-                        String message = 'Welcome back passenger';
                         await StoreUserType.saveLastSignIn('passenger');
                         bool? pass = await StoreUserType.getPassenger();
                         
@@ -74,14 +72,11 @@ class DriverOrRiderBody extends StatelessWidget {
 
                           String newPassengerId = newPassengerRef.id; // ✅ This is the new document ID
                           await StoreUserType.savePassengerDocId(newPassengerId);
-                          message = 'We Welcome you to our app as new passenger';
                         }
                         else{
-                            message = 'Welcome back passenger';
                         }
                         if(!context.mounted) return;
                         Navigator.pushReplacementNamed(context, PassengerHome.routeName);
-                        alertMessage(message, context);
                       },
                     ),
                     const SizedBox(height: 18),
@@ -101,12 +96,23 @@ class DriverOrRiderBody extends StatelessWidget {
                             ),
 
                           );
-                          alertMessage('Welcome back driver', context);
                         } else {
-                          
+                            bool isDriver =await checkDriverStatus();
+                            if(isDriver){
+                              StoreUserType.saveLastSignIn('driver');
+                              StoreUserType.saveDriver(true);
+                              if (!context.mounted) return;
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const DriverHome(),
+                                ),
+                              );
+                              return;
+                            } 
+                            
                             if (!context.mounted) return;
                             Navigator.pushNamed(context, DriverInfoView1.routeName);
-                            alertMessage('Welcome as new driver', context);
                           
                         }
                       },

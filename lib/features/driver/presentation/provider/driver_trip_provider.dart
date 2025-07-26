@@ -42,43 +42,24 @@ class DriverTripProvider extends TripProvider {
     return false;
   }
 
-  /* ──────────── available-trips stream ──────────── */
-  Stream<List<Map<String, dynamic>>> listenForAvailableTrips() {
-    debugPrint('tripCtrrrrrrrrrrrrrrrr: $_tripsCtr');
-  // إن كان البث موجودًا بالفعل فأعد نفس الـ stream
-  if (_tripsCtr != null) return _tripsCtr!.stream;
+  Future<void> fetchInitialTrips() async {
+  final snap = await FirebaseFirestore.instance.collection('trips').get();
 
-  _tripsCtr = StreamController<List<Map<String, dynamic>>>.broadcast();
+  final filtered = snap.docs
+      .where((d) {
+        final data = d.data();
+        if (data['passengerdocId'] == driverId) return false;
+        if (!data.containsKey('driverDocId')) {
+          return true;
+        }
+        return false;
+      })
+      .map((d) => {'tripId': d.id, ...d.data()})
+      .toList();
 
-  _tripsSub = FirebaseFirestore.instance
-    .collection('trips')
-    .snapshots()
-    .listen((snap) {
-      final trips = snap.docs
-          .where((d) {
-            // استبعد رحلاتك
-            if (d['passengerdocId'] == driverId) return false;
-
-            final data = d.data();
-
-            // ✅ تحقق هل driverLocation غير موجود أو null
-            if (!data.containsKey('driverLocation') || data['driverLocation'] == null) {
-              return true;
-            }
-
-            return false; // يعنى أن الموقع موجود بالفعل
-          })
-          .map((d) => {'tripId': d.id, ...d.data()})
-          .toList();
-
-      updateAvailableTrips(trips);
-      _tripsCtr?.add(trips);
-    });
-
-
-
-  return _tripsCtr!.stream;
+  updateAvailableTrips(filtered);
 }
+
 
 
   void _stopTripsStream() {
@@ -184,8 +165,7 @@ class DriverTripProvider extends TripProvider {
   String toString() {
     return 'DriverTripProvider(driverId: '
         ' [32m$driverId [0m, isDriverDocIdFetched: $isDriverDocIdFetched, '
-        'availableTrips: $availableTrips, driverProposal: $driverProposal, '
-        'currentTrip: $currentTrip, points: $points, lastDest: $lastDest)';
+        'availableTrips: $availableTrips, driverProposal: $driverProposal, ';
   }
 
   @override

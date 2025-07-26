@@ -1,6 +1,6 @@
+import 'package:dirver/features/driver/presentation/provider/map_provider.dart';
 import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
 class ClearLocationButton extends StatelessWidget {
@@ -29,6 +29,8 @@ class ClearLocationButton extends StatelessWidget {
         onPressed: () {
           if (tripProvider.tripStream != null) return;
             tripProvider.clearAllData();
+            var mapProvider = context.read<MapProvider>();
+            mapProvider.clearSearch();
         },
         icon: Icon(Icons.clear, color: Theme.of(context).colorScheme.onPrimary),
       ),

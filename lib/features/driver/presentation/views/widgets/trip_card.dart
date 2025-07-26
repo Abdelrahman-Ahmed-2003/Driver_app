@@ -1,12 +1,8 @@
-// =================================== Trip Card ===================================
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dirver/core/models/trip.dart';
 import 'package:dirver/core/utils/colors_app.dart';
-import 'package:dirver/core/utils/utils.dart';
-import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
-import 'package:dirver/features/trip/presentation/views/driver_trip_view.dart';
+import 'package:dirver/features/driver/presentation/views/widgets/bottom_sheet.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class TripCard extends StatefulWidget {
   final Trip trip;
@@ -18,152 +14,81 @@ class TripCard extends StatefulWidget {
 }
 
 class _TripCardState extends State<TripCard> {
-  bool fetched = false;
-  void initState() {
-    super.initState();
-    var provider = context.read<DriverTripProvider>();
-    
-    debugPrint('TripCard initState');
-    WidgetsBinding.instance.addPostFrameCallback((_){
-      
-      if(fetched) return;
-      fetched = provider.fetchOnlineProposedTrip(widget.trip);
-    });
-  }
+
+
   @override
   Widget build(BuildContext context) {
-    var provider = context.watch<DriverTripProvider>();
-    // if(widget.trip.status != 'waiting'){
-    //   Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-    //   MaterialPageRoute(
-    //     builder: (_) => ChangeNotifierProvider.value(
-    //       value: provider,
-    //       child: const DriverTripView(),
-    //     ),
-    //   ),
-    //   (_) => false,
-    // );
-    // }
-    debugPrint('trip card: ${widget.trip}');
-    return Card(
-      elevation: 6,
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: AppColors.greyColor, width: 1),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          // mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            provider.currentTrip != Trip() && provider.currentTrip.id == widget.trip.id
-                ? Align(
-                    alignment: Alignment.topRight,
-                    child: IconButton(
-                        onPressed: () async {
-                          bool check = await alertMessage(
-                              'are you sure from deleting you proposal of this is trip?',
-                              context);
-                          if (check) {
-                            await provider.deleteDriverProposal();
-                          }
-                        },
-                        icon: Icon(Icons.delete, color: Colors.red.shade400)))
-                : SizedBox.shrink(),
-            Text(
-              "Trip to: ${widget.trip.destination}",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-            Chip(
-              backgroundColor: Colors.amber.shade100,
-              label: Text(
-                "${widget.trip.price} EGP",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            provider.driverProposal == null?
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  //  backgroundColor: AppColors.grenColor,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                ),
-                onPressed: () async {
-                  try {
-                    var provider =
-                        Provider.of<DriverTripProvider>(context, listen: false);
-                    if (provider.currentTrip != Trip() &&
-                        provider.currentTrip.id != widget.trip.id) {
-                      errorMessage(
-                          context, 'you can propose only one trip at a time');
-                      return;
-                    }
+    final tripDocRef =
+        FirebaseFirestore.instance.collection('trips').doc(widget.trip.id);
+    return StreamBuilder<DocumentSnapshot>(
+      stream: tripDocRef.snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || !snapshot.data!.exists) {
+          return const SizedBox(); // Trip deleted
+        }
 
-                    provider.currentTrip = widget.trip;
-                    provider.currentDocumentTrip = FirebaseFirestore.instance
-                        .collection('trips')
-                        .doc(widget.trip.id);
-                    provider.tripStream =
-                        provider.currentDocumentTrip!.snapshots();
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ChangeNotifierProvider.value(
-                          value: provider, // same instance!
-                          child: const DriverTripView(),
-                        ),
-                      ),
-                      (Route<dynamic> route) => false,
-                    );
-                    await provider.selectTrip();
-                    // if (!context.mounted) {
-                    //   debugPrint('context is not mounted, returning');
-                    //   return;
-                    // } // widget might be gone after await
+        final updatedTrip = Trip.fromFirestore(snapshot.data!);
 
-                    // ➋ push TripView and keep the same provider instance alive
-
-                    debugPrint('its okeyyyyyyyyyyyyyyyyyy');
-                  } catch (e) {
-                    debugPrint('Error selecting driver: $e');
-                    if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Error selecting driver: $e'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                    return;
-                  }
-                  // Update the price in the trip document
-                  //  if(nameOfButton == 'update price'){
-                  //  FirebaseFirestore.instance.collection('trips').doc(widget.trip['tripId']).update({
-                  //    'updatedPrice': priceController.text,
-                  //  });}
-                  //  acceptTrip(widget.trip['tripId']);
-                },
-                child: Text('Accept Trip', style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onPrimary)),
-              ),
-            ):SizedBox.shrink(),
-          ],
-        ),
-      ),
+        return Card(
+          margin: const EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: const BorderSide(color: AppColors.cardBorderLight, width: 1),
+          ),
+          elevation: 2,
+          shadowColor: AppColors.blackColor,
+          color: AppColors.whiteColor,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // 🗺️ Map (fixed height)
+              // SizedBox(
+              //   height: 200,
+              //   child: ClipRRect(
+              //       borderRadius:
+              //           const BorderRadius.vertical(top: Radius.circular(20)),
+              //       child: Stack(
+              //         children: [
+              //           // DriverMap(
+              //           // ),
+              //           // Positioned(
+              //           //         bottom: 1,
+              //           //         right: 1,
+              //           //         child: IconButton(
+              //           //           icon: const Icon(Icons.fullscreen,
+              //           //               color: AppColors.cardBorderLight),
+              //           //           onPressed: () {
+              //           //             debugPrint(
+              //           //                 "FullScreenMap button pressed");
+              //           //                 // mapProvider.reSetMapController();
+              //           //             Navigator.push(
+              //           //               context,
+              //           //               MaterialPageRoute(
+              //           //                 builder: (context) =>
+              //           //                     ChangeNotifierProvider.value(
+              //           //                   value:
+              //           //                       mapProvider, // Pass the existing instance
+              //           //                   child: FullScreenMap(
+              //           //                     userLocation:
+              //           //                         updatedTrip.userLocation!,
+              //           //                   ),
+              //           //                 ),
+              //           //               ),
+              //           //             );
+              //           //           },
+              //           //         ),
+              //           //       ),
+              //         ],
+              //       )),
+              // ),
+          
+              // 🧾 Flexible Bottom Part
+              BottomSheetDriver(trip: updatedTrip),
+            ],
+          ),
+        );
+      },
     );
   }
 }

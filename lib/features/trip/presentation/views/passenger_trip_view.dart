@@ -1,4 +1,5 @@
 import 'package:dirver/core/models/trip.dart';
+import 'package:dirver/features/driver/presentation/provider/map_provider.dart';
 import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
 import 'package:dirver/features/trip/presentation/views/widgets/bottom_sheet_to_user.dart';
 import 'package:dirver/features/trip/presentation/views/widgets/tracking_map.dart';
@@ -75,10 +76,13 @@ class _PassengerTripViewState extends State<PassengerTripView> {
           return Column(
             children: [
               Expanded(
-                child: TrackingMap(
+                child:ChangeNotifierProvider(
+                  create: (_) => MapProvider(),
+                  child: TrackingMap(
                             current: tripProvider.currentTrip.driverLocation ?? const LatLng(0, 0),
                             destination: tripProvider.currentTrip.userLocation ?? const LatLng(0, 0),
                           ),
+                ),
               ),
           BottomSheetToUser(provider: tripProvider,)
             ],

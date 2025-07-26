@@ -50,7 +50,8 @@ class _PriceFieldState extends State<PriceField> {
 
   @override
   Widget build(BuildContext context) {
-    final tripProvider = context.watch<PassengerTripProvider>();
+    debugPrint('PriceField build called');
+    final tripProvider = context.read<PassengerTripProvider>();
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(

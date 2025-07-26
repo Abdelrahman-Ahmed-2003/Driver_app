@@ -1,4 +1,4 @@
-import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
+import 'package:dirver/features/driver/presentation/provider/map_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -46,9 +46,10 @@ class _TrackingMapState extends State<TrackingMap> {
     debugPrint('${widget.current}');
 
     WidgetsBinding.instance.addPostFrameCallback((_)async{
-      var tripProvider = context.read<PassengerTripProvider>();
-      tripProvider.setCurrentUserLocation(widget.current);
-      tripProvider.setCurrentPoints(widget.current,widget.destination);
+      var mapProvider = Provider.of<MapProvider>(context, listen: false);
+      mapProvider.passengerLocation = widget.current;
+      mapProvider.setCurrentPoints(from: widget.current);
+      // tripProvider.setCurrentPoints(widget.current,widget.destination);
       debugPrint('end of initstate of tracking map');
     });
   }
@@ -57,8 +58,7 @@ class _TrackingMapState extends State<TrackingMap> {
   Widget build(BuildContext context) {
     
     debugPrint('trackingggggggggggggg maaaaaaaaaaappppppppppppp');
-    // return Container();
-    var provider = context.watch<PassengerTripProvider>();
+    var mapProvider = context.watch<MapProvider>();
     return FlutterMap(
       mapController: _mapController,
       options: MapOptions(
@@ -104,11 +104,11 @@ class _TrackingMapState extends State<TrackingMap> {
         ),
 
         // ─── Polyline current ➜ destination ─────────────────────────
-        provider.points.isNotEmpty ?
+        mapProvider.points.isNotEmpty ?
         PolylineLayer(
           polylines: [
             Polyline(
-              points: provider.points,
+              points: mapProvider.points,
               strokeWidth: 5,
               color: Colors.red,
             ),

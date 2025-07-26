@@ -1,13 +1,9 @@
 import 'dart:async';
 import 'package:animated_text_kit/animated_text_kit.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dirver/core/services/sharedPref/store_user_type.dart';
 import 'package:dirver/core/utils/colors_app.dart';
-import 'package:dirver/core/utils/search_about_user.dart';
+import 'package:dirver/core/utils/utils.dart';
 import 'package:dirver/features/auth/presentation/views/login_view.dart';
-import 'package:dirver/features/driver/presentation/views/driver_home.dart';
-import 'package:dirver/features/driver_or_rider/presentation/views/driver_or_rider_view.dart';
-import 'package:dirver/features/passenger/presentation/views/passenger_home.dart';
 import 'package:dirver/features/splash_screen/presentation/views/widgets/logo_animation.dart';
 import 'package:dirver/features/splash_screen/presentation/views/widgets/text_in_splash.dart';
 import 'package:dirver/features/trip/presentation/views/driver_trip_view.dart';
@@ -79,93 +75,14 @@ class _SplashViewState extends State<SplashView>
       debugPrint('splashView: ${FirebaseAuth.instance.currentUser}');
       if (FirebaseAuth.instance.currentUser != null) {
         debugPrint('splashView: user is logged in');
-        var isPassenger = await StoreUserType.getPassenger();
-      if(isPassenger == false){
-        debugPrint('splashView: user is not a passenger');
-        final passengerId = await searchAboutUserOnline(
-          type: 'passengers',
-          email: FirebaseAuth.instance.currentUser!.email!,
-        );
-        if(passengerId != null) {
-          debugPrint('splashView: user is a passenger');
-          await StoreUserType.savePassenger(true);
-          await StoreUserType.savePassengerDocId(passengerId);
-        }
-      }
-      var isDriver = await StoreUserType.getDriver();
-      if(isDriver == false){
-        debugPrint('splashView: user is not a driver');
-        final driverId = await searchAboutUserOnline(
-          type: 'drivers',
-          email: FirebaseAuth.instance.currentUser!.email!,
-        );
-        if(driverId != null) {
-          debugPrint('splashView: user is a driver');
-          await StoreUserType.saveDriver(true);
-          await StoreUserType.saveDriverDocId(driverId);
-        }
-      }
+        await checkPassengerStatus();
+        await checkDriverStatus();
         String? userType = await StoreUserType.getLastSignIn();
 
         if (!mounted) return; // ✅ Again after async
-
-        if (userType == 'passenger') {
-          debugPrint('splashView: user is a passenger');
-          var passengerDoc = await FirebaseFirestore.instance
-              .collection('passengers')
-              .doc(await StoreUserType.getPassengerDocId())
-              .get();
-
-          var data = passengerDoc.data();
-          if (data != null &&
-              data.containsKey('tripId') &&
-              data['tripId'] != null &&
-              data['tripId'] != '') {
-            // if the passenger has a trip, redirect to the trip view
-            tripId = data['tripId'];
-            var tripDoc = await FirebaseFirestore.instance
-                .collection('trips')
-                .doc(tripId)
-                .get();
-            var tripData = tripDoc.data();
-            debugPrint('splashView: tripData: $tripData');
-            if(tripData != null && tripData.containsKey('driverDocId') && tripDoc['driverDocId'] != null) {
-              debugPrint('splashView: trip has a driver');
-              // if the trip has a driver, redirect to the passenger trip view
-              routeName = PassengerTripView.routeName;
-            } else {
-              debugPrint('splashView: trip has no driver');
-              // if the trip doesn't have a driver, redirect to the passenger home
-              routeName = PassengerHome.routeName;
-            }
-          } else {
-            debugPrint('splashView: passenger has no trip');
-            // if the passenger doesn't have a trip, redirect to the home
-            routeName = PassengerHome.routeName;
-          }
-        } else if (userType == 'driver') {
-          debugPrint('splashView: user is a driver');
-          var driverDoc = await FirebaseFirestore.instance
-              .collection('drivers')
-              .doc(await StoreUserType.getDriverDocId())
-              .get();
-          var data = driverDoc.data();
-          if (data != null &&
-              data.containsKey('tripId') &&
-              data['tripId'] != null &&
-              data['tripId'] != '') {
-                debugPrint('splashView: driver has a trip');
-            tripId = data['tripId'];
-            routeName = DriverTripView.routeName;
-          } else {
-            debugPrint('splashView: driver has no trip');
-            routeName = DriverHome.routeName;
-          }
-        } else {
-          debugPrint('splashView: user type is null or unknown');
-          // errorMessage(context, 'Sorry, error occurred.');
-          routeName = DriverOrRiderView.routeName;
-        }
+        var result = await decideNavigationRoute(userType);
+        routeName = result.routeName;
+        tripId = result.tripId;
       } else {
         debugPrint('splashView: user is not logged in');
         routeName = LoginView.routeName;

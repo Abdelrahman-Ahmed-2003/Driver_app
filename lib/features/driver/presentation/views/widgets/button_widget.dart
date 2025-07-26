@@ -119,6 +119,7 @@ class _ButtonWidgetState extends State<ButtonWidget> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint("ButtonWidget Rebuild");
     final provider = context.watch<DriverTripProvider>();
     final state = _computeState(provider);
 

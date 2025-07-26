@@ -10,7 +10,7 @@ import 'package:latlong2/latlong.dart';
 class PassengerTripProvider extends TripProvider {
   String? passengerDocId;
   bool isPassengerDocIdFetched = false;
-  bool loadingTrip = false;
+  bool loadingTrip = true;
 
   PassengerTripProvider() {
     fetchPassengerDocId();
@@ -27,11 +27,7 @@ class PassengerTripProvider extends TripProvider {
   void clearAllData(){
     currentTrip.price = '';
           currentTrip.destination = '';
-          currentTrip.destinationCoords = LatLng(0, 0);
-          points.clear();
-          lastDest = null;
-          setCurrentPoints(LatLng(0, 0),LatLng(0,0));
-          
+          currentTrip.destinationCoords = LatLng(0, 0);          
   }
 
   Future<void> createTrip() async {
@@ -130,7 +126,7 @@ class PassengerTripProvider extends TripProvider {
   Future<void> changePassengerPrice(String newData) async {
     if (currentDocumentTrip == null) {
       currentTrip.price = newData;
-      notifyListeners();
+      // notifyListeners();
       return;
     }
     try {
@@ -138,7 +134,7 @@ class PassengerTripProvider extends TripProvider {
         'price': newData,
       });
       currentTrip.price = newData;
-      notifyListeners();
+      // notifyListeners();
     } catch (e) {
       debugPrint('Error updating data: $e');
     }

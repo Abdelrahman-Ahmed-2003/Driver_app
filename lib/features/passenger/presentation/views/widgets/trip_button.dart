@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dirver/features/driver/presentation/provider/map_provider.dart';
 import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
 import 'package:dirver/features/trip/presentation/views/passenger_trip_view.dart';
 import 'package:flutter/material.dart';
@@ -53,7 +54,7 @@ class TripButton extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         
-                        builder: (_) => ChangeNotifierProvider.value(value: tripProvider,child: const PassengerTripView(),)
+                        builder: (_) => const PassengerTripView()
                         
                       ),
                       (Route<dynamic> route) => false,
@@ -94,13 +95,16 @@ class TripButton extends StatelessWidget {
     BuildContext context,
     PassengerTripProvider tripProvider,
   ) async {
-    if (tripProvider.currentTrip.destination.isEmpty || 
+    var mapProvider = context.read<MapProvider>();
+    if (mapProvider.stringDestination.isEmpty || 
         tripProvider.currentTrip.price.isEmpty) {
       errorMessage(context, 'Please fill all fields');
       return;
     }
 
     try {
+      tripProvider.currentTrip.destination = mapProvider.stringDestination;
+      tripProvider.currentTrip.destinationCoords = mapProvider.destination;
       await tripProvider.createTrip();
     } catch (e) {
       if (!context.mounted) return;

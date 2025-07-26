@@ -1,26 +1,19 @@
-import 'dart:async';
-import 'package:dirver/core/sharedProvider/trip_provider.dart';
 import 'package:dirver/core/utils/utils.dart';
-import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
+import 'package:dirver/features/driver/presentation/provider/map_provider.dart';
 import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:location/location.dart' as location_package;
 import 'package:provider/provider.dart';
 
 class ShowMap extends StatefulWidget {
-  final bool isDriver;
-  final LatLng? destination;
-  final TripProvider tripProvider; // Receive the provider in the constructor
+  final LatLng destination;
 
   const ShowMap({
-    super.key,
-    required this.isDriver,
-    required this.tripProvider, // Pass the provider here
-    this.destination,
+    super.key,// Pass the provider here
+    required this.destination,
   });
 
   @override
@@ -28,121 +21,70 @@ class ShowMap extends StatefulWidget {
 }
 
 class _ShowMapState extends State<ShowMap> {
-  final MapController _mapController = MapController();
-  final location_package.Location _location = location_package.Location();
-  StreamSubscription<location_package.LocationData>? _locationSubscription;
-  bool _isLoading = true;
-  LatLng? _lastUpdatedLocation;
-  final Distance _distanceCalculator = Distance();
+  late MapProvider mapProvider;
+  var mapController = MapController();
 
   @override
   void initState() {
     super.initState();
     debugPrint("ShowMap initState called");
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initializeLocation();
-      if (widget.isDriver && widget.destination != null) {
-        widget.tripProvider.setCoordinatesPoint(widget.destination!,widget.destination!);
-      }
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      var mapProvider = Provider.of<MapProvider>(context, listen: false);
+      mapProvider.destination = widget.destination;
+
+      await mapProvider.listenLocation(false);
+      // if(widget.destination != const LatLng(0, 0)) {
+      //   await mapProvider.fetchRoute();
+      // }
+      // await mapProvider.fetchRoute(widget.destination);
     });
   }
 
   @override
-  void dispose() {
-    _locationSubscription?.cancel(); //✅ Only cancel the subscription without handling context
-    super.dispose();
-  }
-
-  Future<void> _initializeLocation() async {
-    if (!await _checkPermissions()) return;
-
-    _locationSubscription = _location.onLocationChanged.listen((currentLocation) {
-      if (currentLocation.latitude != null && currentLocation.longitude != null) {
-        final newLocation = LatLng(
-          currentLocation.latitude!,
-          currentLocation.longitude!,
-        );
-
-        if (_shouldUpdateLocation(newLocation)) {
-          widget.tripProvider.setCurrentUserLocation(newLocation);
-          widget.tripProvider.setCurrentPoints(newLocation,widget.tripProvider.currentTrip.destinationCoords);
-          _lastUpdatedLocation = newLocation;
-
-          if (_isLoading) {
-            // _isLoading = false;
-            setState(() => _isLoading = false);
-          }
-        }
-      }
-    });
-  }
-
-  bool _shouldUpdateLocation(LatLng newLocation) {
-    if (_lastUpdatedLocation == null) return true;
-    final distance = _distanceCalculator(_lastUpdatedLocation!, newLocation);
-    return distance > 5;
-  }
-
-  Future<bool> _checkPermissions() async {
-    bool serviceEnabled = await _location.serviceEnabled();
-    if (!serviceEnabled) {
-      serviceEnabled = await _location.requestService();
-      if (!serviceEnabled) return false;
-    }
-
-    final permissionStatus = await _location.requestPermission();
-    return permissionStatus == location_package.PermissionStatus.granted;
-  }
-
-  Future<void> _centerOnUserLocation() async {
-  final location = widget.tripProvider.currentTrip.userLocation;
-  if (location != null) {
-    _mapController.move(location, 15);
-  } else {
-    debugPrint("Current location not available");
-    debugPrint("Location: $location");
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Current location not available')),
-    );
-  }
+void didChangeDependencies() {
+  super.didChangeDependencies();
+  mapProvider = context.read<MapProvider>(); // Safe here
 }
 
-  bool isError = false;
+@override
+void dispose() {
+  mapProvider.cancelLocationSubscription(); // Use saved reference
+  mapController.dispose();
+  mapProvider.clear();
+  super.dispose();
+}
+
 
 
   @override
 Widget build(BuildContext context) {
-  if (isError) {
-    return const Center(child: Text('Bad connection'));
+  
+  var mapProvider = context.watch<MapProvider>();
+  var passengerProvider = context.read<PassengerTripProvider>();
+  if(passengerProvider.tripStream != null && mapProvider.destination == const LatLng(0, 0))
+  {
+    debugPrint('print from condation in begining of show map');
+    mapProvider.stringDestination = passengerProvider.currentTrip.destination;
+    WidgetsBinding.instance.addPostFrameCallback((_)async{
+        mapProvider.destination = passengerProvider.currentTrip.destinationCoords;
+        // await mapProvider.fetchRoute();
+    });
+    
+
   }
-
-  if (widget.isDriver) {
-    return Consumer<DriverTripProvider>(
-      builder: (context, provider, child) {
-        return _buildMap(provider);
-      },
-    );
-  } else {
-    return Consumer<PassengerTripProvider>(
-      builder: (context, provider, child) {
-        return _buildMap(provider);
-      },
-    );
+  debugPrint('ShowMap Rebuild ${mapProvider.isLoading}');
+  if(mapProvider.isLoading) {
+    return const Center(child: CircularProgressIndicator());
   }
-}
-
-
-  Widget _buildMap(TripProvider provider) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    return FlutterMap(
-      mapController: _mapController,
+  return FlutterMap(
+      mapController: mapController,
       options: MapOptions(
         onTap: (tapPosition, latLng) async {
-          if (widget.isDriver || provider.tripStream != null) return;
+          if (passengerProvider.tripStream != null) return;
+          var mapProvider = context.read<MapProvider>();
+          if(mapProvider.canSearch) {
+            mapProvider.canSearch = false;
+          }
           
           try {
             List<Placemark> placemarks = await placemarkFromCoordinates(
@@ -150,39 +92,26 @@ Widget build(BuildContext context) {
               latLng.longitude,
             );
             Placemark place = placemarks.first;
-            provider.currentTrip.destination = place.street ?? 'Unknown location';
-            await provider.setCoordinatesPoint(latLng,latLng);
+            mapProvider.stringDestination = place.street ?? 'Unknown Location';
+            mapProvider.destination = latLng;
+            debugPrint('in show map destination: ${latLng}');
+            await mapProvider.setCurrentPoints(from:mapProvider.passengerLocation, to:latLng,type: 'toDest');
           } catch (e) {
             debugPrint("Error getting place name: $e");
             if (!mounted) return;
             errorMessage(context, e.toString());
           }
         },
-        initialCenter: provider.currentTrip.userLocation ?? LatLng(0, 0),
+        initialCenter: mapProvider.passengerLocation,
         initialZoom: 15,
         minZoom: 0,
         maxZoom: 100,
-        onMapReady: _centerOnUserLocation,
+        // onMapReady: mapProvider.centerOnUserLocation,
       ),
       children: [
         TileLayer(
   urlTemplate: "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
   subdomains: ['a', 'b', 'c'],
-  errorTileCallback: (tile, error, stackTrace) {
-    if (!isError) {
-      setState(() {
-        isError = true;
-      });
-    }
-  },
-  tileBuilder: (context, tileWidget, image) {
-    if (isError) {
-      setState(() {
-        isError = false;
-      });
-    }
-    return tileWidget;
-  },
 ),
 
         
@@ -196,13 +125,13 @@ Widget build(BuildContext context) {
             markerDirection: MarkerDirection.heading,
           ),
         ),
-        if (provider.currentTrip.destinationCoords != const LatLng(0, 0))
+        if (mapProvider.destination != const LatLng(0, 0))
           MarkerLayer(
             markers: [
               Marker(
                 width: 35,
                 height: 35,
-                point: provider.currentTrip.destinationCoords,
+                point: mapProvider.destination,
                 child: Icon(
                   Icons.location_pin,
                   color: Theme.of(context).colorScheme.secondary,
@@ -211,11 +140,11 @@ Widget build(BuildContext context) {
               ),
             ],
           ),
-        if (provider.points.isNotEmpty)
+        if (mapProvider.points.isNotEmpty)
           PolylineLayer(
             polylines: [
               Polyline(
-                points: provider.points,
+                points: mapProvider.points,
                 strokeWidth: 5,
                 color: Theme.of(context).colorScheme.error,
               ),
@@ -223,5 +152,6 @@ Widget build(BuildContext context) {
           ),
       ],
     );
-  }
+}
+
 }

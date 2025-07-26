@@ -1,10 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dirver/core/models/driver_with_proposal.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:free_map/free_map.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import '../models/trip.dart';
 
 abstract class TripProvider with ChangeNotifier {
@@ -17,17 +14,13 @@ abstract class TripProvider with ChangeNotifier {
   DocumentReference? currentDocumentTrip;
   Trip currentTrip = Trip();
 
-  // Keep only variables not part of Trip model
-  List<LatLng> points = [];
-  LatLng? lastDest;
-
   // UI-related proposals list
   List<DriverWithProposal> driverWithProposalList = [];
 
-  void setCurrentUserLocation(LatLng location) {
-    currentTrip.userLocation = location;
-    // notifyListeners(); // Notify listeners of the update
-  }
+  // void setCurrentUserLocation(LatLng location) {
+  //   currentTrip.userLocation = location;
+  //   // notifyListeners(); // Notify listeners of the update
+  // }
 
   Future<void> fetchOnlineTrip(String tripId) async {
     isLoading = true;
@@ -104,70 +97,6 @@ abstract class TripProvider with ChangeNotifier {
     debugPrint('pushDriverLocation after notifyListeners');
   }
 
-  void setCurrentPoints(LatLng newPoints, LatLng dest) async {
-    if (points.isEmpty) {
-      points.add(newPoints);
-    } else {
-      points[0] = newPoints;
-    }
-    await updatePoints(dest);
-    notifyListeners();
-  }
-
-  void setDestinations(List<LatLng> newPoints) {
-    if (currentTrip.userLocation != null) {
-      points = [currentTrip.userLocation!, ...newPoints];
-    } else {
-      points = [...newPoints];
-    }
-    debugPrint('points fetchedddddddddddddddddd');
-    notifyListeners();
-  }
-
-  Future<void> updatePoints(LatLng dest) async {
-    if (currentTrip.destinationCoords != const LatLng(0, 0)) {
-      await fetchRoute(dest);
-    }
-  }
-
-  Future<void> setCoordinatesPoint(LatLng location, LatLng dest) async {
-    if (lastDest != location) {
-      lastDest = location;
-      currentTrip.destinationCoords = location;
-
-      debugPrint('setCoordinatesPoint: $location');
-      await fetchRoute(dest);
-    }
-  }
-
-  /// Update route points based on currentTrip.userLocation and new destination
-  Future<void> fetchRoute(LatLng dest) async {
-    debugPrint('destination: $dest');
-    if (dest == const LatLng(0, 0) || currentTrip.userLocation == null) return;
-
-    points.clear();
-    final url = Uri.parse(
-        'https://routing.openstreetmap.de/routed-car/route/v1/driving/'
-        '${currentTrip.userLocation!.longitude},${currentTrip.userLocation!.latitude};'
-        '${dest.longitude},${dest.latitude}?overview=full&geometries=polyline&steps=true');
-
-    debugPrint('fetchRoute: $url');
-    final response = await http.get(url);
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      final geometry = data['routes'][0]['geometry'];
-      _decodePolyline(geometry);
-    }
-  }
-
-  /// Decode polyline and set new route
-  void _decodePolyline(String geometry) {
-    final polylinePoints = PolylinePoints();
-    final result = polylinePoints.decodePolyline(geometry);
-    setDestinations(
-        result.map((e) => LatLng(e.latitude, e.longitude)).toList());
-  }
-
   void reconnectTripStream() {
     tripStream = currentDocumentTrip?.snapshots();
   }
@@ -178,8 +107,6 @@ abstract class TripProvider with ChangeNotifier {
   }
 
   void clear() {
-    points = [];
-    lastDest = null;
     currentTrip = Trip();
     currentDocumentTrip = null;
     tripStream = null;

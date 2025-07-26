@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class BottomSheetWidget extends StatefulWidget {
-  BottomSheetWidget({super.key});
+  const BottomSheetWidget({super.key});
 
   @override
   State<BottomSheetWidget> createState() => _BottomSheetWidgetState();
@@ -22,6 +22,8 @@ class _BottomSheetWidgetState extends State<BottomSheetWidget> {
   void initState() {
     super.initState();
     final userProvider = Provider.of<PassengerTripProvider>(context, listen: false);
+    debugPrint("BottomSheetWidget initState called");
+    debugPrint('Current trip price: ${userProvider.currentTrip.price}');
     priceController = TextEditingController(text: userProvider.currentTrip.price);
     addressController = TextEditingController(text: userProvider.currentTrip.destination);
   }
