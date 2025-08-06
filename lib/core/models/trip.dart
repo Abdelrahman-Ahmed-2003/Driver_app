@@ -1,5 +1,6 @@
 // trip_model.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 
 class Trip {
@@ -13,7 +14,7 @@ class Trip {
    LatLng destinationCoords = LatLng(0, 0);
    String price;
    String status;
-  Map<String, DriverProposal> drivers;
+   String? driverProposalPrice;
    
 
   Trip({
@@ -27,7 +28,7 @@ class Trip {
     this.destinationCoords = const LatLng(0, 0),
     this.price = '',
     this.status = 'wating',
-    this.drivers = const {},
+    this.driverProposalPrice,
   });
 
   @override
@@ -42,36 +43,49 @@ class Trip {
   @override
   int get hashCode => Object.hash(id, status, price);
 
-  factory Trip.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+  factory Trip.fromFirestore(DocumentSnapshot doc, String driverId) {
+  final data = doc.data() as Map<String, dynamic>;
 
-    return Trip(
-      id: doc.id,
-      passengerId: data['passengerdocId'] ?? '',
-      driverId: data['driverDocId'] ?? '',
-      destination: data['destination'] ?? '',
-      driverDistination: data['driverDistination'] ?? 'toUser',
-      userLocation: LatLng(
-        data['userLocation']?['lat'] ?? 0.0,
-        data['userLocation']?['long'] ?? 0.0,
-      ),
-      driverLocation: LatLng(
-        data['driverLocation']?['lat'] ?? 0.0,
-        data['driverLocation']?['long'] ?? 0.0,
-      ),
-      destinationCoords: LatLng(
-        data['destinationCoords']?['lat'] ?? 0.0,
-        data['destinationCoords']?['long'] ?? 0.0,
-      ),
-      price: data['price'] ?? '',
-      status: data['status'] ?? '',
-      drivers: (data['driverProposals'] as Map<String, dynamic>? ?? {}).map(
-        (email, value) => MapEntry(email, DriverProposal.fromMap(value)),
-      ),
-    );
-  }
+  final allProposals = data['driverProposals'] as Map<String, dynamic>? ?? {};
 
-  factory Trip.fromMap(Map<String, dynamic> data) {
+  // ✅ Only get your driver's proposal
+  String? myProposal = allProposals.containsKey(driverId)
+      ? allProposals[driverId]['proposedPrice']
+      : null;
+    debugPrint('myProposal: $myProposal');
+
+  return Trip(
+    id: doc.id,
+    passengerId: data['passengerdocId'] ?? '',
+    driverId: data['driverDocId'] ?? '',
+    destination: data['destination'] ?? '',
+    driverDistination: data['driverDistination'] ?? 'toUser',
+    userLocation: LatLng(
+      data['userLocation']?['lat'] ?? 0.0,
+      data['userLocation']?['long'] ?? 0.0,
+    ),
+    driverLocation: LatLng(
+      data['driverLocation']?['lat'] ?? 0.0,
+      data['driverLocation']?['long'] ?? 0.0,
+    ),
+    destinationCoords: LatLng(
+      data['destinationCoords']?['lat'] ?? 0.0,
+      data['destinationCoords']?['long'] ?? 0.0,
+    ),
+    price: data['price'] ?? '',
+    status: data['status'] ?? '',
+    driverProposalPrice: myProposal
+  );
+}
+
+
+  factory Trip.fromMap(Map<String, dynamic> data, String driverId) {
+    final allProposals = data['driverProposals'] as Map<String, dynamic>? ?? {};
+
+  // ✅ Only get your driver's proposal
+  String? myProposal = allProposals.containsKey(driverId)
+      ? allProposals[driverId]['proposedPrice']
+      : null;
     return Trip(
       id: data['tripId'] ?? '',
       passengerId: data['passengerdocId'] ?? '',
@@ -92,9 +106,8 @@ class Trip {
       ),
       price: data['price'] ?? '',
       status: data['status'] ?? '',
-      drivers: (data['driverProposals'] as Map<String, dynamic>? ?? {}).map(
-        (email, value) => MapEntry(email, DriverProposal.fromMap(value)),
-      ),
+      driverProposalPrice: myProposal,
+      
     );
   }
 
@@ -110,7 +123,7 @@ class Trip {
     String? price,
 
     String? status,
-    Map<String, DriverProposal>? drivers,
+    String? driverProposalPrice,
   }) {
     return Trip(
       id: id ?? this.id,
@@ -123,12 +136,12 @@ class Trip {
       destinationCoords: destinationCoords ?? this.destinationCoords,
       price: price ?? this.price,
       status: status ?? this.status,
-      drivers: drivers ?? Map.from(this.drivers),
+      driverProposalPrice: driverProposalPrice ?? this.driverProposalPrice,
     );
   }
    @override
   String toString() {
-    return 'Trip(id: $id, passengerId: $passengerId, driverId: $driverId, destination: $destination, price: $price)';
+    return 'Trip(id: $id, passengerId: $passengerId, driverId: $driverId, destination: $destination, price: $price , driverProposalPrice: $driverProposalPrice)';
   }
 }
 

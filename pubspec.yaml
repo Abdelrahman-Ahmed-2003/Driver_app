@@ -63,6 +63,7 @@ dependencies:
   flutter_multi_formatter: ^2.13.7
   input_formatter: ^1.0.0
   flutter_masked_text2: ^0.9.1
+  skeletonizer: 1.4.3
 
 dev_dependencies:
   flutter_test:

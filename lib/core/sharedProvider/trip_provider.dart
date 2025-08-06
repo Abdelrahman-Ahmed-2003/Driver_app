@@ -22,7 +22,7 @@ abstract class TripProvider with ChangeNotifier {
   //   // notifyListeners(); // Notify listeners of the update
   // }
 
-  Future<void> fetchOnlineTrip(String tripId) async {
+  Future<void> fetchOnlineTrip(String tripId, String iam) async {
     isLoading = true;
     notifyListeners(); // Notify listeners of the loading state
     try {
@@ -30,7 +30,7 @@ abstract class TripProvider with ChangeNotifier {
       tripStream = currentDocumentTrip?.snapshots();
       final snapshot = await currentDocumentTrip!.get();
       if (snapshot.exists) {
-        currentTrip = Trip.fromFirestore(snapshot);
+        currentTrip = Trip.fromFirestore(snapshot, iam);
         debugPrint('fetchOnlineTrip: $currentTrip');
       } else {
         debugPrint('No trip found with ID: $tripId');

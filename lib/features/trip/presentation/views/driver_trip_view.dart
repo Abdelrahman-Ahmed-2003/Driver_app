@@ -32,9 +32,12 @@ class _DriverTripViewState extends State<DriverTripView> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
               
       debugPrint('DriverTripView post frame callback ${widget.tripId}');
+      if(provider.driverId == null) {
+        await provider.fetchDriverDocId();
+      }
       if (widget.tripId != null) {
 
-        await provider.fetchOnlineTrip(widget.tripId!);
+        await provider.fetchOnlineTrip(widget.tripId!,provider.driverId!);
       }
     });
   }

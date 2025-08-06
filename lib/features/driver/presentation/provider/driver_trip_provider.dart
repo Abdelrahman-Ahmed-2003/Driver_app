@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dirver/core/models/trip.dart';
+import 'package:dirver/core/services/sharedPref/store_proposed_trips.dart';
 import 'package:dirver/core/services/sharedPref/store_user_type.dart';
 import 'package:dirver/core/sharedProvider/trip_provider.dart';
 import 'package:flutter/material.dart';
@@ -11,8 +12,7 @@ class DriverTripProvider extends TripProvider {
   String? driverId;
   bool isDriverDocIdFetched = false;
   List<Trip> availableTrips = [];
-  DriverProposal? driverProposal;
-
+  Map <String, String> propsedTrips = {};  // {tripId: price}
   // Firestore + GPS
   StreamSubscription<QuerySnapshot>? _tripsSub;
   StreamController<List<Map<String, dynamic>>>? _tripsCtr;
@@ -29,18 +29,6 @@ class DriverTripProvider extends TripProvider {
     // notifyListeners();
   }
 
-  bool fetchOnlineProposedTrip(Trip trip){
-    for (var driver in trip.drivers.entries) {
-      if (driver.key == driverId) {
-        driverProposal = driver.value;
-        currentTrip = trip;
-        notifyListeners();
-        return true;
-      }
-    }
-    notifyListeners();
-    return false;
-  }
 
   Future<void> fetchInitialTrips() async {
   final snap = await FirebaseFirestore.instance.collection('trips').get();
@@ -57,7 +45,7 @@ class DriverTripProvider extends TripProvider {
       .map((d) => {'tripId': d.id, ...d.data()})
       .toList();
 
-  updateAvailableTrips(filtered);
+  await updateAvailableTrips(filtered);
 }
 
 
@@ -110,12 +98,13 @@ class DriverTripProvider extends TripProvider {
     await firestore.collection('drivers').doc(driverId).update({
       'tripId': currentDocumentTrip!.id,
     });
+    if(driverId == null) await fetchDriverDocId();
 
-    currentTrip = Trip.fromFirestore(await currentDocumentTrip!.get());
+    currentTrip = Trip.fromFirestore(await currentDocumentTrip!.get(),driverId!);
     currentDocumentTrip = FirebaseFirestore.instance
         .collection('trips')
         .doc(currentTrip.id);
-    // tripStream = currentDocumentTrip!.snapshots();
+    tripStream = currentDocumentTrip!.snapshots();
     debugPrint('Selected tripppppppppppppppppp:');
     _stopTripsStream();  // 🚫 stop listening to “waiting” trips
     debugPrint('end of funcitonnnnnnnnnnn:');
@@ -123,9 +112,16 @@ class DriverTripProvider extends TripProvider {
   }
 
   /* ─────────── update helpers you already had ─────────── */
-  void updateAvailableTrips(List<Map<String, dynamic>> maps) {
-    availableTrips = maps.map(Trip.fromMap).toList();
-    notifyListeners();
+  Future<void> updateAvailableTrips(List<Map<String, dynamic>> maps) async {
+    availableTrips.clear();
+    if(driverId == null) await fetchDriverDocId();
+    for(var map in maps){
+      final trip = Trip.fromMap(map,driverId!);
+      availableTrips.add(trip);
+      
+    }
+    // availableTrips = maps.map(Trip.fromMap).toList();
+    // notifyListeners();
   }
 
   Future<void> updateDriverProposal(
@@ -133,14 +129,6 @@ class DriverTripProvider extends TripProvider {
     await firestore.collection('trips').doc(tripId).update({
       'driverProposals.$driverId.proposedPrice': price,
     });
-    DriverProposal proposal = DriverProposal(
-            proposedPrice: price,
-    );
-    currentTrip.drivers[driverId] = proposal;
-    driverProposal = currentTrip.drivers[driverId];
-    debugPrint('Updated driver proposal: $driverId with price: $price');
-    debugPrint('Current trip drivers: ${currentTrip.drivers[driverId]?.proposedPrice ?? 'nullllllll'}');
-    notifyListeners();
   }
 
   /* ───────────── cleanup ───────────── */
@@ -151,21 +139,34 @@ class DriverTripProvider extends TripProvider {
   }
 
   Future<void> deleteDriverProposal() async {
-    await FirebaseFirestore.instance.collection('trips').doc(currentTrip.id).update({
+  WriteBatch batch = FirebaseFirestore.instance.batch();
+
+  for (var entry in propsedTrips.entries) {
+    final tripId = entry.key;
+
+    final tripDocRef = FirebaseFirestore.instance.collection('trips').doc(tripId);
+
+    // Delete driver's proposal for this trip
+    batch.update(tripDocRef, {
       'driverProposals.$driverId': FieldValue.delete(),
     });
-    currentTrip = Trip();
-    currentDocumentTrip = null;
-    tripStream = null;
-    driverProposal = null;
-    notifyListeners();
   }
+
+  // Commit all deletions at once for better performance
+  await batch.commit();
+  await StoreProposedTrips.clear();
+
+  // Clear the local map and reset trip state
+  propsedTrips.clear();
+  currentTrip = Trip();
+}
+
 
   @override
   String toString() {
     return 'DriverTripProvider(driverId: '
         ' [32m$driverId [0m, isDriverDocIdFetched: $isDriverDocIdFetched, '
-        'availableTrips: $availableTrips, driverProposal: $driverProposal, ';
+        'availableTrips: $availableTrips';
   }
 
   @override
@@ -174,7 +175,6 @@ class DriverTripProvider extends TripProvider {
     driverId = null;
     isDriverDocIdFetched = false;
     availableTrips = [];
-    driverProposal = null;
     _stopTripsStream();
     super.clear();
   }

@@ -74,7 +74,7 @@ class _DriverHomeState extends State<DriverHome> {
           ? const Center(child: CircularProgressIndicator())
           : Builder(
               builder: (context) {
-
+                debugPrint('in builder driver home');
                 if (provider.availableTrips.isEmpty) {
                   return const Center(child: NoTripWidget());
                 }
@@ -109,7 +109,7 @@ class _DriverHomeState extends State<DriverHome> {
               provider.firestore.collection('trips').doc(data['tripId']);
 
           final tripSnapshot = await provider.currentDocumentTrip!.get();
-          provider.currentTrip = Trip.fromFirestore(tripSnapshot);
+          provider.currentTrip = Trip.fromFirestore(tripSnapshot, data['tripId']);
         }
 
         provider.tripStream = provider.currentDocumentTrip!.snapshots();

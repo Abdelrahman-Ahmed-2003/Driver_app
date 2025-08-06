@@ -33,7 +33,7 @@ class _PassengerTripViewState extends State<PassengerTripView> {
       debugPrint('passengerTripView post frame callback ${widget.tripId}');
       if (widget.tripId != null) {
           debugPrint('in if condation');
-        await provider.fetchOnlineTrip(widget.tripId!);
+        await provider.fetchOnlineTrip(widget.tripId!,'passenger');
       }
     });
   }
@@ -69,7 +69,7 @@ class _PassengerTripViewState extends State<PassengerTripView> {
             return const Center(child: Text('No trip data available'));
           }
           debugPrint('passenger trip data');
-          tripProvider.currentTrip = Trip.fromFirestore(snapshot.data!);
+          tripProvider.currentTrip = Trip.fromFirestore(snapshot.data!,'passenger');
           debugPrint('passenger trip data');
           debugPrint('${tripProvider.currentTrip.driverLocation}' );
           debugPrint('${tripProvider.currentTrip.userLocation}');

@@ -81,7 +81,7 @@ class PassengerTripProvider extends TripProvider {
         .collection('drivers')
         .doc(driver.driver.id)
         .update({'tripId': currentDocumentTrip!.id});
-    currentTrip = Trip.fromFirestore(await currentDocumentTrip!.get());
+    currentTrip = Trip.fromFirestore(await currentDocumentTrip!.get(),'passenger');
   }
 
   Future<void> updateDriverProposalsLocally(
@@ -205,7 +205,7 @@ class PassengerTripProvider extends TripProvider {
       if (!tripSnapshot.exists) return;
 
       // Convert Firestore document to Trip model
-      currentTrip = Trip.fromFirestore(tripSnapshot);
+      currentTrip = Trip.fromFirestore(tripSnapshot, 'passenger');
       debugPrint("Current Trip: $currentTrip");
       loadingTrip = false;
       notifyListeners();
