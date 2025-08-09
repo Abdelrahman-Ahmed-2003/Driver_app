@@ -1,7 +1,7 @@
 import 'package:dirver/core/models/trip.dart';
-import 'package:dirver/features/driver/presentation/provider/map_provider.dart';
+import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
-import 'package:dirver/features/trip/presentation/views/widgets/bottom_sheet_to_user.dart';
+import 'package:dirver/features/trip/presentation/views/widgets/passenger_bottom_sheet.dart';
 import 'package:dirver/features/trip/presentation/views/widgets/tracking_map.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 
 class PassengerTripView extends StatefulWidget {
   final String? tripId;
-  const PassengerTripView({super.key,this.tripId});
+  const PassengerTripView({super.key, this.tripId});
   static const String routeName = '/PassengerTripView';
 
   @override
@@ -22,35 +22,34 @@ class _PassengerTripViewState extends State<PassengerTripView> {
     super.initState();
     debugPrint('passengerTripView initState');
     var provider = Provider.of<PassengerTripProvider>(context, listen: false);
-              if(widget.tripId != null) {
-                provider.isLoading = true;
-                debugPrint('passengerTripView tripId: ${widget.tripId}');
-              } else {
-                debugPrint('passengerTripView tripId is null, fetching online trip');
-              }
+    provider.isLoading = true;
+    if (widget.tripId != null) {
+      provider.isLoading = true;
+      debugPrint('passengerTripView tripId: ${widget.tripId}');
+    } else {
+      debugPrint('passengerTripView tripId is null, fetching online trip');
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-              
       debugPrint('passengerTripView post frame callback ${widget.tripId}');
       if (widget.tripId != null) {
-          debugPrint('in if condation');
-        await provider.fetchOnlineTrip(widget.tripId!,'passenger');
+        debugPrint('in if condation');
+        await provider.fetchOnlineTrip(widget.tripId!, 'passenger');
       }
     });
   }
+
   @override
   Widget build(BuildContext context) {
     var tripProvider = context.watch<PassengerTripProvider>();
     // tripProvider.reconnectTripStream();
     debugPrint(tripProvider.toString());
-    return SafeArea(child: Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: const Text("Driver move to you"),
-      ),
+    return SafeArea(
+        child: Scaffold(
       body: StreamBuilder(
         stream: tripProvider.tripStream,
         builder: (context, snapshot) {
-          debugPrint('StreamBuilder stream hash: ${tripProvider.tripStream.hashCode}');
+          debugPrint(
+              'StreamBuilder stream hash: ${tripProvider.tripStream.hashCode}');
 
           debugPrint('StreamBuilder state: ${snapshot.connectionState}');
           debugPrint('StreamBuilder hasData: ${snapshot.hasData}');
@@ -58,7 +57,7 @@ class _PassengerTripViewState extends State<PassengerTripView> {
           debugPrint('StreamBuilder error: ${snapshot.error}');
           if (snapshot.connectionState == ConnectionState.waiting) {
             debugPrint('load data in passenger home');
-            if(tripProvider.tripStream == null) {
+            if (tripProvider.tripStream == null) {
               debugPrint('stream is nullllllllll');
             } else {
               debugPrint('stream not equal nullllllllllll');
@@ -69,22 +68,29 @@ class _PassengerTripViewState extends State<PassengerTripView> {
             return const Center(child: Text('No trip data available'));
           }
           debugPrint('passenger trip data');
-          tripProvider.currentTrip = Trip.fromFirestore(snapshot.data!,'passenger');
+          tripProvider.currentTrip =
+              Trip.fromFirestore(snapshot.data!, 'passenger');
           debugPrint('passenger trip data');
-          debugPrint('${tripProvider.currentTrip.driverLocation}' );
+          debugPrint('${tripProvider.currentTrip.driverLocation}');
           debugPrint('${tripProvider.currentTrip.userLocation}');
           return Column(
             children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.greyColor.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child:Text(tripProvider.currentTrip.driverDistination == 'toUser' ? 'Driver moving to you' : 'Start Trip to Destination'),
+              ),
               Expanded(
-                child:ChangeNotifierProvider(
-                  create: (_) => MapProvider(),
-                  child: TrackingMap(
-                            current: tripProvider.currentTrip.driverLocation ?? const LatLng(0, 0),
-                            destination: tripProvider.currentTrip.userLocation ?? const LatLng(0, 0),
-                          ),
+                child: TrackingMap(
+                  current: tripProvider.currentTrip.driverLocation ??
+                      const LatLng(0, 0),
+                  destination: tripProvider.currentTrip.userLocationCoords ??
+                      const LatLng(0, 0),
                 ),
               ),
-          BottomSheetToUser(provider: tripProvider,)
+              PassengerBottomSheet()
             ],
           );
         },

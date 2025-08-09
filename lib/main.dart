@@ -1,4 +1,5 @@
 import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
+import 'package:dirver/features/driver/presentation/provider/map_provider.dart';
 import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
 import 'package:dirver/my_app.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -21,7 +22,8 @@ void main() async{
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => DriverTripProvider()),
-        ChangeNotifierProvider(create: (context)=> PassengerTripProvider())
+        ChangeNotifierProvider(create: (context)=> PassengerTripProvider()),
+        ChangeNotifierProvider(create: (context) => MapProvider()),
 
 
       ],

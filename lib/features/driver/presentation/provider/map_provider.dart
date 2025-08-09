@@ -23,8 +23,6 @@ class MapProvider extends ChangeNotifier {
   LatLng anotherLocation = const LatLng(0, 0);
   List<LatLng> _points = []; //to destination
   List<LatLng> _toUserPoints = [];
-  bool _isToUserMode = false;
-  bool get isToUserMode => _isToUserMode;
   List<LatLng> get toUserPoints => _toUserPoints;
   LatLng _destination = const LatLng(0, 0);
   LatLng get destination => _destination;
@@ -91,7 +89,9 @@ class MapProvider extends ChangeNotifier {
   Future<void> setCurrentPoints(
       {LatLng from = const LatLng(0, 0),
       LatLng to = const LatLng(0, 0),
+      
       String type = 'toDest'}) async {
+        debugPrint('destination is in listen to notificaiton $_destination');
         if(_destination == const LatLng(0, 0)) return;
     if (to == const LatLng(0, 0)) {
       to = _destination;
@@ -104,6 +104,8 @@ class MapProvider extends ChangeNotifier {
   /// Fetch route for any two points
   Future<void> fetchRoute(LatLng from, LatLng to, String type) async {
     try {
+      debugPrint('fetchRoute called');
+      debugPrint('from: $from, to: $to'  'type: $type');
       final url = Uri.parse(
         'https://routing.openstreetmap.de/routed-car/route/v1/driving/'
         '${from.longitude},${from.latitude};${to.longitude},${to.latitude}'

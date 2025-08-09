@@ -26,6 +26,7 @@ abstract class TripProvider with ChangeNotifier {
     isLoading = true;
     notifyListeners(); // Notify listeners of the loading state
     try {
+      
       currentDocumentTrip = firestore.collection('trips').doc(tripId);
       tripStream = currentDocumentTrip?.snapshots();
       final snapshot = await currentDocumentTrip!.get();
@@ -39,7 +40,8 @@ abstract class TripProvider with ChangeNotifier {
       debugPrint('Error fetching trip: $e');
     } finally {
       isLoading = false;
-      notifyListeners(); // Notify listeners of the loading state change
+        notifyListeners(); // Notify listeners of the loading state change
+      
     }
   }
 

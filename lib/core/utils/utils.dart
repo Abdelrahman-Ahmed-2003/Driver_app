@@ -6,9 +6,10 @@ import 'package:dirver/features/trip/presentation/views/driver_trip_view.dart';
 import 'package:dirver/features/trip/presentation/views/passenger_trip_view.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:location/location.dart' as location_package;
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
-import 'package:location/location.dart';
   import 'package:cloud_firestore/cloud_firestore.dart';
 
 void errorMessage(BuildContext context, String message) {
@@ -47,22 +48,32 @@ Future<bool> alertMessage(String message, BuildContext context) async {
 
  
 
-Future<LocationData?> getCurrentLocation() async {
-  Location location = Location();
+Future<location_package.LocationData?> getCurrentLocation() async {
+  final location = location_package.Location();
 
+  // Ensure location services are enabled
   bool serviceEnabled = await location.serviceEnabled();
   if (!serviceEnabled) {
     serviceEnabled = await location.requestService();
     if (!serviceEnabled) return null;
   }
 
-  PermissionStatus permissionGranted = await location.hasPermission();
-  if (permissionGranted == PermissionStatus.denied) {
+  // Check for permission
+  location_package.PermissionStatus permissionGranted = await location.hasPermission();
+  if (permissionGranted == location_package.PermissionStatus.denied) {
     permissionGranted = await location.requestPermission();
-    if (permissionGranted != PermissionStatus.granted) return null;
+    if (permissionGranted != location_package.PermissionStatus.granted) {
+      return null;
+    }
   }
 
-  return await location.getLocation();
+  // Get current location
+  try {
+    return await location.getLocation();
+  } catch (e) {
+    print("Error getting location: $e");
+    return null;
+  }
 }
 
 
@@ -185,5 +196,23 @@ Future<({String routeName, String? tripId})> decideNavigationRoute(String? userT
     debugPrint('splashView: user type is null or unknown');
     return (routeName: DriverOrRiderView.routeName, tripId: null);
   }
+}
+
+Future<String> coordsToAddress(double lat, double lng) async {
+    debugPrint('Converting coordinates to address: $lat, $lng');
+  // Returns a list of Placemark; we take the first
+  final placemarks = await placemarkFromCoordinates(lat, lng);
+
+  if (placemarks.isEmpty) return 'No address available';
+
+  final Placemark p = placemarks.first;
+
+  // Compose the full street-level address (customise as you like)
+  return [
+    p.street,            // e.g. “5th Avenue”
+    p.subLocality,       // e.g. “Manhattan”
+    p.locality,          // e.g. “New York”
+    p.country            // e.g. “United States”
+  ].where((e) => e != null && e.isNotEmpty).join(', ');
 }
 

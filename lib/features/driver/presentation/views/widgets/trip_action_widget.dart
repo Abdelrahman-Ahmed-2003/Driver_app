@@ -44,16 +44,13 @@ class _TripActionWidgetState extends State<TripActionWidget> {
   }
 
   Future<void> _acceptTrip(DriverTripProvider provider) async {
-    await provider.selectTrip();
+    await provider.selectTrip(widget.trip.id);
     provider.deleteDriverProposal();
     if (!mounted) return;
 
     Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
       MaterialPageRoute(
-        builder: (_) => ChangeNotifierProvider.value(
-          value: provider,
-          child: const DriverTripView(),
-        ),
+        builder: (_) => const DriverTripView(),
       ),
       (_) => false,
     );
@@ -62,6 +59,8 @@ class _TripActionWidgetState extends State<TripActionWidget> {
   Future<void> _updateProposal(DriverTripProvider provider) async {
     _buttonText = 'change price to enabled';
     provider.propsedTrips[widget.trip.id] = _controller.text;
+      debugPrint('Deleting driver proposal add: ${provider.propsedTrips}');
+
     await StoreProposedTrips.addProposal(widget.trip.id, _controller.text);
     await provider.updateDriverProposal(
         widget.trip.id, provider.driverId!, _controller.text);

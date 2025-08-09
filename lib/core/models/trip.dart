@@ -9,7 +9,8 @@ class Trip {
    String driverId;
    String destination;
    String driverDistination = 'toUser';
-   LatLng? userLocation;
+   LatLng? userLocationCoords;
+   String? userLocation;
    LatLng? driverLocation;
    LatLng destinationCoords = LatLng(0, 0);
    String price;
@@ -23,7 +24,8 @@ class Trip {
     this.driverDistination = 'toUser',
     this.driverId = '',
     this.destination = '',
-    this.userLocation = const LatLng(0, 0),
+    this.userLocation = '',
+    this.userLocationCoords = const LatLng(0, 0),
     this.driverLocation = const LatLng(0, 0),
     this.destinationCoords = const LatLng(0, 0),
     this.price = '',
@@ -60,10 +62,11 @@ class Trip {
     driverId: data['driverDocId'] ?? '',
     destination: data['destination'] ?? '',
     driverDistination: data['driverDistination'] ?? 'toUser',
-    userLocation: LatLng(
-      data['userLocation']?['lat'] ?? 0.0,
-      data['userLocation']?['long'] ?? 0.0,
+    userLocationCoords: LatLng(
+      data['userLocationCoords']?['lat'] ?? 0.0,
+      data['userLocationCoords']?['long'] ?? 0.0,
     ),
+    userLocation: data['userLocation'] ?? '',
     driverLocation: LatLng(
       data['driverLocation']?['lat'] ?? 0.0,
       data['driverLocation']?['long'] ?? 0.0,
@@ -92,10 +95,11 @@ class Trip {
       driverId: data['driverId'] ?? '',
       destination: data['destination'] ?? '',
       driverDistination: data['driverDistination'] ?? 'toUser',
-      userLocation: LatLng(
-        data['userLocation']?['lat'] ?? 0.0,
-        data['userLocation']?['long'] ?? 0.0,
+      userLocationCoords: LatLng(
+        data['userLocationCoords']?['lat'] ?? 0.0,
+        data['userLocationCoords']?['long'] ?? 0.0,
       ),
+      userLocation: data['userLocation'] ?? '',
       driverLocation: LatLng(
         data['driverLocation']?['lat'] ?? 0.0,
         data['driverLocation']?['long'] ?? 0.0,
@@ -117,7 +121,8 @@ class Trip {
     String? driverId,
     String? destination,
     String? driverDistination,
-    LatLng? userLocation,
+    String? userLocation,
+    LatLng? userLocationCoords,
     LatLng? driverLocation,
     LatLng? destinationCoords,
     String? price,
@@ -131,8 +136,9 @@ class Trip {
       driverId: driverId ?? this.driverId,
       destination: destination ?? this.destination,
       driverDistination: driverDistination ?? this.driverDistination,
+      userLocationCoords: userLocationCoords ?? this.userLocationCoords,
       userLocation: userLocation ?? this.userLocation,
-      driverLocation: userLocation ?? this.driverLocation,
+      driverLocation: driverLocation ?? this.driverLocation,
       destinationCoords: destinationCoords ?? this.destinationCoords,
       price: price ?? this.price,
       status: status ?? this.status,

@@ -1,4 +1,5 @@
 import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
+import 'package:dirver/features/driver/presentation/provider/map_provider.dart';
 import 'package:dirver/features/driver/presentation/views/driver_home.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -13,6 +14,8 @@ class EndTripButton extends StatelessWidget {
       height: 50,
       child: ElevatedButton(onPressed: ()async{
         var provider = context.read<DriverTripProvider>();
+        var mapProvider = context.read<MapProvider>();
+        mapProvider.dispose(); 
         await provider.endTrip();
         Navigator.pushNamedAndRemoveUntil(
                       context,

@@ -2,7 +2,6 @@ import 'package:dirver/core/models/driver_with_proposal.dart';
 import 'package:dirver/features/passenger/presentation/provider/passenger_trip_provider.dart';
 import 'package:dirver/features/trip/presentation/views/passenger_trip_view.dart';
 import 'package:flutter/material.dart';
-import 'package:dirver/core/utils/colors_app.dart';
 import 'package:provider/provider.dart';
 
 class DriverCard extends StatefulWidget {
@@ -110,7 +109,7 @@ class _DriverCardState extends State<DriverCard> {
                   onPressed: () async {
                     try {
                       await provider
-                          .updateSelectedDriver(widget.driverWithProposal);
+                          .selectedDriver(widget.driverWithProposal);
                       if (!context.mounted) return;
                       Navigator.pushReplacement(
                           context,

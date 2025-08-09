@@ -1,9 +1,11 @@
+import 'package:dirver/core/utils/utils.dart';
 import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
-import 'package:dirver/features/trip/presentation/views/widgets/bottom_sheet_to_user.dart';
+import 'package:dirver/features/trip/presentation/views/widgets/driver_bottom_sheet.dart';
 import 'package:dirver/features/trip/presentation/views/widgets/driver_trip_map.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class DriverTripView extends StatefulWidget {
   final String? tripId;
@@ -23,46 +25,54 @@ class _DriverTripViewState extends State<DriverTripView> {
     super.initState();
     debugPrint('DriverTripView initState');
     var provider = Provider.of<DriverTripProvider>(context, listen: false);
-              if(widget.tripId != null) {
-                provider.isLoading = true;
-                debugPrint('DriverTripView tripId: ${widget.tripId}');
-              } else {
-                debugPrint('DriverTripView tripId is null, fetching online trip');
-              }
+    provider.isLoading = true;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-              
       debugPrint('DriverTripView post frame callback ${widget.tripId}');
       if(provider.driverId == null) {
         await provider.fetchDriverDocId();
       }
       if (widget.tripId != null) {
+        debugPrint('in if condation');
+                debugPrint('current trip${provider.currentTrip.destination}');
 
         await provider.fetchOnlineTrip(widget.tripId!,provider.driverId!);
+        
+        debugPrint('current trip${provider.currentTrip.destination}');
       }
+      else {
+        setState(() {
+          provider.isLoading = false;
+        });
+      }
+      
     });
   }
 
   @override
   Widget build(BuildContext context) {
     var provider = context.watch<DriverTripProvider>();
+        debugPrint('DriverTripView build ${provider.isLoading}');
+
     LatLng destination = provider.currentTrip.driverDistination == 'toUser'
-        ? provider.currentTrip.userLocation!
+        ? provider.currentTrip.userLocationCoords!
         : provider.currentTrip.destinationCoords;
     debugPrint('DriverTripView build, isLoading: ${destination}');
     return SafeArea(
         child: Scaffold(
             
-           body: provider.isLoading
-    ? const Center(child: CircularProgressIndicator())
-    : Stack(
-        children: [
-          ChangeNotifierProvider.value(value: provider, child: DriverTripMap(destination: destination)),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: BottomSheetToUser(provider: provider,),
-          ),
-        ],
-      )
+           body:  Skeletonizer(
+      enabled: provider.isLoading,
+      enableSwitchAnimation: true,
+      child: Stack(
+          children: [
+            DriverTripMap(destination: destination),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: DriverBottomSheet(),
+            ),
+          ],
+        ),
+    )
 ));
   }
 }

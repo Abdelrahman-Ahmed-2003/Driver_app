@@ -105,6 +105,7 @@ class TripButton extends StatelessWidget {
     try {
       tripProvider.currentTrip.destination = mapProvider.stringDestination;
       tripProvider.currentTrip.destinationCoords = mapProvider.destination;
+      tripProvider.currentTrip.userLocationCoords = mapProvider.passengerLocation;
       await tripProvider.createTrip();
     } catch (e) {
       if (!context.mounted) return;

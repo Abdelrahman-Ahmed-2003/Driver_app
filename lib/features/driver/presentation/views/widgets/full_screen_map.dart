@@ -3,7 +3,6 @@ import 'package:dirver/features/driver/presentation/provider/map_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
 class FullScreenMap extends StatefulWidget {
@@ -20,11 +19,14 @@ class _FullScreenMapState extends State<FullScreenMap> {
   @override
   void initState() {
     super.initState();
+    debugPrint("FullScreenMap initState called");
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       var mapProvider = Provider.of<MapProvider>(context, listen: false);
       // await mapProvider.initializeLocation(); // include notifyListeners
+      debugPrint('driver location fulllllllllllscreeeeeeeeeeeennnnnnnnnnn');
+      debugPrint('passenger location ${mapProvider.passengerLocation}');
       await mapProvider.initialize3MarkersRoute();
-      debugPrint("FullScreenMap initState called");
+      
     });
   }
 
@@ -50,110 +52,126 @@ class _FullScreenMapState extends State<FullScreenMap> {
     }
     debugPrint('DriverMap Rebuild  ${mapProvider.isLoading}');
     return SafeArea(
-      child: Stack(
-        children: [
-          FlutterMap(
-            mapController: mapController,
-            options: MapOptions(
-              initialCenter: mapProvider.driverLocation,
-              initialZoom: 15,
-              minZoom: 0,
-              maxZoom: 100,
-              // onMapReady: mapProvider.centerOnUserLocation,
-            ),
-            children: [
-              TileLayer(
-                urlTemplate: "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
-                subdomains: ['a', 'b', 'c'],
+      child: Scaffold(
+        body: Stack(
+          children: [
+            FlutterMap(
+              mapController: mapController,
+              options: MapOptions(
+                initialCenter: mapProvider.driverLocation,
+                initialZoom: 15,
+                minZoom: 0,
+                maxZoom: 100,
+                // onMapReady: mapProvider.centerOnUserLocation,
               ),
-              CurrentLocationLayer(
-                style: LocationMarkerStyle(
-                  marker: DefaultLocationMarker(
-                    color: Theme.of(context).colorScheme.onPrimary,
-                    child: Icon(Icons.navigation,
-                        color: Theme.of(context).colorScheme.primary),
-                  ),
-                  markerSize: const Size(35, 35),
-                  markerDirection: MarkerDirection.heading,
+              children: [
+                TileLayer(
+                  urlTemplate: "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
+                  subdomains: ['a', 'b', 'c'],
                 ),
-              ),
-              MarkerLayer(
-                markers: [
-                  Marker(
-                    width: 35,
-                    height: 35,
-                    point: mapProvider.destination,
-                    child: Icon(
-                      Icons.location_pin,
-                      color: AppColors.cardBorderLight,
-                      size: 35,
+                CurrentLocationLayer(
+                  style: LocationMarkerStyle(
+                    marker: DefaultLocationMarker(
+                      color: Theme.of(context).colorScheme.onPrimary,
+                      child: Icon(Icons.navigation,
+                          color: Theme.of(context).colorScheme.primary),
                     ),
+                    markerSize: const Size(35, 35),
+                    markerDirection: MarkerDirection.heading,
                   ),
-                ],
-              ),
-              MarkerLayer(
-                markers: [
-                  Marker(
-                    width: 35,
-                    height: 35,
-                    point: mapProvider.passengerLocation,
-                    child: Icon(
-                      Icons.location_pin,
-                      color: AppColors.darkRed,
-                      size: 35,
+                ),
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      width: 35,
+                      height: 35,
+                      point: mapProvider.driverLocation,
+                      child: Icon(
+                        Icons.navigation,
+                        color: AppColors.cardBorderLight,
+                        size: 35,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              PolylineLayer(
-                  polylines: [
-                    Polyline(
-                      points: mapProvider.toUserPoints,
-                      strokeWidth: 5,
-                      color: AppColors.orangeColor,
+                  ],
+                ),
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      width: 35,
+                      height: 35,
+                      point: mapProvider.destination,
+                      child: Icon(
+                        Icons.location_pin,
+                        color: AppColors.cardBorderLight,
+                        size: 35,
+                      ),
+                    ),
+                  ],
+                ),
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      width: 35,
+                      height: 35,
+                      point: mapProvider.passengerLocation,
+                      child: Icon(
+                        Icons.face_6_outlined,
+                        color: AppColors.darkRed,
+                        size: 35,
+                      ),
                     ),
                   ],
                 ),
                 PolylineLayer(
-                  polylines: [
-                    Polyline(
-                      points: mapProvider.points,
-                      strokeWidth: 5,
-                      color: AppColors.darkRed,
-                    ),
-                  ],
-                ),
-            ],
-          ),
-          // Positioned(
-          //   bottom: 50,
-          //   right: 1,
-          //   child: IconButton(
-          //     icon: const Icon(Icons.add, color: AppColors.cardBorderLight),
-          //     onPressed: () {
-          //       ++_currentZoom;
-          //       setState(() {
-                  
-          //       });
-          //     },
-          //   ),
-          // ),
-          // Positioned(
-          //   bottom: 1,
-          //   right: 1,
-          //   child: IconButton(
-          //     icon: const Icon(Icons.remove, color: AppColors.cardBorderLight),
-          //     onPressed: () {
-          //       if (_currentZoom > 0) {
-          //         --_currentZoom;
-          //         setState(() {});
-          //       }
-          //     },
-          //   ),
-          // ),
-          
-          
-        ],
+                    polylines: [
+                      Polyline(
+                        points: mapProvider.toUserPoints,
+                        strokeWidth: 5,
+                        color: AppColors.orangeColor,
+                      ),
+                    ],
+                  ),
+                  PolylineLayer(
+                    polylines: [
+                      Polyline(
+                        points: mapProvider.points,
+                        strokeWidth: 5,
+                        color: AppColors.darkRed,
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+            // Positioned(
+            //   bottom: 50,
+            //   right: 1,
+            //   child: IconButton(
+            //     icon: const Icon(Icons.add, color: AppColors.cardBorderLight),
+            //     onPressed: () {
+            //       ++_currentZoom;
+            //       setState(() {
+                    
+            //       });
+            //     },
+            //   ),
+            // ),
+            // Positioned(
+            //   bottom: 1,
+            //   right: 1,
+            //   child: IconButton(
+            //     icon: const Icon(Icons.remove, color: AppColors.cardBorderLight),
+            //     onPressed: () {
+            //       if (_currentZoom > 0) {
+            //         --_currentZoom;
+            //         setState(() {});
+            //       }
+            //     },
+            //   ),
+            // ),
+            
+            
+          ],
+        ),
       ),
     );
   }

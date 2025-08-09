@@ -5,6 +5,7 @@ import 'package:dirver/core/models/trip.dart';
 import 'package:dirver/core/services/sharedPref/store_user_type.dart';
 import 'package:dirver/core/sharedProvider/trip_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:latlong2/latlong.dart';
 
 class PassengerTripProvider extends TripProvider {
@@ -37,13 +38,20 @@ class PassengerTripProvider extends TripProvider {
       if (!isPassengerDocIdFetched) {
         passengerDocId = await StoreUserType.getPassengerDocId();
       }
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+              currentTrip.userLocationCoords!.latitude,
+              currentTrip.userLocationCoords!.longitude,
+            );
+            Placemark place = placemarks.first;
+            currentTrip.userLocation = place.street ?? 'Unknown Location';
       currentDocumentTrip = await firestore.collection('trips').add({
         'passengerdocId': passengerDocId,
         'destination': currentTrip.destination,
-        'userLocation': {
-          'lat': currentTrip.userLocation?.latitude,
-          'long': currentTrip.userLocation?.longitude,
+        'userLocationCoords': {
+          'lat': currentTrip.userLocationCoords?.latitude,
+          'long': currentTrip.userLocationCoords?.longitude,
         },
+        'userLocation': currentTrip.userLocation,
         'destinationCoords': {
           'lat': currentTrip.destinationCoords.latitude,
           'long': currentTrip.destinationCoords.longitude,
@@ -64,7 +72,7 @@ class PassengerTripProvider extends TripProvider {
     }
   }
 
-  Future<void> updateSelectedDriver(DriverWithProposal driver) async {
+  Future<void> selectedDriver(DriverWithProposal driver) async {
     if (currentDocumentTrip == null) return;
     await currentDocumentTrip!.update({
       'driverDocId': driver.driver.id,
@@ -72,10 +80,10 @@ class PassengerTripProvider extends TripProvider {
       'status': 'started',
       'price':driver.proposal.proposedPrice,
       'driverProposals': FieldValue.delete(),
-      'driverLocation': {
-        'latitude': currentTrip.userLocation!.latitude,
-        'longitude': currentTrip.userLocation!.longitude,
-      },
+      // 'driverLocation': {
+      //   'latitude': currentTrip.userLocation!.latitude,
+      //   'longitude': currentTrip.userLocation!.longitude,
+      // },
     });
     await firestore
         .collection('drivers')

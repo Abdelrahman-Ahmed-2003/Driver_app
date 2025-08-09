@@ -74,8 +74,7 @@ class DriverTripProvider extends TripProvider {
   }
 
   /* ─────────── driver selects a trip ─────────── */
-  Future<void> selectTrip() async {
-    if (currentDocumentTrip == null) return;
+  Future<void> selectTrip(String tripId) async {
     debugPrint('selectTrip');
     debugPrint('selectTrip: ${isDriverDocIdFetched}');
     driverId = await StoreUserType.getDriverDocId();
@@ -84,7 +83,7 @@ class DriverTripProvider extends TripProvider {
     if (locationData == null) {
       throw Exception('Location not available');
     }
-    await currentDocumentTrip!.update({
+    firestore.collection('trips').doc(tripId).update({
       'driverDocId': driverId,
       'driverDistination': 'toUser',
       'status': 'started',
@@ -92,23 +91,22 @@ class DriverTripProvider extends TripProvider {
       'driverLocation': {
         'latitude': locationData.latitude,
         'longitude': locationData.longitude,
-      },
+      },  
     });
 
     await firestore.collection('drivers').doc(driverId).update({
-      'tripId': currentDocumentTrip!.id,
+      'tripId': tripId,
     });
     if(driverId == null) await fetchDriverDocId();
 
-    currentTrip = Trip.fromFirestore(await currentDocumentTrip!.get(),driverId!);
     currentDocumentTrip = FirebaseFirestore.instance
         .collection('trips')
-        .doc(currentTrip.id);
+        .doc(tripId);
+        currentTrip = Trip.fromFirestore(await currentDocumentTrip!.get(),driverId!);
     tripStream = currentDocumentTrip!.snapshots();
     debugPrint('Selected tripppppppppppppppppp:');
     _stopTripsStream();  // 🚫 stop listening to “waiting” trips
     debugPrint('end of funcitonnnnnnnnnnn:');
-    // _startGpsTracker();  // 🚀 start location push
   }
 
   /* ─────────── update helpers you already had ─────────── */
@@ -140,7 +138,8 @@ class DriverTripProvider extends TripProvider {
 
   Future<void> deleteDriverProposal() async {
   WriteBatch batch = FirebaseFirestore.instance.batch();
-
+  debugPrint('Deleting driver proposal');
+  debugPrint('Deleting driver proposal: $propsedTrips');
   for (var entry in propsedTrips.entries) {
     final tripId = entry.key;
 
@@ -150,6 +149,7 @@ class DriverTripProvider extends TripProvider {
     batch.update(tripDocRef, {
       'driverProposals.$driverId': FieldValue.delete(),
     });
+    debugPrint('Deleted driver proposal for trip $tripId');
   }
 
   // Commit all deletions at once for better performance

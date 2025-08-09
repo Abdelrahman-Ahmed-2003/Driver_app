@@ -1,17 +1,15 @@
 import 'package:dirver/core/sharedProvider/trip_provider.dart';
-import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
 import 'package:dirver/features/trip/presentation/views/widgets/dest_trip_widget.dart';
-import 'package:dirver/features/trip/presentation/views/widgets/end_trip_button.dart';
 import 'package:dirver/features/trip/presentation/views/widgets/price_trip_widget.dart';
-import 'package:dirver/features/trip/presentation/views/widgets/start_trip_button.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-class BottomSheetToUser extends StatelessWidget {
-  final TripProvider provider;
-  const BottomSheetToUser({super.key,required this.provider});
+class PassengerBottomSheet extends StatelessWidget {
+  const PassengerBottomSheet({super.key});
 
   @override
   Widget build(BuildContext context) {
+    TripProvider provider = context.read<TripProvider>();
     debugPrint('bottommmmmmmmmmmmmmmmmmmm sheeeeeeeettttttttttttttttttttttt');
     return Align(
       alignment: Alignment.bottomCenter,
@@ -48,14 +46,9 @@ class BottomSheetToUser extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 20),
-                DestTripWidget(provider:provider),
+                DestTripWidget(),
                 const SizedBox(height: 24),
-                PriceTripWidget(provider:provider),
-                const SizedBox(height: 28),
-                provider is DriverTripProvider?
-                (provider.currentTrip.driverDistination == 'toUser'
-                    ? StartTripButton()
-                    : EndTripButton()):SizedBox.shrink(),
+                PriceTripWidget(price:provider.currentTrip.price),
               ],
             ),
           ),

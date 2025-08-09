@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dirver/core/models/trip.dart';
 import 'package:dirver/core/utils/colors_app.dart';
 import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
-import 'package:dirver/features/driver/presentation/provider/map_provider.dart';
 import 'package:dirver/features/driver/presentation/views/widgets/dest_widget.dart';
 import 'package:dirver/features/driver/presentation/views/widgets/trip_action_widget.dart';
 import 'package:flutter/material.dart';
@@ -38,14 +37,14 @@ class _TripCardState extends State<TripCard> {
       double dist1 = Geolocator.distanceBetween(
         driverPosition.latitude,
         driverPosition.longitude,
-        widget.trip.userLocation!.latitude,
-        widget.trip.userLocation!.longitude,
+        widget.trip.userLocationCoords!.latitude,
+        widget.trip.userLocationCoords!.longitude,
       );
 
       // Distance from user to destination
       double dist2 = Geolocator.distanceBetween(
-        widget.trip.userLocation!.latitude,
-        widget.trip.userLocation!.longitude,
+        widget.trip.userLocationCoords!.latitude,
+        widget.trip.userLocationCoords!.longitude,
         widget.trip.destinationCoords.latitude,
         widget.trip.destinationCoords.longitude,
       );
@@ -114,13 +113,10 @@ class _TripCardState extends State<TripCard> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ChangeNotifierProvider(
-                  create: (_) => MapProvider(),
-                  child: DestWidget(
-                    destination: trip.destination,
-                    destinationCoords: trip.destinationCoords,
-                    passengerLocation: trip.userLocation!,
-                  ),
+                DestWidget(
+                  destination: trip.destination,
+                  destinationCoords: trip.destinationCoords,
+                  passengerLocation: trip.userLocationCoords!,
                 ),
                 const SizedBox(height: 10),
                 if (!_enable) ...[

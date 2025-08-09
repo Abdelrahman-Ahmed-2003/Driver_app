@@ -16,6 +16,7 @@ class DriverTripMap extends StatefulWidget {
 
 class _DriverMapState extends State<DriverTripMap> {
   final MapController _mapController = MapController();
+  late MapProvider mapProvider;
 
   @override
   void initState() {
@@ -24,16 +25,20 @@ class _DriverMapState extends State<DriverTripMap> {
     debugPrint('destination: ${widget.destination}');
     WidgetsBinding.instance.addPostFrameCallback((_) async{
       var mapProvider = Provider.of<MapProvider>(context, listen: false);
+      
             mapProvider.destination = widget.destination;
 
       await mapProvider.listenLocation(true);
       // await mapProvider.fetchRoute();
     });
   }
-
+@override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    mapProvider = context.read<MapProvider>(); // Safe here
+  }
   @override
   void dispose() {
-    var mapProvider = Provider.of<MapProvider>(context, listen: false);
     mapProvider.cancelLocationSubscription();
     debugPrint('dispose');
     super.dispose();
@@ -74,6 +79,9 @@ class _DriverMapState extends State<DriverTripMap> {
 
     // نستخدم watch ليحدث الرسم إذا تغيّرت البيانات
     final provider = context.watch<MapProvider>();
+    if(mapProvider.isLoading) {
+    return const Center(child: CircularProgressIndicator());
+  }
 
     return FlutterMap(
       mapController: _mapController,

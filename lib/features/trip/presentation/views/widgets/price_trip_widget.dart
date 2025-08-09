@@ -1,9 +1,8 @@
-import 'package:dirver/core/sharedProvider/trip_provider.dart';
 import 'package:flutter/material.dart';
 
 class PriceTripWidget extends StatelessWidget {
-  final TripProvider provider;
-  const PriceTripWidget({super.key,required this.provider});
+  final String price;
+  const PriceTripWidget({super.key,required this.price});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +21,7 @@ class PriceTripWidget extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  "Trip Price: ${provider.currentTrip.price} EGP",
+                  "Trip Price: $price EGP",
                   style: const TextStyle(
                       fontWeight: FontWeight.bold, color: Colors.black87),
                 ),

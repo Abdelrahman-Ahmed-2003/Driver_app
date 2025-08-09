@@ -37,41 +37,25 @@ class AppRoutes {
         );
 
       case DriverInfoView2.routeName:
-        final driverProvider = settings.arguments as DriverProvider;
         return MaterialPageRoute(
-          builder: (_) => ChangeNotifierProvider.value(
-            value: driverProvider,
-            child: DriverInfoView2(),
-          ),
+          builder: (_) => DriverInfoView2(),
         );
 
       case DriverInfoView3.routeName:
-        final driverProvider = settings.arguments as DriverProvider;
         return MaterialPageRoute(
-          builder: (_) => ChangeNotifierProvider.value(
-            value: driverProvider,
-            child: DriverInfoView3(),
-          ),
+          builder: (_) => DriverInfoView3(),
         );
 
       case DriverInfoView4.routeName:
-        final driverProvider = settings.arguments as DriverProvider;
         return MaterialPageRoute(
-          builder: (_) => ChangeNotifierProvider.value(
-            value: driverProvider,
-            child: DriverInfoView4(),
-          ),
+          builder: (_) => DriverInfoView4(),
         );
         
       // case SelectedTrip.routeName:
       //   return MaterialPageRoute(builder: (_) => SelectedTrip(trip: null,));
       case SelectDriver.routeName:
-        final provider = settings.arguments as PassengerTripProvider;
         return MaterialPageRoute(
-          builder: (_) => ChangeNotifierProvider.value(
-            value: provider,
-            child: const SelectDriver(),
-          ),
+          builder: (_) => const SelectDriver(),
         );
       case DriverTripView.routeName:
         return MaterialPageRoute(builder: (_) => const DriverTripView());
