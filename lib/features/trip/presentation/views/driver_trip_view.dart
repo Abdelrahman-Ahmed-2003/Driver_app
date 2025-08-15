@@ -1,11 +1,10 @@
-import 'package:dirver/core/utils/utils.dart';
 import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
 import 'package:dirver/features/trip/presentation/views/widgets/driver_bottom_sheet.dart';
 import 'package:dirver/features/trip/presentation/views/widgets/driver_trip_map.dart';
+import 'package:dirver/features/trip/presentation/views/widgets/skeletonizer_trip_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 
 class DriverTripView extends StatefulWidget {
   final String? tripId;
@@ -23,9 +22,19 @@ class _DriverTripViewState extends State<DriverTripView> {
   @override
   void initState() {
     super.initState();
+    
     debugPrint('DriverTripView initState');
     var provider = Provider.of<DriverTripProvider>(context, listen: false);
     provider.isLoading = true;
+    
+    // Only print currentTrip if it has meaningful data
+    if (provider.currentTrip.id.isNotEmpty) {
+      debugPrint(' selectedtripp from initstate ${provider.currentTrip}');
+    } else {
+      debugPrint(' selectedtripp from initstate - no trip data yet');
+    }
+    
+    
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       debugPrint('DriverTripView post frame callback ${widget.tripId}');
       if(provider.driverId == null) {
@@ -33,16 +42,19 @@ class _DriverTripViewState extends State<DriverTripView> {
       }
       if (widget.tripId != null) {
         debugPrint('in if condation');
-                debugPrint('current trip${provider.currentTrip.destination}');
+        debugPrint('current trip${provider.currentTrip.destination}');
 
         await provider.fetchOnlineTrip(widget.tripId!,provider.driverId!);
         
         debugPrint('current trip${provider.currentTrip.destination}');
       }
       else {
-        setState(() {
-          provider.isLoading = false;
-        });
+        
+          setState(() {
+            provider.isLoading = false;
+            debugPrint('set state called - no trip data');
+          });
+        
       }
       
     });
@@ -60,19 +72,12 @@ class _DriverTripViewState extends State<DriverTripView> {
     return SafeArea(
         child: Scaffold(
             
-           body:  Skeletonizer(
-      enabled: provider.isLoading,
-      enableSwitchAnimation: true,
-      child: Stack(
+           body:  provider.isLoading  ?SkeletonizerTripWidget():Stack(
           children: [
             DriverTripMap(destination: destination),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: DriverBottomSheet(),
-            ),
+            DriverBottomSheet(),
           ],
         ),
-    )
 ));
   }
 }

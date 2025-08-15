@@ -5,11 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
-class DestWidget extends StatelessWidget {
+class AddressWidget extends StatelessWidget {
   final String destination;
   final LatLng destinationCoords;
   final LatLng passengerLocation;
-  const DestWidget(
+  const AddressWidget(
       {super.key,
       required this.destination,
       required this.destinationCoords,

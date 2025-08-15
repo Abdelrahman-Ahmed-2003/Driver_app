@@ -12,10 +12,9 @@ class DriverTripProvider extends TripProvider {
   String? driverId;
   bool isDriverDocIdFetched = false;
   List<Trip> availableTrips = [];
+  bool updated = false;
   Map <String, String> propsedTrips = {};  // {tripId: price}
   // Firestore + GPS
-  StreamSubscription<QuerySnapshot>? _tripsSub;
-  StreamController<List<Map<String, dynamic>>>? _tripsCtr;
 
   // DriverTripProvider() {
   //   fetchDriverDocId();
@@ -30,33 +29,11 @@ class DriverTripProvider extends TripProvider {
   }
 
 
-  Future<void> fetchInitialTrips() async {
-  final snap = await FirebaseFirestore.instance.collection('trips').get();
 
-  final filtered = snap.docs
-      .where((d) {
-        final data = d.data();
-        if (data['passengerdocId'] == driverId) return false;
-        if (!data.containsKey('driverDocId')) {
-          return true;
-        }
-        return false;
-      })
-      .map((d) => {'tripId': d.id, ...d.data()})
-      .toList();
-
-  await updateAvailableTrips(filtered);
-}
-
-
-
-  void _stopTripsStream() {
-    _tripsSub?.cancel();
-    _tripsSub = null;
-    _tripsCtr?.close();
-    _tripsCtr = null;
-    debugPrint('tripCTr is nullllllll $_tripsCtr');
-  }
+ set CurrentTrip(Trip trip){
+   currentTrip = trip;
+   notifyListeners();
+ }
 
   /* ───────────── current location once ───────────── */
   Future<LocationData?> _getCurrentLocation() async {
@@ -75,39 +52,36 @@ class DriverTripProvider extends TripProvider {
 
   /* ─────────── driver selects a trip ─────────── */
   Future<void> selectTrip(String tripId) async {
-    debugPrint('selectTrip');
-    debugPrint('selectTrip: ${isDriverDocIdFetched}');
-    driverId = await StoreUserType.getDriverDocId();
-    debugPrint('selectTrip: ${driverId}');
-    var locationData = await _getCurrentLocation();
-    if (locationData == null) {
-      throw Exception('Location not available');
-    }
-    firestore.collection('trips').doc(tripId).update({
-      'driverDocId': driverId,
-      'driverDistination': 'toUser',
-      'status': 'started',
-      'driverProposals': FieldValue.delete(),
-      'driverLocation': {
-        'latitude': locationData.latitude,
-        'longitude': locationData.longitude,
-      },  
-    });
-
-    await firestore.collection('drivers').doc(driverId).update({
-      'tripId': tripId,
-    });
-    if(driverId == null) await fetchDriverDocId();
-
-    currentDocumentTrip = FirebaseFirestore.instance
-        .collection('trips')
-        .doc(tripId);
-        currentTrip = Trip.fromFirestore(await currentDocumentTrip!.get(),driverId!);
-    tripStream = currentDocumentTrip!.snapshots();
-    debugPrint('Selected tripppppppppppppppppp:');
-    _stopTripsStream();  // 🚫 stop listening to “waiting” trips
-    debugPrint('end of funcitonnnnnnnnnnn:');
+  debugPrint('selectTrip');
+  
+  driverId = await StoreUserType.getDriverDocId();
+  var locationData = await _getCurrentLocation();
+  if (locationData == null) {
+    throw Exception('Location not available');
   }
+
+  // ✅ Await this so we don't continue until it's done
+  await firestore.collection('trips').doc(tripId).update({
+    'driverDocId': driverId,
+    'driverDistination': 'toUser',
+    'status': 'started',
+    'driverProposals': FieldValue.delete(),
+    'driverLocation': {
+      'latitude': locationData.latitude,
+      'longitude': locationData.longitude,
+    },
+  });
+
+  await firestore.collection('drivers').doc(driverId).update({
+    'tripId': tripId,
+  });
+
+  CurrentTrip = Trip.fromFirestore(
+    await firestore.collection('trips').doc(tripId).get(),
+    'driver',
+  );
+}
+
 
   /* ─────────── update helpers you already had ─────────── */
   Future<void> updateAvailableTrips(List<Map<String, dynamic>> maps) async {
@@ -129,12 +103,7 @@ class DriverTripProvider extends TripProvider {
     });
   }
 
-  /* ───────────── cleanup ───────────── */
-  @override
-  void dispose() {
-    _stopTripsStream();
-    super.dispose();
-  }
+  
 
   Future<void> deleteDriverProposal() async {
   WriteBatch batch = FirebaseFirestore.instance.batch();
@@ -175,7 +144,35 @@ class DriverTripProvider extends TripProvider {
     driverId = null;
     isDriverDocIdFetched = false;
     availableTrips = [];
-    _stopTripsStream();
     super.clear();
+  }
+
+  void listenTrips() {
+    // isLoading = true;
+    FirebaseFirestore.instance
+        .collection('trips')
+        .snapshots()
+        .listen((snapshot) {
+      debugPrint('Listening to trips...');
+      updated = false;
+      for (var change in snapshot.docChanges) {
+        if (change.type == DocumentChangeType.added) {
+          debugPrint('Adding trip to availableTrips: ${change.doc.id}');
+          availableTrips.add(Trip.fromFirestore(change.doc, driverId!));
+          updated = true;
+        } else if (change.type == DocumentChangeType.removed) {
+          debugPrint('Removing trip from availableTrips: ${change.doc.id}');
+          propsedTrips.removeWhere((key, value) => key == change.doc.id);
+          availableTrips.removeWhere((t) => t.id == change.doc.id);
+          updated = true;
+        }
+      }
+      if(updated == true || isLoading == true) {
+        isLoading = false;
+        notifyListeners();
+      }
+      
+      
+    });
   }
 }

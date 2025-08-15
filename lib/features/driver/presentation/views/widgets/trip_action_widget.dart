@@ -30,11 +30,9 @@ class _TripActionWidgetState extends State<TripActionWidget> {
       text: widget.trip.driverProposalPrice ?? '',
     );
 
-      if (widget.trip.driverProposalPrice != null) {
-          _buttonText = 'change price to enabled';
-        
-      }
-    
+    if (widget.trip.driverProposalPrice != null) {
+      _buttonText = 'change price to enabled';
+    }
   }
 
   @override
@@ -44,22 +42,21 @@ class _TripActionWidgetState extends State<TripActionWidget> {
   }
 
   Future<void> _acceptTrip(DriverTripProvider provider) async {
-    await provider.selectTrip(widget.trip.id);
-    provider.deleteDriverProposal();
+    provider.CurrentTrip = widget.trip;
+
+    await provider.selectTrip(widget.trip.id); // Wait until trip is selected
+
+    // provider.deleteDriverProposal();
     if (!mounted) return;
 
-    Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-      MaterialPageRoute(
-        builder: (_) => const DriverTripView(),
-      ),
-      (_) => false,
-    );
+    // Delay navigation to the next event loop cycle
+    // await Future.delayed(Duration.zero);
   }
 
   Future<void> _updateProposal(DriverTripProvider provider) async {
     _buttonText = 'change price to enabled';
     provider.propsedTrips[widget.trip.id] = _controller.text;
-      debugPrint('Deleting driver proposal add: ${provider.propsedTrips}');
+    debugPrint('Deleting driver proposal add: ${provider.propsedTrips}');
 
     await StoreProposedTrips.addProposal(widget.trip.id, _controller.text);
     await provider.updateDriverProposal(
@@ -67,94 +64,136 @@ class _TripActionWidgetState extends State<TripActionWidget> {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
-    debugPrint('intial price issssssssssssss ${widget.trip.driverProposalPrice}');
-    final provider = context.read<DriverTripProvider>();
+    debugPrint(
+        'intial price issssssssssssss ${widget.trip.driverProposalPrice}');
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text("Your Proposed Price",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                decoration: BoxDecoration(
-                  color: Colors.amber.shade100,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  "Passenger Price: ${widget.trip.price} EGP",
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.black87),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: TextFormField(
-                controller: _controller,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  suffix: const Text('EGP'),
-                  hintText: "EGP",
-                  filled: true,
-                  fillColor: AppColors.greyColor.withOpacity(0.2),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  border: OutlineInputBorder(
+    return Selector<DriverTripProvider, Trip?>(
+  selector: (_, provider) => provider.currentTrip,
+  builder: (context, _, __) {
+    final provider = context.read<DriverTripProvider>();
+    if (provider.currentTrip.driverId != '' ||
+        provider.currentTrip.driverId.isNotEmpty) {
+      Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (_) => const DriverTripView(),
+        ),
+        (_) => false,
+      );
+      return const SizedBox(); // Add return here after navigation
+    }
+
+    if (provider.currentTrip != Trip() &&
+        provider.currentTrip.id == widget.trip.id) {
+      return const LinearProgressIndicator();
+    } else if (provider.currentTrip != Trip()) {
+      debugPrint('current trip is${provider.currentTrip}');
+      return const SizedBox.shrink();
+    } else if (provider.currentTrip == Trip()) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Your Proposed Price",
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade100,
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide.none,
+                  ),
+                  child: Text(
+                    "Passenger Price: ${widget.trip.price} EGP",
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
                   ),
                 ),
-                onChanged: (value) {
-                  if (value == widget.trip.driverProposalPrice && widget.trip.driverProposalPrice != null) {
-                    setState(() {
-                      _buttonText = 'change price to enabled';
-                    });
-                  } else if (value != widget.trip.driverProposalPrice && value.isNotEmpty) {
-                    setState(() {
-                      _buttonText = 'update';
-                      // text = value;
-                    });
-                  } else if (value == widget.trip.price &&
-                      _buttonText != 'accept' &&
-                      widget.trip.driverProposalPrice == null) {
-                    setState(() {
-                      _buttonText = 'accept';
-                      // text = value;
-                    });
-                  }
-                },
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextFormField(
+                  controller: _controller,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    suffix: const Text('EGP'),
+                    hintText: "EGP",
+                    filled: true,
+                    fillColor: AppColors.greyColor.withOpacity(0.2),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  onChanged: (value) {
+                    if (value == widget.trip.driverProposalPrice &&
+                        widget.trip.driverProposalPrice != null) {
+                      setState(() {
+                        _buttonText = 'change price to enabled';
+                      });
+                    } else if (value != widget.trip.driverProposalPrice &&
+                        value.isNotEmpty) {
+                      setState(() {
+                        _buttonText = 'update';
+                      });
+                    } else if (value == widget.trip.price &&
+                        _buttonText != 'accept' &&
+                        widget.trip.driverProposalPrice == null) {
+                      setState(() {
+                        _buttonText = 'accept';
+                      });
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              label: Text(_buttonText.toUpperCase()),
-              onPressed: _buttonText == 'accept'
-                  ? () => _acceptTrip(provider)
-                  : (_buttonText == 'update'
-                      ? () => _updateProposal(provider)
-                      : null),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _buttonText == 'accept'
-                    ? Colors.green
-                    : (_buttonText == 'update' ? Colors.amber : Colors.grey),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
+                    label: Text(_buttonText.toUpperCase()),
+                    onPressed: _buttonText == 'accept'
+                        ? () async => await _acceptTrip(
+                            context.read<DriverTripProvider>(),
+                          )
+                        : (_buttonText == 'update'
+                            ? () async => await _updateProposal(
+                                context.read<DriverTripProvider>(),
+                              )
+                            : null),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _buttonText == 'accept'
+                          ? Colors.green
+                          : (_buttonText == 'update'
+                              ? Colors.amber
+                              : Colors.grey),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
           ),
-      ],
-    );
+        ],
+      );
+    }
+
+    return const SizedBox(); // default return if no condition matches
+  },
+);
+
   }
 }

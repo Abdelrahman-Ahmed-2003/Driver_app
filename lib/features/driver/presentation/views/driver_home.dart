@@ -1,6 +1,5 @@
-import 'package:dirver/core/models/trip.dart';
 import 'package:dirver/features/driver/presentation/views/widgets/no_trip_widget.dart';
-import 'package:dirver/features/trip/presentation/views/driver_trip_view.dart';
+import 'package:dirver/features/driver/presentation/views/widgets/skeletonizer_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -18,14 +17,14 @@ class DriverHome extends StatefulWidget {
 }
 
 class _DriverHomeState extends State<DriverHome> {
-  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-
+final provider = context.read<DriverTripProvider>();
+  provider.isLoading = true;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final provider = context.read<DriverTripProvider>();
+      
 
       await StoreUserType.saveDriver(true);
       await StoreUserType.saveLastSignIn('driver');
@@ -33,15 +32,11 @@ class _DriverHomeState extends State<DriverHome> {
       if (!provider.isDriverDocIdFetched) {
         await provider.fetchDriverDocId();
       }
-
-      await provider.fetchInitialTrips(); // ✅ Fetch all trips once
-      await _checkDriverTripAndRedirect(context, provider);
-
-      setState(() {
-        _isLoading = false;
-      });
+      provider.listenTrips();
     });
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -70,59 +65,18 @@ class _DriverHomeState extends State<DriverHome> {
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Builder(
-              builder: (context) {
-                debugPrint('in builder driver home');
-                if (provider.availableTrips.isEmpty) {
-                  return const Center(child: NoTripWidget());
-                }
-
-                return const AnimatedCards(); // ListView with per-trip StreamBuilder
-              },
-            ),
+      body: Consumer<DriverTripProvider>(
+        
+        builder: (context, provider, child) {
+          debugPrint('Consumer build ${provider.availableTrips.length}');
+          if(provider.isLoading) return const SkeletonizerWidget();
+          
+          return provider.isLoading
+          ?  SkeletonizerWidget()
+          :(!provider.updated ? const Center(child: NoTripWidget()):const AnimatedCards()); 
+        },
+      ),
+          
     );
-  }
-
-  Future<void> _checkDriverTripAndRedirect(
-    BuildContext context,
-    DriverTripProvider provider,
-  ) async {
-    try {
-      debugPrint('Checking driver trip...');
-
-      final docSnapshot = await provider.firestore
-          .collection('drivers')
-          .doc(provider.driverId)
-          .get();
-
-      final data = docSnapshot.data();
-
-      if (data != null && data['tripId'] != null) {
-        debugPrint('Driver has an active trip: ${data['tripId']}');
-
-        if (!context.mounted) return;
-
-        if (provider.currentTrip == Trip()) {
-          provider.currentDocumentTrip =
-              provider.firestore.collection('trips').doc(data['tripId']);
-
-          final tripSnapshot = await provider.currentDocumentTrip!.get();
-          provider.currentTrip = Trip.fromFirestore(tripSnapshot, data['tripId']);
-        }
-
-        provider.tripStream = provider.currentDocumentTrip!.snapshots();
-
-        Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-          MaterialPageRoute(
-            builder: (_) => const DriverTripView(),
-          ),
-          (_) => false,
-        );
-      }
-    } catch (e) {
-      debugPrint('Error checking trip: $e');
-    }
   }
 }

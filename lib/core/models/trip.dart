@@ -42,6 +42,8 @@ class Trip {
         other.price == price;
   }
 
+  
+
   @override
   int get hashCode => Object.hash(id, status, price);
 

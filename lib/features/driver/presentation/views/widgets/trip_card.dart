@@ -1,99 +1,75 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dirver/core/models/trip.dart';
 import 'package:dirver/core/utils/colors_app.dart';
-import 'package:dirver/features/driver/presentation/provider/driver_trip_provider.dart';
-import 'package:dirver/features/driver/presentation/views/widgets/dest_widget.dart';
+import 'package:dirver/features/driver/presentation/views/widgets/address_widget.dart';
+import 'package:dirver/features/driver/presentation/views/widgets/destance_widget.dart';
 import 'package:dirver/features/driver/presentation/views/widgets/trip_action_widget.dart';
+import 'package:dirver/features/trip/presentation/views/driver_trip_view.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:provider/provider.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 
 class TripCard extends StatefulWidget {
-  final Trip trip;
+  Trip trip;
 
-  const TripCard({super.key, required this.trip});
+  TripCard({super.key, required this.trip});
 
   @override
   State<TripCard> createState() => _TripCardState();
 }
 
 class _TripCardState extends State<TripCard> {
-  double? distanceToUser;
-  double? distanceToDestination;
-  bool _enable = true;
+ 
+  StreamSubscription<DocumentSnapshot>? _tripSubscription;
+
   @override
   void initState() {
     super.initState();
-    _calculateDistances();
+    
+
+// WidgetsBinding.instance.addPostFrameCallback((_) async {
+      
+_tripSubscription = FirebaseFirestore.instance
+        .collection('trips')
+        .doc(widget.trip.id)
+        .snapshots()
+        .listen((snapshot) {
+          if(snapshot.data()!.containsKey('driverDocId')){
+            Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const DriverTripView()),
+                (route) => false,
+              );
+              return;
+          }
+      debugPrint('trip modified');
+      widget.trip = Trip.fromFirestore(snapshot, widget.trip.driverId);
+      setState(() {
+        debugPrint('trip card rebuild in initstate');
+      });
+    });
+      
+    // });
+    // Listen to trip updates
+  
+    
   }
 
-  Future<void> _calculateDistances() async {
-    try {
-      Position driverPosition = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
-
-      // Distance from driver to user
-      double dist1 = Geolocator.distanceBetween(
-        driverPosition.latitude,
-        driverPosition.longitude,
-        widget.trip.userLocationCoords!.latitude,
-        widget.trip.userLocationCoords!.longitude,
-      );
-
-      // Distance from user to destination
-      double dist2 = Geolocator.distanceBetween(
-        widget.trip.userLocationCoords!.latitude,
-        widget.trip.userLocationCoords!.longitude,
-        widget.trip.destinationCoords.latitude,
-        widget.trip.destinationCoords.longitude,
-      );
-
-      setState(() {
-        _enable = false;
-        debugPrint('dist1: $dist1, dist2: $dist2');
-        distanceToUser = dist1 / 1000; // convert to kilometers
-        distanceToDestination = dist2 / 1000;
-      });
-    } catch (e) {
-      print('Error getting distances: $e');
-    }
+  @override
+  void dispose() {
+    _tripSubscription?.cancel(); // Cancel Firestore listener
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    debugPrint("TripCard Rebuild ${widget.trip.id}");
-    final tripDocRef =
-        FirebaseFirestore.instance.collection('trips').doc(widget.trip.id);
-    return StreamBuilder<DocumentSnapshot>(
-      stream: tripDocRef.snapshots(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData || !snapshot.data!.exists) {
-          debugPrint('StreamBuilder no data${widget.trip.id}');
-          return const SizedBox(); // Trip deleted
-        }
-        debugPrint('StreamBuilder state build ${widget.trip.id}');
-        var provider = context.watch<DriverTripProvider>();
-        final updatedTrip =
-            Trip.fromFirestore(snapshot.data!, provider.driverId!);
+    debugPrint("TripCard rebuild ${widget.trip.id}");
 
-        if (updatedTrip.driverProposalPrice != null) {
-          debugPrint(
-              'updatedTrip driverProposalPrice ${updatedTrip.driverProposalPrice}');
-          provider.currentTrip = updatedTrip;
-        }
-        debugPrint('updatedTrip ${updatedTrip.toString()}');
-        return Skeletonizer(
-            enabled: _enable,
-            enableSwitchAnimation: true,
-            child: buildCard(updatedTrip));
-      },
-    );
+    
+
+    return buildCard(widget.trip);
   }
 
   Widget buildCard(Trip trip) {
-    debugPrint('buildCard ');
-    debugPrint(trip.driverProposalPrice ?? 'nulllllllllllllllllllll');
     return Card(
       margin: const EdgeInsets.all(16),
       shape: RoundedRectangleBorder(
@@ -103,39 +79,22 @@ class _TripCardState extends State<TripCard> {
       elevation: 2,
       shadowColor: AppColors.blackColor,
       color: AppColors.whiteColor,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                DestWidget(
-                  destination: trip.destination,
-                  destinationCoords: trip.destinationCoords,
-                  passengerLocation: trip.userLocationCoords!,
-                ),
-                const SizedBox(height: 10),
-                if (!_enable) ...[
-                  Text(
-                    'Distance to User: ${distanceToUser!.toStringAsFixed(2)} km',
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                  Text(
-                    'Distance to Destination: ${distanceToDestination!.toStringAsFixed(2)} km',
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                  const SizedBox(height: 10),
-                ] else
-                  const Text('Calculating distances...'),
-                TripActionWidget(trip: trip),
-              ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AddressWidget(
+              destination: trip.destination,
+              destinationCoords: trip.destinationCoords,
+              passengerLocation: trip.userLocationCoords!,
             ),
-          )
-        ],
+            const SizedBox(height: 10),
+            DestanceWidget(destination: trip.destination, destinationCoords: trip.destinationCoords, passengerLocation: trip.userLocationCoords!),
+            TripActionWidget(trip: trip),
+          ],
+        ),
       ),
     );
   }

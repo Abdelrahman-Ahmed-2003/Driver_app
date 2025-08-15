@@ -8,14 +8,22 @@ class AnimatedCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.read<DriverTripProvider>();
-    debugPrint('animated card build');
-    return ListView.builder(
-      shrinkWrap: true,
-      itemCount: provider.availableTrips.length,
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      itemBuilder: (context, index) {
-        return TripCard(trip: provider.availableTrips[index]);
+    return Selector<DriverTripProvider, int>(
+      selector: (_, provider) => provider.availableTrips.length,
+      builder: (context, tripCount, child) {
+        debugPrint('animated card build — trip count: $tripCount');
+
+        // Still need to get the trips here without listening for changes
+        final provider = context.read<DriverTripProvider>();
+
+        return ListView.builder(
+          shrinkWrap: true,
+          itemCount: tripCount,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          itemBuilder: (context, index) {
+            return TripCard(trip: provider.availableTrips[index]);
+          },
+        );
       },
     );
   }

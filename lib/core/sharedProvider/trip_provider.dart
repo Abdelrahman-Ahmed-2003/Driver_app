@@ -45,7 +45,7 @@ abstract class TripProvider with ChangeNotifier {
     }
   }
 
-  Future<void> updateDestination(String dest) async {
+  Future<bool> updateDestination(String dest) async {
     debugPrint('updateDestination: ${currentTrip.id}');
     await FirebaseFirestore.instance
         .collection('trips')
@@ -56,6 +56,7 @@ abstract class TripProvider with ChangeNotifier {
     currentTrip.driverDistination = 'toDestination';
 
     notifyListeners();
+    return true;
   }
 
   Future<void> endTrip() async {
